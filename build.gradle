@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+apply plugin: 'maven'
+
+group 'org.torusresearch'
+version '1.0.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.web3j:core:4.5.17'
+    compile 'com.google.code.gson:gson:2.8.6'
+    compile 'org.apache.httpcomponents:httpasyncclient:4.1.4'
+}
