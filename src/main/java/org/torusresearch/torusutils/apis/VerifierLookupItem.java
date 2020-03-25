@@ -13,7 +13,9 @@ public class VerifierLookupItem {
         return pub_key_X;
     }
 
-    public String getPub_key_Y() { return pub_key_Y; }
+    public String getPub_key_Y() {
+        return pub_key_Y;
+    }
 
     public String getAddress() {
         return address;

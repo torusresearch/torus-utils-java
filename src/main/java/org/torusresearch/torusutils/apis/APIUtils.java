@@ -53,39 +53,32 @@ public class APIUtils {
         new Timer(true).schedule(task, 12000);
         httpClient.execute(request, new FutureCallback<HttpResponse>() {
             public void completed(HttpResponse httpResponse) {
-                System.out.println("completed post");
                 try {
                     completableFuture.complete(EntityUtils.toString(httpResponse.getEntity()));
                 } catch (IOException e) {
-                    System.out.println("IO EXCEPTION");
                     completableFuture.completeExceptionally(e);
                 }
                 try {
                     httpClient.close();
                 } catch (Exception e) {
-                    System.out.println("EXCEPTION");
                     e.printStackTrace();
                 }
             }
 
             public void failed(Exception exception) {
-                System.out.println("failed post");
                 completableFuture.completeExceptionally(exception);
                 try {
                     httpClient.close();
                 } catch (IOException e) {
-                    System.out.println("IO EXCEPTION");
                     e.printStackTrace();
                 }
             }
 
             public void cancelled() {
-                System.out.println("cancelled post");
                 completableFuture.completeExceptionally(new Exception("canceled request"));
                 try {
                     httpClient.close();
                 } catch (IOException e) {
-                    System.out.println("IO EXCEPTION");
                     e.printStackTrace();
                 }
             }

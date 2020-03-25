@@ -74,9 +74,9 @@ public class Utils {
 
     public static CompletableFuture<KeyLookupResult> keyLookup(String[] endpoints, String verifier, String verifierId) {
         int k = Math.floorDiv(endpoints.length, 2) + 1;
-        CompletableFuture<String>[] lookupPromises = new CompletableFuture[endpoints.length];
+        List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
-            lookupPromises[i] = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId)));
+            lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId))));
         }
         return new Some<KeyLookupResult>(lookupPromises, lookupResults -> {
             try {
@@ -154,7 +154,6 @@ public class Utils {
                     if (result != null && !result.equals("")) {
                         completableFuture.complete(new KeyLookupResult(result, null));
                     } else {
-                        System.out.println(5);
                         Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId).thenComposeAsync(nextResp -> {
                             completableFuture.complete(nextResp);
                             return completableFuture;
@@ -176,8 +175,7 @@ public class Utils {
             });
             return completableFuture;
         }).exceptionally(e -> {
-            System.out.println("reached here");
-            System.out.println(e);
+            e.printStackTrace();
             completableFuture.completeExceptionally(e);
             return null;
         });

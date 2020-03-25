@@ -24,4 +24,7 @@ public class ShareRequestItem {
         return verifieridentifier;
     }
 
+    public String getVerifier_id() {
+        return verifier_id;
+    }
 }

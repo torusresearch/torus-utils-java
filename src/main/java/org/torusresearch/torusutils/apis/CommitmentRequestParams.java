@@ -21,47 +21,23 @@ public class CommitmentRequestParams {
         return messageprefix;
     }
 
-    public void setMessageprefix(String messageprefix) {
-        this.messageprefix = messageprefix;
-    }
-
     public String getTokencommitment() {
         return tokencommitment;
-    }
-
-    public void setTokencommitment(String tokencommitment) {
-        this.tokencommitment = tokencommitment;
     }
 
     public String getTemppubx() {
         return temppubx;
     }
 
-    public void setTemppubx(String temppubx) {
-        this.temppubx = temppubx;
-    }
-
     public String getTemppuby() {
         return temppuby;
-    }
-
-    public void setTemppuby(String temppuby) {
-        this.temppuby = temppuby;
     }
 
     public String getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public String getVerifieridentifier() {
         return verifieridentifier;
-    }
-
-    public void setVerifieridentifier(String verifieridentifier) {
-        this.verifieridentifier = verifieridentifier;
     }
 }
