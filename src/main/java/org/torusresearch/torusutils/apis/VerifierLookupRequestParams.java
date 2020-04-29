@@ -1,8 +1,9 @@
 package org.torusresearch.torusutils.apis;
 
 public class VerifierLookupRequestParams {
-    private String verifier;
-    private String verifier_id;
+    private final String verifier;
+    private final String verifier_id;
+
     public VerifierLookupRequestParams(String _verifier, String _verifier_id) {
         verifier = _verifier;
         verifier_id = _verifier_id;

@@ -1,8 +1,8 @@
 package org.torusresearch.torusutils.apis;
 
 public class JsonRPCResponse {
-    private JsonRPCError error;
-    private Object result;
+    private final JsonRPCError error;
+    private final Object result;
 
 
     public JsonRPCError getError() {

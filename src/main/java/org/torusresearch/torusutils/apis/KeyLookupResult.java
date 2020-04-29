@@ -1,8 +1,8 @@
 package org.torusresearch.torusutils.apis;
 
 public class KeyLookupResult {
-    private String keyResult;
-    private String errResult;
+    private final String keyResult;
+    private final String errResult;
 
     public String getKeyResult() {
         return keyResult;

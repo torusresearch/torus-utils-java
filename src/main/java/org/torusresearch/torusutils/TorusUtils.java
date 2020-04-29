@@ -1,14 +1,17 @@
 package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
+import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
 import org.torusresearch.torusutils.helpers.*;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.types.DecryptedShare;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -25,13 +28,13 @@ import java.util.stream.IntStream;
 
 public class TorusUtils {
 
-    private static BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
+    private static final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
 
     private TorusUtils() {
     }
 
 
-    private static CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    public static CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         List<CompletableFuture<String>> promiseArr = new ArrayList<>();
         // generate temporary private and public key that is used to secure receive shares
         ECKeyPair tmpKey = Keys.createEcKeyPair();

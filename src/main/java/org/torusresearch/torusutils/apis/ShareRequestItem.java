@@ -1,10 +1,11 @@
 package org.torusresearch.torusutils.apis;
 
 public class ShareRequestItem {
-    private String idtoken;
-    private NodeSignature[] nodesignatures;
-    private String verifieridentifier;
-    private String verifier_id;
+    private final String idtoken;
+    private final NodeSignature[] nodesignatures;
+    private final String verifieridentifier;
+    private final String verifier_id;
+
     public ShareRequestItem(String _verifier_id, String _idtoken, NodeSignature[] _nodesignatures, String _verifieridentifier) {
         verifier_id = _verifier_id;
         idtoken = _idtoken;

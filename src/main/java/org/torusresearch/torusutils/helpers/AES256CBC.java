@@ -1,20 +1,28 @@
 package org.torusresearch.torusutils.helpers;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECFieldFp;
 import java.security.spec.EllipticCurve;
 import java.util.Arrays;
 
 public class AES256CBC {
-    private BigInteger AES_ENCRYPTION_KEY;
-    private BigInteger ENCRYPTION_IV;
+    private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
+    private final BigInteger AES_ENCRYPTION_KEY;
+    private final BigInteger ENCRYPTION_IV;
 
-    public AES256CBC(String privateKeyHex, String ephemPublicKeyHex, String encryptionIvHex) {
+    public AES256CBC(String privateKeyHex, String ephemPublicKeyHex, String encryptionIvHex) throws NoSuchAlgorithmException {
         byte[] hash = SHA512.digest(toByteArray(ecdh(privateKeyHex, ephemPublicKeyHex)));
         byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
         AES_ENCRYPTION_KEY = new BigInteger(encKeyBytes);
@@ -29,35 +37,26 @@ public class AES256CBC {
      */
     public static byte[] toByteArray(BigInteger bi) {
         byte[] b = bi.toByteArray();
-        if ((b.length > 1) && (b[0] == 0)) {
+        if (b.length > 1 && b[0] == 0) {
             int n = b.length - 1;
-            byte[] newarray = new byte[n];
-            System.arraycopy(b, 1, newarray, 0, n);
-            b = newarray;
+            byte[] newArray = new byte[n];
+            System.arraycopy(b, 1, newArray, 0, n);
+            b = newArray;
         }
         return b;
     }
 
-    public String encrypt(byte[] src) {
-        try {
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, makeKey(), makeIv());
-            return Base64.encodeBytes(cipher.doFinal(src));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public String encrypt(byte[] src) throws NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException {
+        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+        cipher.init(Cipher.ENCRYPT_MODE, makeKey(), makeIv());
+        return Base64.encodeBytes(cipher.doFinal(src));
+
     }
 
-    public byte[] decrypt(String src) {
-        byte[] decrypted;
-        try {
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, makeKey(), makeIv());
-            decrypted = cipher.doFinal(Base64.decode(src));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return decrypted;
+    public byte[] decrypt(String src) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException {
+        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+        cipher.init(Cipher.DECRYPT_MODE, makeKey(), makeIv());
+        return cipher.doFinal(Base64.decode(src));
     }
 
     private BigInteger ecdh(String privateKeyHex, String ephemPublicKeyHex) {

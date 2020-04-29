@@ -1,8 +1,9 @@
 package org.torusresearch.torusutils.types;
 
 public class VerifierArgs {
-    private String verifier;
-    private String verifierId;
+    private final String verifier;
+    private final String verifierId;
+
     public VerifierArgs(String _verifier, String _verifierId) {
         verifier = _verifier;
         verifierId = _verifierId;

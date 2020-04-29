@@ -8,12 +8,12 @@ import java.security.spec.EllipticCurve;
 public class ECPointArithmetic {
     EllipticCurve ec;
     ECFieldFp ef;
-    private BigInteger x;
-    private BigInteger y;
-    private BigInteger z;
+    private final BigInteger x;
+    private final BigInteger y;
+    private final BigInteger z;
     private BigInteger zinv;
-    private BigInteger one = BigInteger.ONE;
-    private BigInteger zero = BigInteger.ZERO;
+    private final BigInteger one = BigInteger.ONE;
+    private final BigInteger zero = BigInteger.ZERO;
     private boolean infinity;
 
     public ECPointArithmetic(EllipticCurve ec, BigInteger x, BigInteger y, BigInteger z) {

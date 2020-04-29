@@ -3,8 +3,8 @@ package org.torusresearch.torusutils.helpers;
 import com.google.gson.Gson;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
+import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
-import org.torusresearch.torusutils.types.TorusNodePub;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -17,8 +17,8 @@ public class Utils {
     public static String thresholdSame(String[] arr, int threshold) {
         HashMap<String, Integer> hashMap = new HashMap();
         for (int i = 0; i < arr.length; i++) {
-            Integer currentCount = hashMap.getOrDefault(arr[i], new Integer(0));
-            Integer incrementedCount = currentCount + 1;
+            Integer currentCount = hashMap.getOrDefault(arr[i], 0);
+            int incrementedCount = currentCount + 1;
             if (incrementedCount == threshold) {
                 return arr[i];
             }
@@ -78,7 +78,7 @@ public class Utils {
         for (int i = 0; i < endpoints.length; i++) {
             lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId))));
         }
-        return new Some<KeyLookupResult>(lookupPromises, lookupResults -> {
+        return new Some<>(lookupPromises, lookupResults -> {
             try {
                 List<String> lookupShares = Arrays.asList(lookupResults)
                         .stream()

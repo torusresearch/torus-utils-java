@@ -1,8 +1,9 @@
 package org.torusresearch.torusutils.apis;
 
 public class PubKey {
-    private String X;
-    private String Y;
+    private final String X;
+    private final String Y;
+
     public PubKey(String _X, String _Y) {
         X = _X;
         Y = _Y;
