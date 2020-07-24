@@ -1,28 +1,43 @@
 package org.torusresearch.torusutils.apis;
 
 import com.google.gson.Gson;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.util.EntityUtils;
+import okhttp3.*;
+import okhttp3.internal.http2.Header;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class APIUtils {
+    private static final OkHttpClient client = new OkHttpClient().newBuilder().writeTimeout(12, TimeUnit.SECONDS).build();
+    public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private APIUtils() {
     }
 
     public static String generateJsonRPCObject(String method, Object params) {
         Gson gson = new Gson();
         return gson.toJson(new JsonRPCCall(method, params));
+    }
+
+    public static Callback toCallback(CompletableFuture<String> future) {
+        return new Callback() {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(e);
+            }
+
+
+
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                try {
+                    future.complete(Objects.requireNonNull(response.body()).string());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    future.completeExceptionally(e);
+                }
+            }
+        };
     }
 
     public static CompletableFuture<String> post(String url, String data) {
@@ -34,55 +49,17 @@ public class APIUtils {
     }
 
     private static CompletableFuture<String> _post(String url, String data, Header[] headers) {
-        CloseableHttpAsyncClient httpClient = HttpAsyncClients.createDefault();
-        httpClient.start();
-        HttpPost request = new HttpPost(url);
-        request.addHeader("Content-Type", "application/json; charset=utf-8");
-        for (int i = 0; i < headers.length; i++) {
-            request.addHeader(headers[i]);
+        RequestBody body = RequestBody.create(data, JSON);
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .post(body);
+        for (Header header : headers) {
+            requestBuilder.addHeader(header.name.utf8(), header.value.utf8());
         }
-        request.setEntity(new StringEntity(data, StandardCharsets.UTF_8));
-        CompletableFuture completableFuture = new CompletableFuture();
-        TimerTask task = new TimerTask() {
-            public void run() {
-                if (!completableFuture.isDone()) {
-                    request.abort();
-                }
-            }
-        };
-        new Timer(true).schedule(task, 12000);
-        httpClient.execute(request, new FutureCallback<HttpResponse>() {
-            public void completed(HttpResponse httpResponse) {
-                try {
-                    completableFuture.complete(EntityUtils.toString(httpResponse.getEntity()));
-                } catch (IOException e) {
-                    completableFuture.completeExceptionally(e);
-                }
-                try {
-                    httpClient.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
 
-            public void failed(Exception exception) {
-                completableFuture.completeExceptionally(exception);
-                try {
-                    httpClient.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            public void cancelled() {
-                completableFuture.completeExceptionally(new Exception("canceled request"));
-                try {
-                    httpClient.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        return completableFuture;
+        Request request = requestBuilder.build();
+        CompletableFuture<String> future = new CompletableFuture<>();
+        client.newCall(request).enqueue(toCallback(future));
+        return future;
     }
 }

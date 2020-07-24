@@ -1,8 +1,7 @@
 package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
+import okhttp3.internal.http2.Header;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
 
@@ -133,17 +132,17 @@ public class Utils {
         }
         String data = APIUtils.generateJsonRPCObject("KeyAssign", new KeyAssignParams(verifier, verifierId));
         Header[] headers = new Header[2];
-        headers[0] = new BasicHeader("pubkeyx", torusNodePubs[nodeNum].getX());
-        headers[1] = new BasicHeader("pubkeyy", torusNodePubs[nodeNum].getY());
+        headers[0] = new Header("pubkeyx", torusNodePubs[nodeNum].getX());
+        headers[1] = new Header("pubkeyy", torusNodePubs[nodeNum].getY());
         Integer finalInitialPoint = initialPoint;
         CompletableFuture<String> apir = APIUtils.post("https://signer.tor.us/api/sign", data, headers);
         apir.thenComposeAsync(signedData -> {
             Gson gson = new Gson();
             SignerResponse signerResponse = gson.fromJson(signedData, SignerResponse.class);
             Header[] signerHeaders = new Header[3];
-            signerHeaders[0] = new BasicHeader("torus-timestamp", signerResponse.getTorus_timestamp());
-            signerHeaders[1] = new BasicHeader("torus-nonce", signerResponse.getTorus_nonce());
-            signerHeaders[2] = new BasicHeader("torus-signature", signerResponse.getTorus_signature());
+            signerHeaders[0] = new Header("torus-timestamp", signerResponse.getTorus_timestamp());
+            signerHeaders[1] = new Header("torus-nonce", signerResponse.getTorus_nonce());
+            signerHeaders[2] = new Header("torus-signature", signerResponse.getTorus_signature());
 
             CompletableFuture<String> cf = APIUtils.post(endpoints[nodeNum], data, signerHeaders);
             cf.thenComposeAsync(resp -> {
