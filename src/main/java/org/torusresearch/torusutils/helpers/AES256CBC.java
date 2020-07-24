@@ -1,15 +1,11 @@
 package org.torusresearch.torusutils.helpers;
 
-import javax.crypto.BadPaddingException;
+import org.torusresearch.torusutils.types.TorusException;
+
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
@@ -46,17 +42,29 @@ public class AES256CBC {
         return b;
     }
 
-    public String encrypt(byte[] src) throws NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        cipher.init(Cipher.ENCRYPT_MODE, makeKey(), makeIv());
-        return Base64.encodeBytes(cipher.doFinal(src));
-
+    public String encrypt(byte[] src) throws TorusException {
+        Cipher cipher;
+        try {
+            cipher = Cipher.getInstance(TRANSFORMATION);
+            cipher.init(Cipher.ENCRYPT_MODE, makeKey(), makeIv());
+            return Base64.encodeBytes(cipher.doFinal(src));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new TorusException("Torus Internal Error", e);
+        }
     }
 
-    public byte[] decrypt(String src) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException {
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        cipher.init(Cipher.DECRYPT_MODE, makeKey(), makeIv());
-        return cipher.doFinal(Base64.decode(src));
+    public byte[] decrypt(String src) throws TorusException {
+        Cipher cipher;
+        try {
+            cipher = Cipher.getInstance(TRANSFORMATION);
+            cipher.init(Cipher.DECRYPT_MODE, makeKey(), makeIv());
+            return cipher.doFinal(Base64.decode(src));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new TorusException("Torus Internal Error", e);
+        }
+
     }
 
     private BigInteger ecdh(String privateKeyHex, String ephemPublicKeyHex) {

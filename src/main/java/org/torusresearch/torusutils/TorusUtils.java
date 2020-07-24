@@ -4,19 +4,13 @@ import com.google.gson.Gson;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
 import org.torusresearch.torusutils.helpers.*;
-import org.torusresearch.torusutils.types.DecryptedShare;
-import org.torusresearch.torusutils.types.RetrieveSharesResponse;
-import org.torusresearch.torusutils.types.TorusPublicKey;
-import org.torusresearch.torusutils.types.VerifierArgs;
+import org.torusresearch.torusutils.types.*;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,142 +28,147 @@ public class TorusUtils {
     }
 
 
-    public static CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        List<CompletableFuture<String>> promiseArr = new ArrayList<>();
-        // generate temporary private and public key that is used to secure receive shares
-        ECKeyPair tmpKey = Keys.createEcKeyPair();
-        String pubKey = tmpKey.getPublicKey().toString(16);
-        String pubKeyX = pubKey.substring(0, pubKey.length() / 2);
-        String pubKeyY = pubKey.substring(pubKey.length() / 2);
-        String tokenCommitment = org.web3j.crypto.Hash.sha3String(idToken);
-        int t = Math.floorDiv(endpoints.length, 4);
-        int k = t * 2 + 1;
+    public static CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) throws TorusException {
+        try {
+            List<CompletableFuture<String>> promiseArr = new ArrayList<>();
+            // generate temporary private and public key that is used to secure receive shares
+            ECKeyPair tmpKey = Keys.createEcKeyPair();
+            String pubKey = tmpKey.getPublicKey().toString(16);
+            String pubKeyX = pubKey.substring(0, pubKey.length() / 2);
+            String pubKeyY = pubKey.substring(pubKey.length() / 2);
+            String tokenCommitment = org.web3j.crypto.Hash.sha3String(idToken);
+            int t = Math.floorDiv(endpoints.length, 4);
+            int k = t * 2 + 1;
 
-        // make commitment requests to endpoints
-        Instant instant = Instant.now();
-        for (int i = 0; i < endpoints.length; i++) {
-            CompletableFuture<String> p = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.substring(2), pubKeyX, pubKeyY, String.valueOf(instant.toEpochMilli()), verifier)));
-            promiseArr.add(i, p);
-        }
-        // send share request once k + t number of commitment requests have completed
-        return new Some<>(promiseArr, resultArr -> {
-
-            List<String> resultArrList = Arrays.asList(resultArr);
-            List<String> completedRequests = resultArrList.stream().filter(resp -> resp != null && !resp.equals("")).collect(Collectors.toList());
-            CompletableFuture<List<String>> completableFuture = new CompletableFuture<>();
-            if (completedRequests.size() >= k + t) {
-                completableFuture.complete(completedRequests);
-                return completableFuture;
-            } else {
-                throw new PredicateFailedException("insufficient responses");
+            // make commitment requests to endpoints
+            Instant instant = Instant.now();
+            for (int i = 0; i < endpoints.length; i++) {
+                CompletableFuture<String> p = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.substring(2), pubKeyX, pubKeyY, String.valueOf(instant.toEpochMilli()), verifier)));
+                promiseArr.add(i, p);
             }
-        })
-                .getCompletableFuture()
-                .thenComposeAsync(responses -> {
-                    List<CompletableFuture<String>> promiseArrRequests = new ArrayList<>();
-                    List<String> nodeSigs = new ArrayList<>();
-                    for (String respons : responses) {
-                        if (respons != null && !respons.equals("")) {
-                            Gson gson = new Gson();
-                            JsonRPCResponse nodeSigResponse = gson.fromJson(respons, JsonRPCResponse.class);
-                            if (nodeSigResponse != null && nodeSigResponse.getResult() != null) {
-                                nodeSigs.add(gson.toJson(nodeSigResponse.getResult()));
-                            }
-                        }
-                    }
-                    NodeSignature[] nodeSignatures = new NodeSignature[nodeSigs.size()];
-                    for (int l = 0; l < nodeSigs.size(); l++) {
-                        Gson gson = new Gson();
-                        nodeSignatures[l] = gson.fromJson(nodeSigs.get(l), NodeSignature.class);
-                    }
-                    ShareRequestItem[] shareRequestItems = {new ShareRequestItem((String) verifierParams.get("verifier_id"), idToken, nodeSignatures, verifier)};
-                    for (String endpoint : endpoints) {
-                        String req = APIUtils.generateJsonRPCObject("ShareRequest", new ShareRequestParams(shareRequestItems));
-                        promiseArrRequests.add(APIUtils.post(endpoint, req));
-                    }
-                    return new Some<>(promiseArrRequests, shareResponses -> {
-                        // check if threshold number of nodes have returned the same user public key
-                        BigInteger privateKey = null;
-                        String ethAddress = null;
-                        List<String> completedResponses = new ArrayList<>();
-                        for (String shareResponse : shareResponses) {
-                            if (shareResponse != null && !shareResponse.equals("")) {
+            // send share request once k + t number of commitment requests have completed
+            return new Some<>(promiseArr, resultArr -> {
+
+                List<String> resultArrList = Arrays.asList(resultArr);
+                List<String> completedRequests = resultArrList.stream().filter(resp -> resp != null && !resp.equals("")).collect(Collectors.toList());
+                CompletableFuture<List<String>> completableFuture = new CompletableFuture<>();
+                if (completedRequests.size() >= k + t) {
+                    completableFuture.complete(completedRequests);
+                    return completableFuture;
+                } else {
+                    throw new PredicateFailedException("insufficient responses");
+                }
+            })
+                    .getCompletableFuture()
+                    .thenComposeAsync(responses -> {
+                        List<CompletableFuture<String>> promiseArrRequests = new ArrayList<>();
+                        List<String> nodeSigs = new ArrayList<>();
+                        for (String respons : responses) {
+                            if (respons != null && !respons.equals("")) {
                                 Gson gson = new Gson();
-                                JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
-                                if (shareResponseJson != null && shareResponseJson.getResult() != null) {
-                                    completedResponses.add(gson.toJson(shareResponseJson.getResult()));
+                                JsonRPCResponse nodeSigResponse = gson.fromJson(respons, JsonRPCResponse.class);
+                                if (nodeSigResponse != null && nodeSigResponse.getResult() != null) {
+                                    nodeSigs.add(gson.toJson(nodeSigResponse.getResult()));
                                 }
                             }
                         }
-                        List<String> completedResponsesPubKeys = completedResponses.stream().map(x -> {
+                        NodeSignature[] nodeSignatures = new NodeSignature[nodeSigs.size()];
+                        for (int l = 0; l < nodeSigs.size(); l++) {
                             Gson gson = new Gson();
-                            KeyAssignResult keyAssignResult = gson.fromJson(x, KeyAssignResult.class);
-                            if (keyAssignResult == null || keyAssignResult.getKeys() == null || keyAssignResult.getKeys().length == 0) {
-                                return null;
-                            }
-                            KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
-                            return gson.toJson(keyAssignResultFirstKey.getPublicKey());
-                        }).collect(Collectors.toList());
-
-                        String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
-                        Gson gson = new Gson();
-                        PubKey thresholdPubKey = null;
-                        if (thresholdPublicKeyString != null && !thresholdPublicKeyString.equals("")) {
-                            thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
+                            nodeSignatures[l] = gson.fromJson(nodeSigs.get(l), NodeSignature.class);
                         }
-                        if (completedResponses.size() >= k && thresholdPubKey != null) {
-                            List<DecryptedShare> decryptedShares = new ArrayList<>();
-                            for (int i = 0; i < shareResponses.length; i++) {
-                                if (shareResponses[i] != null && !shareResponses[i].equals("")) {
-                                    JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
-                                    if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
-                                        KeyAssignResult currentShareResponse = gson.fromJson(gson.toJson(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
-                                        if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
-                                            KeyAssignment firstKey = currentShareResponse.getKeys()[0];
-                                            if (firstKey.getMetadata() != null) {
-                                                try {
-                                                    AES256CBC aes256cbc = new AES256CBC(tmpKey.getPrivateKey().toString(16), firstKey.getMetadata().getEphemPublicKey(), firstKey.getMetadata().getIv());
-                                                    // Implementation specific oddity - hex string actually gets passed as a base64 string
-                                                    String hexUTF8AsBase64 = firstKey.getShare();
-                                                    String hexUTF8 = new String(Base64.decode(hexUTF8AsBase64), StandardCharsets.UTF_8);
-                                                    byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
-                                                    BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes)));
-                                                    decryptedShares.add(new DecryptedShare(indexes[i], share));
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
+                        ShareRequestItem[] shareRequestItems = {new ShareRequestItem((String) verifierParams.get("verifier_id"), idToken, nodeSignatures, verifier)};
+                        for (String endpoint : endpoints) {
+                            String req = APIUtils.generateJsonRPCObject("ShareRequest", new ShareRequestParams(shareRequestItems));
+                            promiseArrRequests.add(APIUtils.post(endpoint, req));
+                        }
+                        return new Some<>(promiseArrRequests, shareResponses -> {
+                            // check if threshold number of nodes have returned the same user public key
+                            BigInteger privateKey = null;
+                            String ethAddress = null;
+                            List<String> completedResponses = new ArrayList<>();
+                            for (String shareResponse : shareResponses) {
+                                if (shareResponse != null && !shareResponse.equals("")) {
+                                    Gson gson = new Gson();
+                                    JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
+                                    if (shareResponseJson != null && shareResponseJson.getResult() != null) {
+                                        completedResponses.add(gson.toJson(shareResponseJson.getResult()));
+                                    }
+                                }
+                            }
+                            List<String> completedResponsesPubKeys = completedResponses.stream().map(x -> {
+                                Gson gson = new Gson();
+                                KeyAssignResult keyAssignResult = gson.fromJson(x, KeyAssignResult.class);
+                                if (keyAssignResult == null || keyAssignResult.getKeys() == null || keyAssignResult.getKeys().length == 0) {
+                                    return null;
+                                }
+                                KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
+                                return gson.toJson(keyAssignResultFirstKey.getPublicKey());
+                            }).collect(Collectors.toList());
+
+                            String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
+                            Gson gson = new Gson();
+                            PubKey thresholdPubKey = null;
+                            if (thresholdPublicKeyString != null && !thresholdPublicKeyString.equals("")) {
+                                thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
+                            }
+                            if (completedResponses.size() >= k && thresholdPubKey != null) {
+                                List<DecryptedShare> decryptedShares = new ArrayList<>();
+                                for (int i = 0; i < shareResponses.length; i++) {
+                                    if (shareResponses[i] != null && !shareResponses[i].equals("")) {
+                                        JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
+                                        if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
+                                            KeyAssignResult currentShareResponse = gson.fromJson(gson.toJson(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
+                                            if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
+                                                KeyAssignment firstKey = currentShareResponse.getKeys()[0];
+                                                if (firstKey.getMetadata() != null) {
+                                                    try {
+                                                        AES256CBC aes256cbc = new AES256CBC(tmpKey.getPrivateKey().toString(16), firstKey.getMetadata().getEphemPublicKey(), firstKey.getMetadata().getIv());
+                                                        // Implementation specific oddity - hex string actually gets passed as a base64 string
+                                                        String hexUTF8AsBase64 = firstKey.getShare();
+                                                        String hexUTF8 = new String(Base64.decode(hexUTF8AsBase64), StandardCharsets.UTF_8);
+                                                        byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
+                                                        BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes)));
+                                                        decryptedShares.add(new DecryptedShare(indexes[i], share));
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }
-                            List<List<Integer>> allCombis = Utils.kCombinations(decryptedShares.size(), k);
-                            for (List<Integer> currentCombi : allCombis) {
-                                List<DecryptedShare> currentCombiShares = IntStream.range(0, decryptedShares.size()).filter(x -> currentCombi.contains(x)).mapToObj(decryptedShares::get).collect(Collectors.toList());
-                                BigInteger derivedPrivateKey = TorusUtils.lagrangeInterpolation(currentCombiShares.stream().map(DecryptedShare::getValue).toArray(BigInteger[]::new), currentCombiShares.stream().map(DecryptedShare::getIndex).toArray(BigInteger[]::new));
-                                assert derivedPrivateKey != null;
-                                ECKeyPair derivedECKeyPair = ECKeyPair.create(derivedPrivateKey);
-                                String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
-                                String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
-                                String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
-                                if (new BigInteger(derivedPubKeyX, 16).compareTo(new BigInteger(thresholdPubKey.getX(), 16)) == 0 &&
-                                        new BigInteger(derivedPubKeyY, 16).compareTo(new BigInteger(thresholdPubKey.getY(), 16)) == 0
-                                ) {
-                                    privateKey = derivedPrivateKey;
-                                    ethAddress = "0x" + Hash.sha3(derivedECKeyPair.getPublicKey().toString(16)).substring(64 - 38);
-                                    break;
+                                List<List<Integer>> allCombis = Utils.kCombinations(decryptedShares.size(), k);
+                                for (List<Integer> currentCombi : allCombis) {
+                                    List<DecryptedShare> currentCombiShares = IntStream.range(0, decryptedShares.size()).filter(currentCombi::contains).mapToObj(decryptedShares::get).collect(Collectors.toList());
+                                    BigInteger derivedPrivateKey = TorusUtils.lagrangeInterpolation(currentCombiShares.stream().map(DecryptedShare::getValue).toArray(BigInteger[]::new), currentCombiShares.stream().map(DecryptedShare::getIndex).toArray(BigInteger[]::new));
+                                    assert derivedPrivateKey != null;
+                                    ECKeyPair derivedECKeyPair = ECKeyPair.create(derivedPrivateKey);
+                                    String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
+                                    String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
+                                    String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
+                                    if (new BigInteger(derivedPubKeyX, 16).compareTo(new BigInteger(thresholdPubKey.getX(), 16)) == 0 &&
+                                            new BigInteger(derivedPubKeyY, 16).compareTo(new BigInteger(thresholdPubKey.getY(), 16)) == 0
+                                    ) {
+                                        privateKey = derivedPrivateKey;
+                                        ethAddress = "0x" + Hash.sha3(derivedECKeyPair.getPublicKey().toString(16)).substring(64 - 38);
+                                        break;
+                                    }
                                 }
+                                if (privateKey == null) {
+                                    throw new PredicateFailedException("could not derive private key");
+                                }
+                            } else {
+                                throw new PredicateFailedException("could not get enough shares");
                             }
-                            if (privateKey == null) {
-                                throw new PredicateFailedException("could not derive private key");
-                            }
-                        } else {
-                            throw new PredicateFailedException("could not get enough shares");
-                        }
 
-                        return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, privateKey.toString(16)));
-                    }).getCompletableFuture();
-                });
+                            return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, privateKey.toString(16)));
+                        }).getCompletableFuture();
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new TorusException("Torus Internal Error", e);
+        }
     }
 
 
