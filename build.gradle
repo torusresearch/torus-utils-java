@@ -15,12 +15,12 @@ repositories {
 }
 
 dependencies {
-    implementation "org.torusresearch:fetch-node-details-java:v1.0.4"
+    implementation 'org.torusresearch:fetch-node-details-java:1.0.5'
     implementation 'org.web3j:core:4.6.1'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation "com.squareup.okhttp3:okhttp:4.8.0"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.2"
+    implementation 'com.squareup.okhttp3:okhttp:4.8.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 }
 
 test {
