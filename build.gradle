@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.torusresearch:fetch-node-details-java:1.0.5'
+    implementation 'com.github.torusresearch:fetch-node-details-java:1.0.5'
     implementation 'org.web3j:core:4.6.1'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.squareup.okhttp3:okhttp:4.8.0'
