@@ -4,11 +4,12 @@ import com.google.gson.annotations.SerializedName;
 
 public class SignerResponse {
     @SerializedName("torus-timestamp")
-    private String torus_timestamp;
+    private final String torus_timestamp;
     @SerializedName("torus-nonce")
-    private String torus_nonce;
+    private final String torus_nonce;
     @SerializedName("torus-signature")
-    private String torus_signature;
+    private final String torus_signature;
+
     public SignerResponse(String _torus_timestamp, String _torus_nonce, String _torus_signature) {
         torus_timestamp = _torus_timestamp;
         torus_nonce = _torus_nonce;

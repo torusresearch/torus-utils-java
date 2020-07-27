@@ -1,10 +1,9 @@
 package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
+import okhttp3.internal.http2.Header;
+import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
-import org.torusresearch.torusutils.types.TorusNodePub;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -17,8 +16,8 @@ public class Utils {
     public static String thresholdSame(String[] arr, int threshold) {
         HashMap<String, Integer> hashMap = new HashMap();
         for (int i = 0; i < arr.length; i++) {
-            Integer currentCount = hashMap.getOrDefault(arr[i], new Integer(0));
-            Integer incrementedCount = currentCount + 1;
+            Integer currentCount = hashMap.getOrDefault(arr[i], 0);
+            int incrementedCount = currentCount + 1;
             if (incrementedCount == threshold) {
                 return arr[i];
             }
@@ -78,7 +77,7 @@ public class Utils {
         for (int i = 0; i < endpoints.length; i++) {
             lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId))));
         }
-        return new Some<KeyLookupResult>(lookupPromises, lookupResults -> {
+        return new Some<>(lookupPromises, lookupResults -> {
             try {
                 List<String> lookupShares = Arrays.asList(lookupResults)
                         .stream()
@@ -133,17 +132,17 @@ public class Utils {
         }
         String data = APIUtils.generateJsonRPCObject("KeyAssign", new KeyAssignParams(verifier, verifierId));
         Header[] headers = new Header[2];
-        headers[0] = new BasicHeader("pubkeyx", torusNodePubs[nodeNum].getX());
-        headers[1] = new BasicHeader("pubkeyy", torusNodePubs[nodeNum].getY());
+        headers[0] = new Header("pubkeyx", torusNodePubs[nodeNum].getX());
+        headers[1] = new Header("pubkeyy", torusNodePubs[nodeNum].getY());
         Integer finalInitialPoint = initialPoint;
         CompletableFuture<String> apir = APIUtils.post("https://signer.tor.us/api/sign", data, headers);
         apir.thenComposeAsync(signedData -> {
             Gson gson = new Gson();
             SignerResponse signerResponse = gson.fromJson(signedData, SignerResponse.class);
             Header[] signerHeaders = new Header[3];
-            signerHeaders[0] = new BasicHeader("torus-timestamp", signerResponse.getTorus_timestamp());
-            signerHeaders[1] = new BasicHeader("torus-nonce", signerResponse.getTorus_nonce());
-            signerHeaders[2] = new BasicHeader("torus-signature", signerResponse.getTorus_signature());
+            signerHeaders[0] = new Header("torus-timestamp", signerResponse.getTorus_timestamp());
+            signerHeaders[1] = new Header("torus-nonce", signerResponse.getTorus_nonce());
+            signerHeaders[2] = new Header("torus-signature", signerResponse.getTorus_signature());
 
             CompletableFuture<String> cf = APIUtils.post(endpoints[nodeNum], data, signerHeaders);
             cf.thenComposeAsync(resp -> {

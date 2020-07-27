@@ -1,8 +1,8 @@
 package org.torusresearch.torusutils.apis;
 
 public class KeyAssignParams {
-    private String verifier;
-    private String verifier_id;
+    private final String verifier;
+    private final String verifier_id;
 
     public String getVerifier() {
         return verifier;

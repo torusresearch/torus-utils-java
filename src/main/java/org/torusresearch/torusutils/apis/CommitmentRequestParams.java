@@ -1,12 +1,12 @@
 package org.torusresearch.torusutils.apis;
 
 public class CommitmentRequestParams {
-    private String messageprefix;
-    private String tokencommitment;
-    private String temppubx;
-    private String temppuby;
-    private String timestamp;
-    private String verifieridentifier;
+    private final String messageprefix;
+    private final String tokencommitment;
+    private final String temppubx;
+    private final String temppuby;
+    private final String timestamp;
+    private final String verifieridentifier;
 
     public CommitmentRequestParams(String _messageprefix, String _tokencommitment, String _temppubx, String _temppuby, String _timestamp, String _verifieridentifier) {
         messageprefix = _messageprefix;

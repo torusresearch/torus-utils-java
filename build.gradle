@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 apply plugin: 'maven'
@@ -11,10 +11,18 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    compile 'org.web3j:core:4.5.17'
-    compile 'com.google.code.gson:gson:2.8.6'
-    compile 'org.apache.httpcomponents:httpasyncclient:4.1.4'
+    implementation 'org.torusresearch:fetch-node-details-java:1.0.5'
+    implementation 'org.web3j:core:4.6.1'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.squareup.okhttp3:okhttp:4.8.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+}
+
+test {
+    useJUnitPlatform()
 }

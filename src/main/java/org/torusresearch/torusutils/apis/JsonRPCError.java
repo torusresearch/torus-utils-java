@@ -1,9 +1,9 @@
 package org.torusresearch.torusutils.apis;
 
 public class JsonRPCError {
-    private int code;
-    private String message;
-    private String data;
+    private final int code;
+    private final String message;
+    private final String data;
 
     public int getCode() {
         return code;

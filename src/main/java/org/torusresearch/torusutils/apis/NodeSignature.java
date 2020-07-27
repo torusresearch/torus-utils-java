@@ -1,10 +1,10 @@
 package org.torusresearch.torusutils.apis;
 
 public class NodeSignature {
-    private String signature;
-    private String data;
-    private String nodepubx;
-    private String nodepuby;
+    private final String signature;
+    private final String data;
+    private final String nodepubx;
+    private final String nodepuby;
 
     public NodeSignature(String _signature, String _data, String _nodepubx, String _nodepuby) {
         signature = _signature;

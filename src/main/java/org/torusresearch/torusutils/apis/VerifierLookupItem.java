@@ -1,10 +1,11 @@
 package org.torusresearch.torusutils.apis;
 
 public class VerifierLookupItem {
-    private String key_index;
-    private String pub_key_X;
-    private String pub_key_Y;
-    private String address;
+    private final String key_index;
+    private final String pub_key_X;
+    private final String pub_key_Y;
+    private final String address;
+
     public String getKey_index() {
         return key_index;
     }

@@ -1,8 +1,9 @@
 package org.torusresearch.torusutils.types;
 
 public class RetrieveSharesResponse {
-    private String ethAddress;
-    private String privKey;
+    private final String ethAddress;
+    private final String privKey;
+
     public RetrieveSharesResponse(String _ethAddress, String _privKey) {
         ethAddress = _ethAddress;
         privKey = _privKey;

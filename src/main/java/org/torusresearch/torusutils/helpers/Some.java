@@ -4,16 +4,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Some<T>  {
-    private AtomicInteger finishedCount = new AtomicInteger(0);
+public class Some<T> {
+    private final AtomicInteger finishedCount = new AtomicInteger(0);
     private boolean resolved = false;
-    private String[] resultArr;
-
-    public CompletableFuture<T> getCompletableFuture() {
-        return completableFuture;
-    }
-
-    private CompletableFuture<T> completableFuture;
+    private final String[] resultArr;
+    private final CompletableFuture<T> completableFuture;
 
     public Some(List<CompletableFuture<String>> promises, Predicate<T> predicate) {
         resultArr = new String[promises.size()];
@@ -42,5 +37,9 @@ public class Some<T>  {
                 return null;
             });
         }
+    }
+
+    public CompletableFuture<T> getCompletableFuture() {
+        return completableFuture;
     }
 }
