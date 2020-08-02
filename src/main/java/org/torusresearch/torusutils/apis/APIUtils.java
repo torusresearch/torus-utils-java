@@ -1,8 +1,7 @@
 package org.torusresearch.torusutils.apis;
 
 import com.google.gson.Gson;
-import okhttp3.*;
-import okhttp3.internal.http2.Header;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -10,9 +9,19 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.internal.http2.Header;
+
 public class APIUtils {
     private static final OkHttpClient client = new OkHttpClient().newBuilder().writeTimeout(12, TimeUnit.SECONDS).build();
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+
     private APIUtils() {
     }
 
@@ -26,8 +35,6 @@ public class APIUtils {
             @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 future.completeExceptionally(e);
             }
-
-
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
                 try {
@@ -56,7 +63,6 @@ public class APIUtils {
         for (Header header : headers) {
             requestBuilder.addHeader(header.name.utf8(), header.value.utf8());
         }
-
         Request request = requestBuilder.build();
         CompletableFuture<String> future = new CompletableFuture<>();
         client.newCall(request).enqueue(toCallback(future));
