@@ -27,7 +27,7 @@ public class TorusUtils {
 
     private static final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
 
-    {
+    static {
         setupBouncyCastle();
     }
 
@@ -296,7 +296,7 @@ public class TorusUtils {
         return _getPublicAddress(endpoints, torusNodePubs, verifierArgs, false);
     }
 
-    private void setupBouncyCastle() {
+    private static void setupBouncyCastle() {
         final Provider provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
         if (provider == null) {
             // Web3j will set up the provider lazily when it's first used.
