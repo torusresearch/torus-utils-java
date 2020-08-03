@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     implementation 'org.torusresearch:fetch-node-details-java:1.0.6'
-    implementation 'org.web3j:core:4.6.1'
+    implementation 'org.web3j:core:4.6.0-android'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.squareup.okhttp3:okhttp:4.8.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
