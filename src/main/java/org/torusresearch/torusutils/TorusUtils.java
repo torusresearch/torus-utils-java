@@ -2,6 +2,7 @@ package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
 import java8.util.concurrent.CompletableFuture;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
 import org.torusresearch.torusutils.helpers.*;
@@ -12,6 +13,8 @@ import org.web3j.crypto.Keys;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.Provider;
+import java.security.Security;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,9 +27,12 @@ public class TorusUtils {
 
     private static final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
 
-    private TorusUtils() {
+    {
+        setupBouncyCastle();
     }
 
+    private TorusUtils() {
+    }
 
     public static CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) throws TorusException {
         try {
@@ -171,6 +177,30 @@ public class TorusUtils {
         }
     }
 
+    static BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
+        if (shares.length != nodeIndex.length) {
+            return null;
+        }
+        BigInteger secret = new BigInteger("0");
+        for (int i = 0; i < shares.length; i++) {
+            BigInteger upper = new BigInteger("1");
+            BigInteger lower = new BigInteger("1");
+            for (int j = 0; j < shares.length; j++) {
+                if (i != j) {
+                    upper = upper.multiply(nodeIndex[j].negate());
+                    upper = upper.mod(secp256k1N);
+                    BigInteger temp = nodeIndex[i].subtract(nodeIndex[j]);
+                    temp = temp.mod(secp256k1N);
+                    lower = lower.multiply(temp).mod(secp256k1N);
+                }
+            }
+            BigInteger delta = upper.multiply(lower.modInverse(secp256k1N)).mod(secp256k1N);
+            delta = delta.multiply(shares[i]).mod(secp256k1N);
+            secret = secret.add(delta);
+        }
+        return secret.mod(secp256k1N);
+    }
+
 
 //    public static void main(String[] args) {
 //        String[] endpoints = {"https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnffode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"};
@@ -202,30 +232,6 @@ public class TorusUtils {
 ////            e.printStackTrace();
 ////        }
 //    }
-
-    static BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
-        if (shares.length != nodeIndex.length) {
-            return null;
-        }
-        BigInteger secret = new BigInteger("0");
-        for (int i = 0; i < shares.length; i++) {
-            BigInteger upper = new BigInteger("1");
-            BigInteger lower = new BigInteger("1");
-            for (int j = 0; j < shares.length; j++) {
-                if (i != j) {
-                    upper = upper.multiply(nodeIndex[j].negate());
-                    upper = upper.mod(secp256k1N);
-                    BigInteger temp = nodeIndex[i].subtract(nodeIndex[j]);
-                    temp = temp.mod(secp256k1N);
-                    lower = lower.multiply(temp).mod(secp256k1N);
-                }
-            }
-            BigInteger delta = upper.multiply(lower.modInverse(secp256k1N)).mod(secp256k1N);
-            delta = delta.multiply(shares[i]).mod(secp256k1N);
-            secret = secret.add(delta);
-        }
-        return secret.mod(secp256k1N);
-    }
 
     public static String generateAddressFromPrivKey(String privateKey) {
         BigInteger privKey = new BigInteger(privateKey, 16);
@@ -288,5 +294,23 @@ public class TorusUtils {
 
     public static CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs) {
         return _getPublicAddress(endpoints, torusNodePubs, verifierArgs, false);
+    }
+
+    private void setupBouncyCastle() {
+        final Provider provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
+        if (provider == null) {
+            // Web3j will set up the provider lazily when it's first used.
+            return;
+        }
+        if (provider.getClass().equals(BouncyCastleProvider.class)) {
+            // BC with same package name, shouldn't happen in real life.
+            return;
+        }
+        // Android registers its own BC provider. As it might be outdated and might not include
+        // all needed ciphers, we substitute it with a known BC bundled in the app.
+        // Android's BC has its package rewritten to "com.android.org.bouncycastle" and because
+        // of that it's possible to have another BC implementation loaded in VM.
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 }

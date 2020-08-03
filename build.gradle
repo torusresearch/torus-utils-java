@@ -8,6 +8,7 @@ group 'org.torusresearch'
 version '1.0.0'
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -15,8 +16,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.torusresearch:fetch-node-details-java:4ff8840082'
-    implementation 'org.web3j:core:4.2.0-android'
+    implementation 'org.torusresearch:fetch-node-details-java:d25e08c90c'
+    implementation 'org.web3j:core:4.6.0-android'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.squareup.okhttp3:okhttp:4.8.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
