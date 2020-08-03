@@ -1,6 +1,7 @@
 package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
+import java8.util.concurrent.CompletableFuture;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
 import org.torusresearch.torusutils.helpers.*;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 

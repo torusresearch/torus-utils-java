@@ -1,38 +1,27 @@
 package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
-
-import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.APIUtils;
-import org.torusresearch.torusutils.apis.JsonRPCResponse;
-import org.torusresearch.torusutils.apis.KeyAssignParams;
-import org.torusresearch.torusutils.apis.KeyLookupResult;
-import org.torusresearch.torusutils.apis.SignerResponse;
-import org.torusresearch.torusutils.apis.VerifierLookupRequestParams;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
+import java8.util.concurrent.CompletableFuture;
 import okhttp3.internal.http2.Header;
+import org.torusresearch.fetchnodedetails.types.TorusNodePub;
+import org.torusresearch.torusutils.apis.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utils {
     private Utils() {
     }
 
     public static String thresholdSame(String[] arr, int threshold) {
-        HashMap<String, Integer> hashMap = new HashMap();
-        for (int i = 0; i < arr.length; i++) {
-            Integer currentCount = hashMap.getOrDefault(arr[i], 0);
+        HashMap<String, Integer> hashMap = new HashMap<>();
+        for (String s : arr) {
+            Integer currentCount = hashMap.getOrDefault(s, 0);
             int incrementedCount = currentCount + 1;
             if (incrementedCount == threshold) {
-                return arr[i];
+                return s;
             }
-            hashMap.put(arr[i], currentCount + 1);
+            hashMap.put(s, currentCount + 1);
         }
         return null;
     }
@@ -44,15 +33,15 @@ public class Utils {
     }
 
     public static List<List<Integer>> kCombinations(int s, int k) {
-        List<Integer> set = new ArrayList();
+        List<Integer> set = new ArrayList<>();
         for (int i = 0; i < s; i++) {
-            set.add(new Integer(i));
+            set.add(i);
         }
         return kCombinations(set, k);
     }
 
     public static List<List<Integer>> kCombinations(List<Integer> set, int k) {
-        List<List<Integer>> combs = new ArrayList();
+        List<List<Integer>> combs = new ArrayList<>();
         if (k > set.size()) {
             return combs;
         }
@@ -62,8 +51,8 @@ public class Utils {
         }
         if (k == 1) {
             set.stream().forEach(i -> {
-                ArrayList<Integer> arrList = new ArrayList();
-                arrList.add(new Integer(i));
+                ArrayList<Integer> arrList = new ArrayList<>();
+                arrList.add(i);
                 combs.add(arrList);
             });
             return combs;
@@ -71,7 +60,7 @@ public class Utils {
         for (int i = 0; i < set.size() - k + 1; i++) {
             List<List<Integer>> tailCombs = Utils.kCombinations(set.subList(i + 1, set.size()), k - 1);
             for (int j = 0; j < tailCombs.size(); j++) {
-                List<Integer> prependedComb = new ArrayList();
+                List<Integer> prependedComb = new ArrayList<>();
                 prependedComb.add(set.get(i));
                 for (int l = 0; l < tailCombs.get(j).size(); l++) {
                     prependedComb.add(tailCombs.get(j).get(l));

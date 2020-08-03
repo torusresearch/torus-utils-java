@@ -1,22 +1,14 @@
 package org.torusresearch.torusutils.apis;
 
 import com.google.gson.Gson;
-
+import java8.util.concurrent.CompletableFuture;
+import okhttp3.*;
+import okhttp3.internal.http2.Header;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.internal.http2.Header;
 
 public class APIUtils {
     private static final OkHttpClient client = new OkHttpClient().newBuilder().writeTimeout(12, TimeUnit.SECONDS).build();

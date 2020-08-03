@@ -1,7 +1,8 @@
 package org.torusresearch.torusutils.helpers;
 
+import java8.util.concurrent.CompletableFuture;
+
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Some<T> {
