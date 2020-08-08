@@ -256,7 +256,7 @@ public class TorusUtils {
                                 if (privateKey == null) {
                                     throw new PredicateFailedException("could not derive private key");
                                 }
-                                BigInteger metadataNonce = null;
+                                BigInteger metadataNonce;
                                 try {
                                     metadataNonce = this.getMetadata(new MetadataPubKey(thresholdPubKey.getX(), thresholdPubKey.getY())).get();
                                 } catch (InterruptedException | ExecutionException e) {
@@ -297,6 +297,7 @@ public class TorusUtils {
                 lock.writeLock().lock();
                 BigInteger finalResponse = Utils.isEmpty(response.getMessage()) ? new BigInteger("0") : new BigInteger(response.getMessage(), 16);
                 metadataCache.put(metadata, finalResponse);
+                lock.writeLock().unlock();
                 return CompletableFuture.supplyAsync(() -> finalResponse);
             } else {
                 lock.readLock().unlock();
@@ -305,8 +306,6 @@ public class TorusUtils {
         } catch (Exception e) {
             e.printStackTrace();
             return CompletableFuture.supplyAsync(() -> new BigInteger("0"));
-        } finally {
-            lock.writeLock().unlock();
         }
     }
 
