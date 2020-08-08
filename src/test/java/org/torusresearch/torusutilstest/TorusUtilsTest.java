@@ -33,7 +33,8 @@ public class TorusUtilsTest {
         System.out.println("Starting test");
         Arrays.stream(nodeDetails.getTorusNodeEndpoints()).forEach(System.out::println);
         Arrays.stream(nodeDetails.getTorusNodePub()).forEach(System.out::println);
-        TorusPublicKey publicAddress = TorusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusUtils torusUtils = new TorusUtils();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         System.out.println(publicAddress.getAddress());
         assertEquals("0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70", publicAddress.getAddress());
     }

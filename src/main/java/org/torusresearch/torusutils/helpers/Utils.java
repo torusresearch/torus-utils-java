@@ -59,12 +59,10 @@ public class Utils {
         }
         for (int i = 0; i < set.size() - k + 1; i++) {
             List<List<Integer>> tailCombs = Utils.kCombinations(set.subList(i + 1, set.size()), k - 1);
-            for (int j = 0; j < tailCombs.size(); j++) {
+            for (List<Integer> tailComb : tailCombs) {
                 List<Integer> prependedComb = new ArrayList<>();
                 prependedComb.add(set.get(i));
-                for (int l = 0; l < tailCombs.get(j).size(); l++) {
-                    prependedComb.add(tailCombs.get(j).get(l));
-                }
+                prependedComb.addAll(tailComb);
                 combs.add(prependedComb);
             }
         }
@@ -75,9 +73,9 @@ public class Utils {
         int k = Math.floorDiv(endpoints.length, 2) + 1;
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
-            lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId))));
+            lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId)), false));
         }
-        return new Some<>(lookupPromises, lookupResults -> {
+        return new Some<>(lookupPromises, (lookupResults, resolved) -> {
             try {
                 List<String> lookupShares = Arrays.stream(lookupResults)
                         .filter(x -> !x.equals(""))
@@ -134,7 +132,7 @@ public class Utils {
         headers[0] = new Header("pubkeyx", torusNodePubs[nodeNum].getX());
         headers[1] = new Header("pubkeyy", torusNodePubs[nodeNum].getY());
         Integer finalInitialPoint = initialPoint;
-        CompletableFuture<String> apir = APIUtils.post("https://signer.tor.us/api/sign", data, headers);
+        CompletableFuture<String> apir = APIUtils.post("https://signer.tor.us/api/sign", data, headers, true);
         apir.thenComposeAsync(signedData -> {
             Gson gson = new Gson();
             SignerResponse signerResponse = gson.fromJson(signedData, SignerResponse.class);
@@ -143,7 +141,7 @@ public class Utils {
             signerHeaders[1] = new Header("torus-nonce", signerResponse.getTorus_nonce());
             signerHeaders[2] = new Header("torus-signature", signerResponse.getTorus_signature());
 
-            CompletableFuture<String> cf = APIUtils.post(endpoints[nodeNum], data, signerHeaders);
+            CompletableFuture<String> cf = APIUtils.post(endpoints[nodeNum], data, signerHeaders, false);
             cf.thenComposeAsync(resp -> {
                 try {
                     Gson gsonTemp = new Gson();
@@ -180,5 +178,9 @@ public class Utils {
 
 
         return completableFuture;
+    }
+
+    public static boolean isEmpty(final CharSequence cs) {
+        return cs == null || cs.length() == 0;
     }
 }
