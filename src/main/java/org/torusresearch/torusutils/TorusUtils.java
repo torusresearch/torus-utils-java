@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -255,7 +256,13 @@ public class TorusUtils {
                                 if (privateKey == null) {
                                     throw new PredicateFailedException("could not derive private key");
                                 }
-                                BigInteger metadataNonce = this.getMetadata(new MetadataPubKey(thresholdPubKey.getX(), thresholdPubKey.getY())).join();
+                                BigInteger metadataNonce = null;
+                                try {
+                                    metadataNonce = this.getMetadata(new MetadataPubKey(thresholdPubKey.getX(), thresholdPubKey.getY())).get();
+                                } catch (InterruptedException | ExecutionException e) {
+                                    e.printStackTrace();
+                                    throw new PredicateFailedException("Unable to get metadata");
+                                }
                                 if (predicateResolved.get()) return null;
                                 privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
                                 ethAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
