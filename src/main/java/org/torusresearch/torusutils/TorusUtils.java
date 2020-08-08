@@ -311,7 +311,7 @@ public class TorusUtils {
 
     public String generateAddressFromPrivKey(String privateKey) {
         BigInteger privKey = new BigInteger(privateKey, 16);
-        return Keys.getAddress(ECKeyPair.create(privKey.toByteArray()));
+        return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.toByteArray())));
     }
 
     CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
