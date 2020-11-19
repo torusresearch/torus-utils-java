@@ -183,4 +183,14 @@ public class Utils {
     public static boolean isEmpty(final CharSequence cs) {
         return cs == null || cs.length() == 0;
     }
+
+    public static String padLeft(String inputString, Character padChar, int length) {
+        if (inputString.length() >= length) return inputString;
+        StringBuilder sb = new StringBuilder();
+        while (sb.length() < length - inputString.length()) {
+            sb.append(padChar);
+        }
+        sb.append(inputString);
+        return sb.toString();
+    }
 }

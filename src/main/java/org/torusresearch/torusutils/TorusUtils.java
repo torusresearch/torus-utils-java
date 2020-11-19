@@ -355,7 +355,7 @@ public class TorusUtils {
                 return null;
             }
             BigInteger metadataNonce = this.getMetadata(new MetadataPubKey(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y())).join();
-            String pubKey = verifierLookupItem.getPub_key_X() + verifierLookupItem.getPub_key_Y();
+            String pubKey = Utils.padLeft(verifierLookupItem.getPub_key_X(), '0', 64) + Utils.padLeft(verifierLookupItem.getPub_key_Y(), '0', 64);
             ECKeyPair metadataKeyPair = ECKeyPair.create(metadataNonce);
             String finalPubKey = new BigInteger(pubKey, 16).add(metadataKeyPair.getPublicKey()).toString(16);
             String address = Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
