@@ -1,15 +1,18 @@
 package org.torusresearch.torusutils.apis;
 
-public class ShareRequestParams {
-    private final ShareRequestItem[] item;
-    private final String encrypted;
+import java.util.HashMap;
+import java.util.List;
 
-    public ShareRequestParams(ShareRequestItem[] _item) {
-        item = _item;
+public class ShareRequestParams {
+    private final String encrypted;
+    private final List<HashMap<String, Object>> item;
+
+    public ShareRequestParams(List<HashMap<String, Object>> _item) {
         encrypted = "yes";
+        item = _item;
     }
 
-    public ShareRequestItem[] getItem() {
+    public List<HashMap<String, Object>> getItem() {
         return item;
     }
 }

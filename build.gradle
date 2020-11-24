@@ -5,13 +5,14 @@ plugins {
 apply plugin: 'maven'
 
 group 'org.torusresearch'
-version '1.0.3'
+version '1.0.4'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    jcenter()
     maven { url 'https://jitpack.io' }
 }
 
@@ -23,6 +24,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
     testImplementation 'org.slf4j:slf4j-simple:1.7.30'
+    testImplementation 'com.auth0:java-jwt:3.11.0'
+    testImplementation 'net.andreinc.mockneat:mockneat:0.4.1'
 }
 
 test {

@@ -174,7 +174,12 @@ public class TorusUtils {
                             Gson gson = new Gson();
                             nodeSignatures[l] = gson.fromJson(nodeSigs.get(l), NodeSignature.class);
                         }
-                        ShareRequestItem[] shareRequestItems = {new ShareRequestItem((String) verifierParams.get("verifier_id"), idToken, nodeSignatures, verifier)};
+                        verifierParams.put("idtoken", idToken);
+                        verifierParams.put("nodesignatures", nodeSignatures);
+                        verifierParams.put("verifieridentifier", verifier);
+                        List<HashMap<String, Object>> shareRequestItems = new ArrayList<HashMap<String, Object>>() {{
+                            add(verifierParams);
+                        }};
                         for (String endpoint : endpoints) {
                             String req = APIUtils.generateJsonRPCObject("ShareRequest", new ShareRequestParams(shareRequestItems));
                             promiseArrRequests.add(APIUtils.post(endpoint, req, false));
