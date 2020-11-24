@@ -2,7 +2,11 @@ package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
 import java8.util.concurrent.CompletableFuture;
+
+import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.math.ec.ECPoint;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
 import org.torusresearch.torusutils.helpers.*;
@@ -50,7 +54,6 @@ public class TorusUtils {
     public static void setAPIKey(String apiKey) {
         APIUtils.setApiKey(apiKey);
     }
-
 
 //    public static void main(String[] args) {
 //        String[] endpoints = {"https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnffode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"};
@@ -360,9 +363,15 @@ public class TorusUtils {
                 return null;
             }
             BigInteger metadataNonce = this.getMetadata(new MetadataPubKey(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y())).join();
-            String pubKey = Utils.padLeft(verifierLookupItem.getPub_key_X(), '0', 64) + Utils.padLeft(verifierLookupItem.getPub_key_Y(), '0', 64);
-            ECKeyPair metadataKeyPair = ECKeyPair.create(metadataNonce);
-            String finalPubKey = new BigInteger(pubKey, 16).add(metadataKeyPair.getPublicKey()).toString(16);
+//            String pubKey = Utils.padLeft(verifierLookupItem.getPub_key_X(), '0', 64) + Utils.padLeft(verifierLookupItem.getPub_key_Y(), '0', 64);
+
+            // curve point addition
+            ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
+            ECPoint metadataPoint = curve.getG().multiply(metadataNonce);
+            ECPoint rawPoint = curve.getCurve().createPoint(new BigInteger(verifierLookupItem.getPub_key_X(), 16), new BigInteger(verifierLookupItem.getPub_key_Y(), 16));
+            ECPoint finalPoint = rawPoint.add(metadataPoint).normalize();
+            String finalPubKey = Utils.padLeft(finalPoint.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(finalPoint.getAffineYCoord().toString(), '0', 64);
+
             String address = Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
             if (!isExtended) {
                 completableFuture.complete(new TorusPublicKey(address));
