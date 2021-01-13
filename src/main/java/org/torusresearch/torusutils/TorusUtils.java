@@ -1,35 +1,16 @@
 package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
-
+import java8.util.concurrent.CompletableFuture;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.APIUtils;
-import org.torusresearch.torusutils.apis.CommitmentRequestParams;
-import org.torusresearch.torusutils.apis.JsonRPCResponse;
-import org.torusresearch.torusutils.apis.KeyAssignResult;
-import org.torusresearch.torusutils.apis.KeyAssignment;
-import org.torusresearch.torusutils.apis.NodeSignature;
-import org.torusresearch.torusutils.apis.PubKey;
-import org.torusresearch.torusutils.apis.ShareRequestParams;
-import org.torusresearch.torusutils.apis.VerifierLookupItem;
-import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
-import org.torusresearch.torusutils.helpers.AES256CBC;
-import org.torusresearch.torusutils.helpers.Base64;
-import org.torusresearch.torusutils.helpers.PredicateFailedException;
-import org.torusresearch.torusutils.helpers.Some;
-import org.torusresearch.torusutils.helpers.Utils;
-import org.torusresearch.torusutils.types.DecryptedShare;
-import org.torusresearch.torusutils.types.MetadataPubKey;
-import org.torusresearch.torusutils.types.MetadataResponse;
-import org.torusresearch.torusutils.types.RetrieveSharesResponse;
-import org.torusresearch.torusutils.types.TorusException;
-import org.torusresearch.torusutils.types.TorusPublicKey;
-import org.torusresearch.torusutils.types.VerifierArgs;
+import org.torusresearch.torusutils.apis.*;
+import org.torusresearch.torusutils.helpers.*;
+import org.torusresearch.torusutils.types.*;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
@@ -49,15 +30,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import java8.util.concurrent.CompletableFuture;
-
 public class TorusUtils {
 
     private final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
-    private final String     metadataHost;
-    private final String     allowHost;
-    ConcurrentHashMap<String, BigInteger>             metadataCache = new ConcurrentHashMap<>();
-    ConcurrentHashMap<String, ReentrantReadWriteLock> locks         = new ConcurrentHashMap<>();
+    private final String metadataHost;
+    private final String allowHost;
+    ConcurrentHashMap<String, BigInteger> metadataCache = new ConcurrentHashMap<>();
+    ConcurrentHashMap<String, ReentrantReadWriteLock> locks = new ConcurrentHashMap<>();
 
     {
         setupBouncyCastle();
