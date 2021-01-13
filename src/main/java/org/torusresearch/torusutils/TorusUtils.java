@@ -1,16 +1,35 @@
 package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
-import java8.util.concurrent.CompletableFuture;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.util.encoders.Hex;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.*;
-import org.torusresearch.torusutils.helpers.*;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.CommitmentRequestParams;
+import org.torusresearch.torusutils.apis.JsonRPCResponse;
+import org.torusresearch.torusutils.apis.KeyAssignResult;
+import org.torusresearch.torusutils.apis.KeyAssignment;
+import org.torusresearch.torusutils.apis.NodeSignature;
+import org.torusresearch.torusutils.apis.PubKey;
+import org.torusresearch.torusutils.apis.ShareRequestParams;
+import org.torusresearch.torusutils.apis.VerifierLookupItem;
+import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
+import org.torusresearch.torusutils.helpers.AES256CBC;
+import org.torusresearch.torusutils.helpers.Base64;
+import org.torusresearch.torusutils.helpers.PredicateFailedException;
+import org.torusresearch.torusutils.helpers.Some;
+import org.torusresearch.torusutils.helpers.Utils;
+import org.torusresearch.torusutils.types.DecryptedShare;
+import org.torusresearch.torusutils.types.MetadataPubKey;
+import org.torusresearch.torusutils.types.MetadataResponse;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
@@ -30,13 +49,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import java8.util.concurrent.CompletableFuture;
+
 public class TorusUtils {
 
     private final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
-    private final String metadataHost;
-    private final String allowHost;
-    ConcurrentHashMap<String, BigInteger> metadataCache = new ConcurrentHashMap<>();
-    ConcurrentHashMap<String, ReentrantReadWriteLock> locks = new ConcurrentHashMap<>();
+    private final String     metadataHost;
+    private final String     allowHost;
+    ConcurrentHashMap<String, BigInteger>             metadataCache = new ConcurrentHashMap<>();
+    ConcurrentHashMap<String, ReentrantReadWriteLock> locks         = new ConcurrentHashMap<>();
 
     {
         setupBouncyCastle();
@@ -55,36 +76,36 @@ public class TorusUtils {
         APIUtils.setApiKey(apiKey);
     }
 
-//    public static void main(String[] args) {
-//        String[] endpoints = {"https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnffode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"};
-//        TorusNodePub[] nodePubKeys = {
-//                new TorusNodePub("4086d123bd8b370db29e84604cd54fa9f1aeb544dba1cc9ff7c856f41b5bf269", "fde2ac475d8d2796aab2dea7426bc57571c26acad4f141463c036c9df3a8b8e8"),
-//                new TorusNodePub("1d6ae1e674fdc1849e8d6dacf193daa97c5d484251aa9f82ff740f8277ee8b7d", "43095ae6101b2e04fa187e3a3eb7fbe1de706062157f9561b1ff07fe924a9528"),
-//                new TorusNodePub("fd2af691fe4289ffbcb30885737a34d8f3f1113cbf71d48968da84cab7d0c262", "c37097edc6d6323142e0f310f0c2fb33766dbe10d07693d73d5d490c1891b8dc"),
-//                new TorusNodePub("e078195f5fd6f58977531135317a0f8d3af6d3b893be9762f433686f782bec58", "843f87df076c26bf5d4d66120770a0aecf0f5667d38aa1ec518383d50fa0fb88"),
-//                new TorusNodePub("a127de58df2e7a612fd256c42b57bb311ce41fd5d0ab58e6426fbf82c72e742f", "388842e57a4df814daef7dceb2065543dd5727f0ee7b40d527f36f905013fa96"),
-//        };
-//        BigInteger[] indexes = {new BigInteger("1"), new BigInteger("2"), new BigInteger("3"), new BigInteger("4"), new BigInteger("5")};
-//        HashMap<String, Object> verifierParams = new HashMap<>();
-//        verifierParams.put("verifier_id", "tetratorus@gmail.com");
-//        String idToken = "";
-//        try {
-//            RetrieveSharesResponse retrieveSharesResponse = TorusUtils.retrieveShares(endpoints, indexes, "google", verifierParams, idToken).get();
-//            System.out.println(retrieveSharesResponse.getEthAddress());
-//            System.out.println(retrieveSharesResponse.getPrivKey());
-//        } catch (Exception e) {
-//            System.out.println("FAILED");
-//            e.printStackTrace();
-//        }
-////        try {
-////            TorusPublicKey pubAddress = TorusUtils.getPublicAddress(endpoints, nodePubKeys, new VerifierArgs("google", "fffwwsss@tor.us"), true).get();
-////            System.out.println(pubAddress.getAddress());
-////            System.out.println(pubAddress.getX());
-////            System.out.println(pubAddress.getY());
-////        } catch (Exception e) {
-////            e.printStackTrace();
-////        }
-//    }
+    //    public static void main(String[] args) {
+    //        String[] endpoints = {"https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnffode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"};
+    //        TorusNodePub[] nodePubKeys = {
+    //                new TorusNodePub("4086d123bd8b370db29e84604cd54fa9f1aeb544dba1cc9ff7c856f41b5bf269", "fde2ac475d8d2796aab2dea7426bc57571c26acad4f141463c036c9df3a8b8e8"),
+    //                new TorusNodePub("1d6ae1e674fdc1849e8d6dacf193daa97c5d484251aa9f82ff740f8277ee8b7d", "43095ae6101b2e04fa187e3a3eb7fbe1de706062157f9561b1ff07fe924a9528"),
+    //                new TorusNodePub("fd2af691fe4289ffbcb30885737a34d8f3f1113cbf71d48968da84cab7d0c262", "c37097edc6d6323142e0f310f0c2fb33766dbe10d07693d73d5d490c1891b8dc"),
+    //                new TorusNodePub("e078195f5fd6f58977531135317a0f8d3af6d3b893be9762f433686f782bec58", "843f87df076c26bf5d4d66120770a0aecf0f5667d38aa1ec518383d50fa0fb88"),
+    //                new TorusNodePub("a127de58df2e7a612fd256c42b57bb311ce41fd5d0ab58e6426fbf82c72e742f", "388842e57a4df814daef7dceb2065543dd5727f0ee7b40d527f36f905013fa96"),
+    //        };
+    //        BigInteger[] indexes = {new BigInteger("1"), new BigInteger("2"), new BigInteger("3"), new BigInteger("4"), new BigInteger("5")};
+    //        HashMap<String, Object> verifierParams = new HashMap<>();
+    //        verifierParams.put("verifier_id", "tetratorus@gmail.com");
+    //        String idToken = "";
+    //        try {
+    //            RetrieveSharesResponse retrieveSharesResponse = TorusUtils.retrieveShares(endpoints, indexes, "google", verifierParams, idToken).get();
+    //            System.out.println(retrieveSharesResponse.getEthAddress());
+    //            System.out.println(retrieveSharesResponse.getPrivKey());
+    //        } catch (Exception e) {
+    //            System.out.println("FAILED");
+    //            e.printStackTrace();
+    //        }
+    ////        try {
+    ////            TorusPublicKey pubAddress = TorusUtils.getPublicAddress(endpoints, nodePubKeys, new VerifierArgs("google", "fffwwsss@tor.us"), true).get();
+    ////            System.out.println(pubAddress.getAddress());
+    ////            System.out.println(pubAddress.getX());
+    ////            System.out.println(pubAddress.getY());
+    ////        } catch (Exception e) {
+    ////            e.printStackTrace();
+    ////        }
+    //    }
 
     BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
         if (shares.length != nodeIndex.length) {
@@ -243,7 +264,8 @@ public class TorusUtils {
                                         }
                                     }
                                 }
-                                if (predicateResolved.get()) return null;
+                                if (predicateResolved.get())
+                                    return null;
                                 List<List<Integer>> allCombis = Utils.kCombinations(decryptedShares.size(), k);
                                 for (List<Integer> currentCombi : allCombis) {
                                     List<DecryptedShare> currentCombiShares = IntStream.range(0, decryptedShares.size()).filter(currentCombi::contains).mapToObj(decryptedShares::get).collect(Collectors.toList());
@@ -257,7 +279,7 @@ public class TorusUtils {
                                             new BigInteger(derivedPubKeyY, 16).compareTo(new BigInteger(thresholdPubKey.getY(), 16)) == 0
                                     ) {
                                         privateKey = derivedPrivateKey;
-//                                        ethAddress = "0x" + Hash.sha3(derivedECKeyPair.getPublicKey().toString(16)).substring(64 - 38);
+                                        //                                        ethAddress = "0x" + Hash.sha3(derivedECKeyPair.getPublicKey().toString(16)).substring(64 - 38);
                                         break;
                                     }
                                 }
@@ -271,14 +293,15 @@ public class TorusUtils {
                                     e.printStackTrace();
                                     throw new PredicateFailedException("Unable to get metadata");
                                 }
-                                if (predicateResolved.get()) return null;
+                                if (predicateResolved.get())
+                                    return null;
                                 privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
                                 ethAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
                             } else {
                                 throw new PredicateFailedException("could not get enough shares");
                             }
 
-                            return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, privateKey.toString(16)));
+                            return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, Hex.toHexString(privateKey.toByteArray())));
                         }).getCompletableFuture();
                     });
         } catch (Exception e) {
@@ -363,7 +386,7 @@ public class TorusUtils {
                 return null;
             }
             BigInteger metadataNonce = this.getMetadata(new MetadataPubKey(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y())).join();
-//            String pubKey = Utils.padLeft(verifierLookupItem.getPub_key_X(), '0', 64) + Utils.padLeft(verifierLookupItem.getPub_key_Y(), '0', 64);
+            //            String pubKey = Utils.padLeft(verifierLookupItem.getPub_key_X(), '0', 64) + Utils.padLeft(verifierLookupItem.getPub_key_Y(), '0', 64);
 
             // curve point addition
             ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
