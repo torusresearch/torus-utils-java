@@ -2,6 +2,7 @@ package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
 import java8.util.concurrent.CompletableFuture;
+import okhttp3.internal.http2.Header;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
@@ -35,6 +36,7 @@ public class TorusUtils {
     private final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
     private final String metadataHost;
     private final String allowHost;
+    private final String origin;
     ConcurrentHashMap<String, BigInteger> metadataCache = new ConcurrentHashMap<>();
     ConcurrentHashMap<String, ReentrantReadWriteLock> locks = new ConcurrentHashMap<>();
 
@@ -46,9 +48,18 @@ public class TorusUtils {
         this("https://metadata.tor.us", "https://signer.tor.us/api/allow");
     }
 
+    public TorusUtils(String origin) {
+        this("https://metadata.tor.us", "https://signer.tor.us/api/allow", origin);
+    }
+
     public TorusUtils(String metadataHost, String allowHost) {
+        this(metadataHost, allowHost, "Custom");
+    }
+
+    public TorusUtils(String metadataHost, String allowHost, String origin) {
         this.metadataHost = metadataHost;
         this.allowHost = allowHost;
+        this.origin = origin;
     }
 
     public static void setAPIKey(String apiKey) {
@@ -128,9 +139,10 @@ public class TorusUtils {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) throws TorusException {
+    public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier,
+                                                                    HashMap<String, Object> verifierParams, String idToken, HashMap<String, Object> extraParams) throws TorusException {
         try {
-            APIUtils.get(this.allowHost, true).join();
+            APIUtils.get(this.allowHost, new Header[]{new Header("Origin", this.origin)}, true).join();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();
@@ -156,7 +168,7 @@ public class TorusUtils {
                     completableFuture.complete(completedRequests);
                     return completableFuture;
                 } else {
-                    throw new PredicateFailedException("insufficient responses");
+                    throw new PredicateFailedException("insufficient responses for commitments");
                 }
             })
                     .getCompletableFuture()
@@ -180,6 +192,9 @@ public class TorusUtils {
                         verifierParams.put("idtoken", idToken);
                         verifierParams.put("nodesignatures", nodeSignatures);
                         verifierParams.put("verifieridentifier", verifier);
+                        if (extraParams != null) {
+                            verifierParams.putAll(extraParams);
+                        }
                         List<HashMap<String, Object>> shareRequestItems = new ArrayList<HashMap<String, Object>>() {{
                             add(verifierParams);
                         }};
@@ -258,7 +273,7 @@ public class TorusUtils {
                                             new BigInteger(derivedPubKeyY, 16).compareTo(new BigInteger(thresholdPubKey.getY(), 16)) == 0
                                     ) {
                                         privateKey = derivedPrivateKey;
-                                        //                                        ethAddress = "0x" + Hash.sha3(derivedECKeyPair.getPublicKey().toString(16)).substring(64 - 38);
+                                        // ethAddress = "0x" + Hash.sha3(derivedECKeyPair.getPublicKey().toString(16)).substring(64 - 38);
                                         break;
                                     }
                                 }
@@ -287,6 +302,11 @@ public class TorusUtils {
             e.printStackTrace();
             throw new TorusException("Torus Internal Error", e);
         }
+    }
+
+    public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier,
+                                                                    HashMap<String, Object> verifierParams, String idToken) throws TorusException {
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null);
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {

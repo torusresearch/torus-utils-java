@@ -39,7 +39,7 @@ public class TorusUtilsTest {
     static Algorithm algorithmRs;
 
     static String TORUS_TEST_VERIFIER = "torus-test-health";
-    static String TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-aggregate-health";
+    static String TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate";
 
     static String TORUS_TEST_EMAIL = "hello@tor.us";
 
@@ -107,6 +107,6 @@ public class TorusUtilsTest {
                 }},
                 hashedIdToken).get();
         System.out.println(retrieveSharesResponse.getEthAddress());
-        assertNotNull(retrieveSharesResponse.getEthAddress());
+        assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getEthAddress());
     }
 }
