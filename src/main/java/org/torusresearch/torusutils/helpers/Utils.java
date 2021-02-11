@@ -1,13 +1,22 @@
 package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
+
+import org.torusresearch.fetchnodedetails.types.TorusNodePub;
+import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.JsonRPCResponse;
+import org.torusresearch.torusutils.apis.KeyAssignParams;
+import org.torusresearch.torusutils.apis.KeyLookupResult;
+import org.torusresearch.torusutils.apis.SignerResponse;
+import org.torusresearch.torusutils.apis.VerifierLookupRequestParams;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+
 import java8.util.concurrent.CompletableFuture;
 import okhttp3.internal.http2.Header;
-import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class Utils {
     private Utils() {
@@ -50,11 +59,12 @@ public class Utils {
             return combs;
         }
         if (k == 1) {
-            set.stream().forEach(i -> {
+            for (Integer i :
+                    set) {
                 ArrayList<Integer> arrList = new ArrayList<>();
                 arrList.add(i);
                 combs.add(arrList);
-            });
+            }
             return combs;
         }
         for (int i = 0; i < set.size() - k + 1; i++) {
@@ -77,26 +87,32 @@ public class Utils {
         }
         return new Some<>(lookupPromises, (lookupResults, resolved) -> {
             try {
-                List<String> lookupShares = Arrays.stream(lookupResults)
-                        .filter(x -> !x.equals(""))
-                        .collect(Collectors.toList());
-                List<String> errorResults = lookupShares.stream().map(rpcResponse -> {
-                    try {
-                        Gson gson = new Gson();
-                        return gson.fromJson(rpcResponse, JsonRPCResponse.class).getError().getData();
-                    } catch (Exception e) {
-                        return "";
+                List<String> errorResults = new ArrayList<>();
+                List<String> keyResults = new ArrayList<>();
+                Gson gson = new Gson();
+                for (String x :
+                        lookupResults) {
+                    if (!x.equals("")) {
+                        try {
+                            JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
+                            keyResults.add(gson.toJson(response.getResult()));
+                        } catch (Exception e) {
+                            keyResults.add("");
+                        }
                     }
-                }).collect(Collectors.toList());
+                }
+                for (String x :
+                        lookupResults) {
+                    if (!x.equals("")) {
+                        try {
+                            JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
+                            errorResults.add(response.getError().getData());
+                        } catch (Exception e) {
+                            errorResults.add("");
+                        }
+                    }
+                }
                 String errorResult = thresholdSame(errorResults, k);
-                List<String> keyResults = lookupShares.stream().map(rpcResponse -> {
-                    try {
-                        Gson gson = new Gson();
-                        return gson.toJson(gson.fromJson(rpcResponse, JsonRPCResponse.class).getResult());
-                    } catch (Exception e) {
-                        return "";
-                    }
-                }).collect(Collectors.toList());
                 String keyResult = thresholdSame(keyResults, k);
                 if (!errorResult.equals("") || !keyResult.equals("")) {
                     return CompletableFuture.completedFuture(new KeyLookupResult(keyResult, errorResult));
