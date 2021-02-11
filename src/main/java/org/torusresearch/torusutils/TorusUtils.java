@@ -1,17 +1,35 @@
 package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
-import java8.util.concurrent.CompletableFuture;
-import okhttp3.internal.http2.Header;
+
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.*;
-import org.torusresearch.torusutils.helpers.*;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.CommitmentRequestParams;
+import org.torusresearch.torusutils.apis.JsonRPCResponse;
+import org.torusresearch.torusutils.apis.KeyAssignResult;
+import org.torusresearch.torusutils.apis.KeyAssignment;
+import org.torusresearch.torusutils.apis.NodeSignature;
+import org.torusresearch.torusutils.apis.PubKey;
+import org.torusresearch.torusutils.apis.ShareRequestParams;
+import org.torusresearch.torusutils.apis.VerifierLookupItem;
+import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
+import org.torusresearch.torusutils.helpers.AES256CBC;
+import org.torusresearch.torusutils.helpers.Base64;
+import org.torusresearch.torusutils.helpers.PredicateFailedException;
+import org.torusresearch.torusutils.helpers.Some;
+import org.torusresearch.torusutils.helpers.Utils;
+import org.torusresearch.torusutils.types.DecryptedShare;
+import org.torusresearch.torusutils.types.MetadataPubKey;
+import org.torusresearch.torusutils.types.MetadataResponse;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
@@ -20,16 +38,15 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.Security;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+import java8.util.concurrent.CompletableFuture;
+import okhttp3.internal.http2.Header;
 
 public class TorusUtils {
 
@@ -154,15 +171,19 @@ public class TorusUtils {
             int k = t * 2 + 1;
 
             // make commitment requests to endpoints
-            Instant instant = Instant.now();
             for (int i = 0; i < endpoints.length; i++) {
-                CompletableFuture<String> p = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.substring(2), pubKeyX, pubKeyY, String.valueOf(instant.toEpochMilli()), verifier)), false);
+                CompletableFuture<String> p = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.substring(2), pubKeyX, pubKeyY, String.valueOf(System.currentTimeMillis()), verifier)), false);
                 promiseArr.add(i, p);
             }
             // send share request once k + t number of commitment requests have completed
             return new Some<>(promiseArr, (resultArr, commitmentsResolved) -> {
-                List<String> resultArrList = Arrays.asList(resultArr);
-                List<String> completedRequests = resultArrList.stream().filter(resp -> resp != null && !resp.equals("")).collect(Collectors.toList());
+                List<String> completedRequests = new ArrayList<>();
+                for (String result :
+                        resultArr) {
+                    if (result != null && !result.equals("")) {
+                        completedRequests.add(result);
+                    }
+                }
                 CompletableFuture<List<String>> completableFuture = new CompletableFuture<>();
                 if (completedRequests.size() >= k + t) {
                     completableFuture.complete(completedRequests);
@@ -207,27 +228,26 @@ public class TorusUtils {
                             BigInteger privateKey = null;
                             String ethAddress;
                             List<String> completedResponses = new ArrayList<>();
+                            Gson gson = new Gson();
                             for (String shareResponse : shareResponses) {
                                 if (shareResponse != null && !shareResponse.equals("")) {
-                                    Gson gson = new Gson();
                                     JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
                                     if (shareResponseJson != null && shareResponseJson.getResult() != null) {
                                         completedResponses.add(gson.toJson(shareResponseJson.getResult()));
                                     }
                                 }
                             }
-                            List<String> completedResponsesPubKeys = completedResponses.stream().map(x -> {
-                                Gson gson = new Gson();
+                            List<String> completedResponsesPubKeys = new ArrayList<>();
+                            for (String x :
+                                    completedResponses) {
                                 KeyAssignResult keyAssignResult = gson.fromJson(x, KeyAssignResult.class);
                                 if (keyAssignResult == null || keyAssignResult.getKeys() == null || keyAssignResult.getKeys().length == 0) {
                                     return null;
                                 }
                                 KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
-                                return gson.toJson(keyAssignResultFirstKey.getPublicKey());
-                            }).collect(Collectors.toList());
-
+                                completedResponsesPubKeys.add(gson.toJson(keyAssignResultFirstKey.getPublicKey()));
+                            }
                             String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
-                            Gson gson = new Gson();
                             PubKey thresholdPubKey = null;
                             if (thresholdPublicKeyString != null && !thresholdPublicKeyString.equals("")) {
                                 thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
@@ -262,8 +282,17 @@ public class TorusUtils {
                                     return null;
                                 List<List<Integer>> allCombis = Utils.kCombinations(decryptedShares.size(), k);
                                 for (List<Integer> currentCombi : allCombis) {
-                                    List<DecryptedShare> currentCombiShares = IntStream.range(0, decryptedShares.size()).filter(currentCombi::contains).mapToObj(decryptedShares::get).collect(Collectors.toList());
-                                    BigInteger derivedPrivateKey = this.lagrangeInterpolation(currentCombiShares.stream().map(DecryptedShare::getValue).toArray(BigInteger[]::new), currentCombiShares.stream().map(DecryptedShare::getIndex).toArray(BigInteger[]::new));
+                                    List<BigInteger> currentCombiSharesIndexes = new ArrayList<>();
+                                    List<BigInteger> currentCombiSharesValues = new ArrayList<>();
+                                    for (int i = 0; i < decryptedShares.size(); i++) {
+                                        if (currentCombi.contains(i)) {
+                                            DecryptedShare decryptedShare = decryptedShares.get(i);
+                                            currentCombiSharesIndexes.add(decryptedShare.getIndex());
+                                            currentCombiSharesValues.add(decryptedShare.getValue());
+                                        }
+                                    }
+                                    BigInteger derivedPrivateKey = this.lagrangeInterpolation(currentCombiSharesValues.toArray(new BigInteger[0]),
+                                            currentCombiSharesIndexes.toArray(new BigInteger[0]));
                                     assert derivedPrivateKey != null;
                                     ECKeyPair derivedECKeyPair = ECKeyPair.create(derivedPrivateKey);
                                     String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
