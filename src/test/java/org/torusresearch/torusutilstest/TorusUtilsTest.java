@@ -19,6 +19,7 @@ import org.web3j.crypto.Hash;
 import sun.security.rsa.RSAPrivateCrtKeyImpl;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
@@ -87,8 +88,10 @@ public class TorusUtilsTest {
                     put("verifier_id", TORUS_TEST_EMAIL);
                 }},
                 JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        System.out.println(retrieveSharesResponse.getEthAddress());
-        assertNotNull(retrieveSharesResponse.getEthAddress());
+        System.out.println(retrieveSharesResponse.getPrivKey());
+        BigInteger requiredPrivateKey = new BigInteger("68ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25", 16);
+        assert (requiredPrivateKey.equals(new BigInteger(retrieveSharesResponse.getPrivKey(), 16)));
+        assertEquals("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4", retrieveSharesResponse.getEthAddress());
     }
 
     @DisplayName("Aggregate Login test")
