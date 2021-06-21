@@ -107,7 +107,8 @@ public class TorusUtils {
     public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier,
                                                                     HashMap<String, Object> verifierParams, String idToken, HashMap<String, Object> extraParams) throws TorusException {
         try {
-            APIUtils.get(this.allowHost, new Header[]{new Header("Origin", this.origin)}, true).join();
+            APIUtils.get(this.allowHost, new Header[]{new Header("Origin", this.origin),
+                    new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString())}, true).join();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();
