@@ -16,16 +16,16 @@ import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
 import org.torusresearch.torusutilstest.utils.VerifyParams;
 import org.web3j.crypto.Hash;
-import sun.security.rsa.RSAPrivateCrtKeyImpl;
+import sun.security.ec.ECPrivateKeyImpl;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -49,10 +49,11 @@ public class TorusUtilsTest {
         System.out.println("Setup Starting");
         FetchNodeDetails fetchNodeDetails = new FetchNodeDetails(EthereumNetwork.ROPSTEN, "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183");
         nodeDetails = fetchNodeDetails.getNodeDetails().get();
-        RSAPrivateKey privateKey = (RSAPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "RSA");
-        RSAPrivateCrtKeyImpl rsaPrivateKey = (RSAPrivateCrtKeyImpl) privateKey;
-        RSAPublicKey publicKey = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(rsaPrivateKey.getModulus(), rsaPrivateKey.getPublicExponent()));
-        algorithmRs = Algorithm.RSA256(publicKey, privateKey);
+        ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
+        ECPrivateKeyImpl ecPrivateKey = (ECPrivateKeyImpl) privateKey;
+        ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(ecPrivateKey.getParams().getGenerator(),
+                ecPrivateKey.getParams()));
+        algorithmRs = Algorithm.ECDSA256(publicKey, privateKey);
     }
 
     @DisplayName("Gets Public Address")
