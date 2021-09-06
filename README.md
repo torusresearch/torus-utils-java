@@ -35,5 +35,5 @@ repositories {
 
 ## Requirements
 
-- Android - API level 24
+- Android - API level 21
 - Java 8
