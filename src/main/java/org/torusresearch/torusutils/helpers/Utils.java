@@ -25,7 +25,8 @@ public class Utils {
     public static String thresholdSame(String[] arr, int threshold) {
         HashMap<String, Integer> hashMap = new HashMap<>();
         for (String s : arr) {
-            Integer currentCount = hashMap.getOrDefault(s, 0);
+            Integer currentCount = hashMap.get(s);
+            if (currentCount == null) currentCount = 0;
             int incrementedCount = currentCount + 1;
             if (incrementedCount == threshold) {
                 return s;
@@ -80,7 +81,7 @@ public class Utils {
     }
 
     public static CompletableFuture<KeyLookupResult> keyLookup(String[] endpoints, String verifier, String verifierId) {
-        int k = Math.floorDiv(endpoints.length, 2) + 1;
+        int k = endpoints.length / 2 + 1;
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
             lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId)), false));
@@ -134,7 +135,7 @@ public class Utils {
             nodeNum = new Random().nextInt(endpoints.length);
             initialPoint = nodeNum;
         } else {
-            nodeNum = Math.floorMod(lastPoint, endpoints.length);
+            nodeNum = lastPoint % endpoints.length;
         }
         if (nodeNum.equals(firstPoint)) {
             completableFuture.completeExceptionally(new Exception("Looped through all"));

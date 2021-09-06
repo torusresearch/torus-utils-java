@@ -5,27 +5,26 @@ plugins {
 apply plugin: 'maven'
 
 group 'org.torusresearch'
-version '1.0.8'
+version '1.0.9'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    jcenter()
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation 'org.torusresearch:fetch-node-details-java:1.0.9'
+    implementation 'org.torusresearch:fetch-node-details-java:1.0.10'
     implementation 'org.web3j:core:4.6.0-android'
-    implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
-    testImplementation 'org.slf4j:slf4j-simple:1.7.30'
-    testImplementation 'com.auth0:java-jwt:3.12.1'
-    testImplementation 'net.andreinc.mockneat:mockneat:0.4.2'
+    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.32'
+    testImplementation 'com.auth0:java-jwt:3.18.1'
+    testImplementation 'net.andreinc:mockneat:0.4.7'
 }
 
 test {

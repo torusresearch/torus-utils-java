@@ -16,7 +16,6 @@ import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
 import org.torusresearch.torusutilstest.utils.VerifyParams;
 import org.web3j.crypto.Hash;
-import sun.security.ec.ECPrivateKeyImpl;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -50,9 +49,8 @@ public class TorusUtilsTest {
         FetchNodeDetails fetchNodeDetails = new FetchNodeDetails(EthereumNetwork.ROPSTEN, "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183");
         nodeDetails = fetchNodeDetails.getNodeDetails().get();
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
-        ECPrivateKeyImpl ecPrivateKey = (ECPrivateKeyImpl) privateKey;
-        ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(ecPrivateKey.getParams().getGenerator(),
-                ecPrivateKey.getParams()));
+        ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(),
+                privateKey.getParams()));
         algorithmRs = Algorithm.ECDSA256(publicKey, privateKey);
     }
 
@@ -61,8 +59,8 @@ public class TorusUtilsTest {
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL);
         System.out.println("Starting test");
-        Arrays.stream(nodeDetails.getTorusNodeEndpoints()).forEach(System.out::println);
-        Arrays.stream(nodeDetails.getTorusNodePub()).forEach(System.out::println);
+        System.out.println(Arrays.toString(nodeDetails.getTorusNodeEndpoints()));
+        System.out.println(Arrays.toString(nodeDetails.getTorusNodePub()));
         TorusUtils torusUtils = new TorusUtils();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         System.out.println(publicAddress.getAddress());

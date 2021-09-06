@@ -116,7 +116,7 @@ public class TorusUtils {
             String pubKeyX = pubKey.substring(0, pubKey.length() / 2);
             String pubKeyY = pubKey.substring(pubKey.length() / 2);
             String tokenCommitment = org.web3j.crypto.Hash.sha3String(idToken);
-            int t = Math.floorDiv(endpoints.length, 4);
+            int t = endpoints.length / 4;
             int k = t * 2 + 1;
 
             // make commitment requests to endpoints
