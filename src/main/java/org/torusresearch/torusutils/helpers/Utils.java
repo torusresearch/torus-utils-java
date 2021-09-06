@@ -92,7 +92,7 @@ public class Utils {
                 Gson gson = new Gson();
                 for (String x :
                         lookupResults) {
-                    if (!x.equals("")) {
+                    if (x != null && !x.equals("")) {
                         try {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
                             keyResults.add(gson.toJson(response.getResult()));
@@ -103,7 +103,7 @@ public class Utils {
                 }
                 for (String x :
                         lookupResults) {
-                    if (!x.equals("")) {
+                    if (x != null && !x.equals("")) {
                         try {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
                             errorResults.add(response.getError().getData());
@@ -114,7 +114,7 @@ public class Utils {
                 }
                 String errorResult = thresholdSame(errorResults, k);
                 String keyResult = thresholdSame(keyResults, k);
-                if (!errorResult.equals("") || !keyResult.equals("")) {
+                if ((errorResult != null && !errorResult.equals("")) || (keyResult != null && !keyResult.equals(""))) {
                     return CompletableFuture.completedFuture(new KeyLookupResult(keyResult, errorResult));
                 }
                 CompletableFuture<KeyLookupResult> failedFuture = new CompletableFuture<>();
