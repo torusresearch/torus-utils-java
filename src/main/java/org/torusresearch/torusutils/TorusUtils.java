@@ -329,7 +329,7 @@ public class TorusUtils {
                     if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier + VerifierID has not yet been assigned")) {
                         return Utils
                                 .keyAssign(endpoints, torusNodePubs, null, null, verifierArgs.getVerifier(), verifierArgs.getVerifierId())
-                                .thenComposeAsync(k -> Utils.keyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId()))
+                                .thenComposeAsync(k -> Utils.waitKeyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), 1000))
                                 .thenComposeAsync(res -> {
                                     if (res == null || res.getKeyResult() == null) {
                                         completableFuture.completeExceptionally(new Exception("could not get lookup, no results"));
