@@ -1,22 +1,15 @@
 package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
-
+import java8.util.concurrent.CompletableFuture;
+import okhttp3.internal.http2.Header;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.APIUtils;
-import org.torusresearch.torusutils.apis.JsonRPCResponse;
-import org.torusresearch.torusutils.apis.KeyAssignParams;
-import org.torusresearch.torusutils.apis.KeyLookupResult;
-import org.torusresearch.torusutils.apis.SignerResponse;
-import org.torusresearch.torusutils.apis.VerifierLookupRequestParams;
+import org.torusresearch.torusutils.apis.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-
-import java8.util.concurrent.CompletableFuture;
-import okhttp3.internal.http2.Header;
 
 public class Utils {
     private Utils() {
@@ -78,6 +71,22 @@ public class Utils {
             }
         }
         return combs;
+    }
+
+    public static CompletableFuture<KeyLookupResult> waitKeyLookup(String[] endpoints, String verifier, String verifierId, int timeout) {
+        CompletableFuture<KeyLookupResult> completableFuture = new CompletableFuture<>();
+        try {
+            Thread.sleep(timeout);
+        } catch (InterruptedException e) {
+            completableFuture.completeExceptionally(e);
+        }
+        Utils.keyLookup(endpoints, verifier, verifierId).whenComplete((res, err) -> {
+            if (err != null) {
+                completableFuture.completeExceptionally(err);
+            }
+            completableFuture.complete(res);
+        });
+        return completableFuture;
     }
 
     public static CompletableFuture<KeyLookupResult> keyLookup(String[] endpoints, String verifier, String verifierId) {
