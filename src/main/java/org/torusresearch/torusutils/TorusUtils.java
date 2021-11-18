@@ -22,9 +22,6 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TorusUtils {
 
@@ -32,8 +29,6 @@ public class TorusUtils {
     private final String metadataHost;
     private final String allowHost;
     private final String origin;
-    ConcurrentHashMap<String, BigInteger> metadataCache = new ConcurrentHashMap<>();
-    ConcurrentHashMap<String, ReentrantReadWriteLock> locks = new ConcurrentHashMap<>();
 
     {
         setupBouncyCastle();
@@ -121,7 +116,8 @@ public class TorusUtils {
 
             // make commitment requests to endpoints
             for (int i = 0; i < endpoints.length; i++) {
-                CompletableFuture<String> p = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.substring(2), pubKeyX, pubKeyY, String.valueOf(System.currentTimeMillis()), verifier)), false);
+                CompletableFuture<String> p = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest",
+                        new CommitmentRequestParams("mug00", tokenCommitment.substring(2), pubKeyX, pubKeyY, String.valueOf(System.currentTimeMillis()), verifier)), false);
                 promiseArr.add(i, p);
             }
             // send share request once k + t number of commitment requests have completed
@@ -175,7 +171,6 @@ public class TorusUtils {
                         return new Some<>(promiseArrRequests, (shareResponses, predicateResolved) -> {
                             // check if threshold number of nodes have returned the same user public key
                             BigInteger privateKey = null;
-                            String ethAddress;
                             List<String> completedResponses = new ArrayList<>();
                             Gson gson = new Gson();
                             for (String shareResponse : shareResponses) {
@@ -251,30 +246,26 @@ public class TorusUtils {
                                             new BigInteger(derivedPubKeyY, 16).compareTo(new BigInteger(thresholdPubKey.getY(), 16)) == 0
                                     ) {
                                         privateKey = derivedPrivateKey;
-                                        // ethAddress = "0x" + Hash.sha3(derivedECKeyPair.getPublicKey().toString(16)).substring(64 - 38);
                                         break;
                                     }
                                 }
                                 if (privateKey == null) {
                                     throw new PredicateFailedException("could not derive private key");
                                 }
-                                BigInteger metadataNonce;
-                                try {
-                                    metadataNonce = this.getMetadata(new MetadataPubKey(thresholdPubKey.getX(), thresholdPubKey.getY())).get();
-                                } catch (InterruptedException | ExecutionException e) {
-                                    e.printStackTrace();
-                                    throw new PredicateFailedException("Unable to get metadata");
-                                }
-                                if (predicateResolved.get())
-                                    return null;
-                                privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
-                                ethAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
+                                return CompletableFuture.completedFuture(privateKey);
                             } else {
                                 throw new PredicateFailedException("could not get enough shares");
                             }
-
-                            return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, privateKey.toString(16)));
                         }).getCompletableFuture();
+                    }).thenComposeAsync((privateKey) -> {
+                        ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
+                        String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
+                        String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
+                        String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
+                        BigInteger metadataNonce = this.getMetadata(new MetadataPubKey(derivedPubKeyX, derivedPubKeyY)).join();
+                        privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
+                        String ethAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
+                        return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, privateKey.toString(16)));
                     });
         } catch (Exception e) {
             e.printStackTrace();
@@ -288,29 +279,13 @@ public class TorusUtils {
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
-        Gson gson = new Gson();
-        String metadata = gson.toJson(data, MetadataPubKey.class);
-        ReentrantReadWriteLock lock = locks.get(metadata);
-        if (lock == null) {
-            lock = new ReentrantReadWriteLock(true);
-            locks.put(metadata, lock);
-        }
-        lock.readLock().lock();
         try {
-            BigInteger cachedResponse = metadataCache.get(metadata);
-            if (cachedResponse == null) {
-                String metadataApiResponse = APIUtils.post(this.metadataHost + "/get", metadata, true).join();
-                MetadataResponse response = gson.fromJson(metadataApiResponse, MetadataResponse.class);
-                lock.readLock().unlock();
-                lock.writeLock().lock();
-                BigInteger finalResponse = Utils.isEmpty(response.getMessage()) ? new BigInteger("0") : new BigInteger(response.getMessage(), 16);
-                metadataCache.put(metadata, finalResponse);
-                lock.writeLock().unlock();
-                return CompletableFuture.supplyAsync(() -> finalResponse);
-            } else {
-                lock.readLock().unlock();
-                return CompletableFuture.supplyAsync(() -> cachedResponse);
-            }
+            Gson gson = new Gson();
+            String metadata = gson.toJson(data, MetadataPubKey.class);
+            String metadataApiResponse = APIUtils.post(this.metadataHost + "/get", metadata, true).join();
+            MetadataResponse response = gson.fromJson(metadataApiResponse, MetadataResponse.class);
+            BigInteger finalResponse = Utils.isEmpty(response.getMessage()) ? new BigInteger("0") : new BigInteger(response.getMessage(), 16);
+            return CompletableFuture.supplyAsync(() -> finalResponse);
         } catch (Exception e) {
             e.printStackTrace();
             return CompletableFuture.supplyAsync(() -> new BigInteger("0"));
@@ -358,29 +333,29 @@ public class TorusUtils {
                     completableFuture.completeExceptionally(new Exception("could not get lookup, no valid key result or error result"));
                     return null;
                 }).thenComposeAsync(verifierLookupItem -> {
-            if (verifierLookupItem == null) {
-                completableFuture.completeExceptionally(new Exception("node results do not match"));
-                return null;
-            }
-            BigInteger metadataNonce = this.getMetadata(new MetadataPubKey(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y())).join();
-            //            String pubKey = Utils.padLeft(verifierLookupItem.getPub_key_X(), '0', 64) + Utils.padLeft(verifierLookupItem.getPub_key_Y(), '0', 64);
+                    if (verifierLookupItem == null) {
+                        completableFuture.completeExceptionally(new Exception("node results do not match"));
+                        return null;
+                    }
+                    BigInteger metadataNonce = this.getMetadata(new MetadataPubKey(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y())).join();
+                    //            String pubKey = Utils.padLeft(verifierLookupItem.getPub_key_X(), '0', 64) + Utils.padLeft(verifierLookupItem.getPub_key_Y(), '0', 64);
 
-            // curve point addition
-            ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
-            ECPoint metadataPoint = curve.getG().multiply(metadataNonce);
-            ECPoint rawPoint = curve.getCurve().createPoint(new BigInteger(verifierLookupItem.getPub_key_X(), 16), new BigInteger(verifierLookupItem.getPub_key_Y(), 16));
-            ECPoint finalPoint = rawPoint.add(metadataPoint).normalize();
-            String finalPubKey = Utils.padLeft(finalPoint.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(finalPoint.getAffineYCoord().toString(), '0', 64);
+                    // curve point addition
+                    ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
+                    ECPoint metadataPoint = curve.getG().multiply(metadataNonce);
+                    ECPoint rawPoint = curve.getCurve().createPoint(new BigInteger(verifierLookupItem.getPub_key_X(), 16), new BigInteger(verifierLookupItem.getPub_key_Y(), 16));
+                    ECPoint finalPoint = rawPoint.add(metadataPoint).normalize();
+                    String finalPubKey = Utils.padLeft(finalPoint.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(finalPoint.getAffineYCoord().toString(), '0', 64);
 
-            String address = Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
-            if (!isExtended) {
-                completableFuture.complete(new TorusPublicKey(address));
-            } else {
-                completableFuture.complete(new TorusPublicKey(finalPubKey.substring(0, finalPubKey.length() / 2), finalPubKey.substring(finalPubKey.length() / 2),
-                        address));
-            }
-            return null;
-        }).exceptionally(completableFuture::completeExceptionally);
+                    String address = Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
+                    if (!isExtended) {
+                        completableFuture.complete(new TorusPublicKey(address));
+                    } else {
+                        completableFuture.complete(new TorusPublicKey(finalPubKey.substring(0, finalPubKey.length() / 2), finalPubKey.substring(finalPubKey.length() / 2),
+                                address));
+                    }
+                    return null;
+                }).exceptionally(completableFuture::completeExceptionally);
         return completableFuture;
     }
 
