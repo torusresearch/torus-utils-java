@@ -5,7 +5,7 @@ plugins {
 apply plugin: 'maven'
 
 group 'org.torusresearch'
-version '1.0.11'
+version '1.0.13'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -18,10 +18,10 @@ repositories {
 dependencies {
     implementation 'org.torusresearch:fetch-node-details-java:1.0.10'
     implementation 'org.web3j:core:4.6.0-android'
-    implementation 'com.google.code.gson:gson:2.8.8'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.0'
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     testImplementation 'org.slf4j:slf4j-simple:1.7.32'
     testImplementation 'com.auth0:java-jwt:3.18.2'
     testImplementation 'net.andreinc:mockneat:0.4.7'
