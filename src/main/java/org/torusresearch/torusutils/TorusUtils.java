@@ -132,10 +132,10 @@ public class TorusUtils {
                 CompletableFuture<List<String>> completableFuture = new CompletableFuture<>();
                 if (completedRequests.size() >= k + t) {
                     completableFuture.complete(completedRequests);
-                    return completableFuture;
                 } else {
-                    throw new PredicateFailedException("insufficient responses for commitments");
+                    completableFuture.completeExceptionally(new PredicateFailedException("insufficient responses for commitments"));
                 }
+                return completableFuture;
             })
                     .getCompletableFuture()
                     .thenComposeAsync(responses -> {
@@ -249,12 +249,17 @@ public class TorusUtils {
                                         break;
                                     }
                                 }
+                                CompletableFuture<BigInteger> response = new CompletableFuture<>();
                                 if (privateKey == null) {
-                                    throw new PredicateFailedException("could not derive private key");
+                                    response.completeExceptionally(new PredicateFailedException("could not derive private key"));
+                                } else {
+                                    response.complete(privateKey);
                                 }
-                                return CompletableFuture.completedFuture(privateKey);
+                                return response;
                             } else {
-                                throw new PredicateFailedException("could not get enough shares");
+                                CompletableFuture<BigInteger> response = new CompletableFuture<>();
+                                response.completeExceptionally(new PredicateFailedException("could not get enough shares"));
+                                return response;
                             }
                         }).getCompletableFuture();
                     }).thenComposeAsync((privateKey) -> {
