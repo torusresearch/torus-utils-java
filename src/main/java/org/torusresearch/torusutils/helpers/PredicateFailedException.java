@@ -1,6 +1,6 @@
 package org.torusresearch.torusutils.helpers;
 
-import java8.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionException;
 
 public class PredicateFailedException extends CompletionException {
     public PredicateFailedException(String errMessage) {
