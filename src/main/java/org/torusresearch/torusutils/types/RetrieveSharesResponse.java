@@ -1,19 +1,28 @@
 package org.torusresearch.torusutils.types;
 
+import java.math.BigInteger;
+
 public class RetrieveSharesResponse {
     private final String ethAddress;
-    private final String privKey;
+    private final BigInteger privKey;
 
-    public RetrieveSharesResponse(String _ethAddress, String _privKey) {
+    private final BigInteger nonce;
+
+    public RetrieveSharesResponse(String _ethAddress, BigInteger _privKey, BigInteger _nonce) {
         ethAddress = _ethAddress;
         privKey = _privKey;
+        nonce = _nonce;
     }
 
     public String getEthAddress() {
         return ethAddress;
     }
 
-    public String getPrivKey() {
+    public BigInteger getPrivKey() {
         return privKey;
+    }
+
+    public BigInteger getNonce() {
+        return nonce;
     }
 }

@@ -22,12 +22,13 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TorusUtilsTest {
+public class CyanTest {
 
     static FetchNodeDetails fetchNodeDetails;
 
@@ -42,9 +43,11 @@ public class TorusUtilsTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(EthereumNetwork.ROPSTEN, FetchNodeDetails.PROXY_ADDRESS_ROPSTEN);
+        fetchNodeDetails = new FetchNodeDetails(EthereumNetwork.POLYGON, FetchNodeDetails.PROXY_ADDRESS_POLYGON);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork("testnet");
+        opts.setNetwork("cyan");
+        opts.setSignerHost("https://signer-polygon.tor.us/api/sign");
+        opts.setAllowHost("https://signer-polygon.tor.us/api/allow");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(),
@@ -55,22 +58,22 @@ public class TorusUtilsTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
-        VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL);
+        VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70", publicAddress.getAddress());
+        assertEquals("0xA3767911A84bE6907f26C572bc89426dDdDB2825", publicAddress.getAddress());
     }
 
     @DisplayName("Key Assign test")
     @Test
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", email).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-cyan", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
-                nodeDetails.getTorusNodePub(), new VerifierArgs("google-lrc", email)).get();
+                nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-cyan", email)).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
-        assertNotEquals(publicAddress.getAddress(), "");
+        assertNotEquals(publicAddress.getAddress(),"");
     }
 
     @DisplayName("Login test")
@@ -83,9 +86,9 @@ public class TorusUtilsTest {
                 }},
                 JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getPrivKey());
-        BigInteger requiredPrivateKey = new BigInteger("68ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25", 16);
+        BigInteger requiredPrivateKey = new BigInteger("1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8", 16);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
-        assertEquals("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA", retrieveSharesResponse.getEthAddress());
     }
 
     @DisplayName("Aggregate Login test")
@@ -103,6 +106,6 @@ public class TorusUtilsTest {
                     put("verifier_id", TORUS_TEST_EMAIL);
                 }},
                 hashedIdToken).get();
-        assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04", retrieveSharesResponse.getEthAddress());
     }
 }

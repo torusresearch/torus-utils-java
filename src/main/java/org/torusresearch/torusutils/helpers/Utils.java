@@ -1,7 +1,6 @@
 package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
-import java.util.concurrent.CompletableFuture;
 import okhttp3.internal.http2.Header;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
 public class Utils {
     private Utils() {
@@ -53,8 +53,7 @@ public class Utils {
             return combs;
         }
         if (k == 1) {
-            for (Integer i :
-                    set) {
+            for (Integer i : set) {
                 ArrayList<Integer> arrList = new ArrayList<>();
                 arrList.add(i);
                 combs.add(arrList);
@@ -100,8 +99,7 @@ public class Utils {
                 List<String> errorResults = new ArrayList<>();
                 List<String> keyResults = new ArrayList<>();
                 Gson gson = new Gson();
-                for (String x :
-                        lookupResults) {
+                for (String x : lookupResults) {
                     if (x != null && !x.equals("")) {
                         try {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
@@ -111,8 +109,7 @@ public class Utils {
                         }
                     }
                 }
-                for (String x :
-                        lookupResults) {
+                for (String x : lookupResults) {
                     if (x != null && !x.equals("")) {
                         try {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
@@ -128,7 +125,7 @@ public class Utils {
                     return CompletableFuture.completedFuture(new KeyLookupResult(keyResult, errorResult));
                 }
                 CompletableFuture<KeyLookupResult> failedFuture = new CompletableFuture<>();
-                failedFuture.completeExceptionally(new Exception("invalid "));
+                failedFuture.completeExceptionally(new Exception("invalid results from KeyLookup " + gson.toJson(lookupResults)));
                 return failedFuture;
             } catch (Exception e) {
                 return null;
@@ -136,7 +133,7 @@ public class Utils {
         }).getCompletableFuture();
     }
 
-    public static CompletableFuture<KeyLookupResult> keyAssign(String[] endpoints, TorusNodePub[] torusNodePubs, Integer lastPoint, Integer firstPoint, String verifier, String verifierId) {
+    public static CompletableFuture<KeyLookupResult> keyAssign(String[] endpoints, TorusNodePub[] torusNodePubs, Integer lastPoint, Integer firstPoint, String verifier, String verifierId, String signerHost, String network) {
         Integer nodeNum, initialPoint = null;
         CompletableFuture<KeyLookupResult> completableFuture = new CompletableFuture<>();
 
@@ -147,63 +144,67 @@ public class Utils {
             nodeNum = lastPoint % endpoints.length;
         }
         if (nodeNum.equals(firstPoint)) {
-            completableFuture.completeExceptionally(new Exception("Looped through all"));
+            completableFuture.completeExceptionally(new Exception("Looped through all. No node available for key assignment"));
             return completableFuture;
         }
         if (firstPoint != null) {
             initialPoint = firstPoint;
         }
         String data = APIUtils.generateJsonRPCObject("KeyAssign", new KeyAssignParams(verifier, verifierId));
-        Header[] headers = new Header[2];
+        Header[] headers = new Header[3];
         headers[0] = new Header("pubkeyx", torusNodePubs[nodeNum].getX());
         headers[1] = new Header("pubkeyy", torusNodePubs[nodeNum].getY());
+        headers[2] = new Header("network", network);
         Integer finalInitialPoint = initialPoint;
-        CompletableFuture<String> apir = APIUtils.post("https://signer.tor.us/api/sign", data, headers, true);
-        apir.thenComposeAsync(signedData -> {
-            Gson gson = new Gson();
-            SignerResponse signerResponse = gson.fromJson(signedData, SignerResponse.class);
-            Header[] signerHeaders = new Header[3];
-            signerHeaders[0] = new Header("torus-timestamp", signerResponse.getTorus_timestamp());
-            signerHeaders[1] = new Header("torus-nonce", signerResponse.getTorus_nonce());
-            signerHeaders[2] = new Header("torus-signature", signerResponse.getTorus_signature());
+        CompletableFuture<String> apir = APIUtils.post(signerHost, data, headers, true);
+        apir.whenCompleteAsync((signedData, err) -> {
+            if (err != null) {
+                // if signer fails, we just return
+                completableFuture.completeExceptionally(err);
+                return;
+            }
+            try {
+                Gson gson = new Gson();
+                SignerResponse signerResponse = gson.fromJson(signedData, SignerResponse.class);
+                Header[] signerHeaders = new Header[3];
+                signerHeaders[0] = new Header("torus-timestamp", signerResponse.getTorus_timestamp());
+                signerHeaders[1] = new Header("torus-nonce", signerResponse.getTorus_nonce());
+                signerHeaders[2] = new Header("torus-signature", signerResponse.getTorus_signature());
 
-            CompletableFuture<String> cf = APIUtils.post(endpoints[nodeNum], data, signerHeaders, false);
-            cf.thenComposeAsync(resp -> {
-                try {
-                    Gson gsonTemp = new Gson();
+                CompletableFuture<String> cf = APIUtils.post(endpoints[nodeNum], data, signerHeaders, false);
+                cf.whenCompleteAsync((resp, keyAssignErr) -> {
+                    // we only retry if keyassign api fails..
+                    // All other cases, we just complete exceptionally
+                    if (keyAssignErr != null) {
+                        Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId, signerHost, network).whenCompleteAsync((res2, err2) -> {
+                            if (err2 != null) {
+                                completableFuture.completeExceptionally(err2);
+                                return;
+                            }
+                            completableFuture.complete(res2);
+                        });
+                        return;
+                    }
                     JsonRPCResponse jsonRPCResponse = gson.fromJson(resp, JsonRPCResponse.class);
                     String result = jsonRPCResponse.getResult().toString();
                     if (result != null && !result.equals("")) {
                         completableFuture.complete(new KeyLookupResult(result, null));
                     } else {
-                        Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId).thenComposeAsync(nextResp -> {
-                            completableFuture.complete(nextResp);
-                            return completableFuture;
-                        }).exceptionally(ex -> {
-                            completableFuture.completeExceptionally(ex);
-                            return new KeyLookupResult(null, ex.toString());
+                        Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId, signerHost, network).whenCompleteAsync((res2, err2) -> {
+                            if (err2 != null) {
+                                completableFuture.completeExceptionally(err2);
+                                return;
+                            }
+                            completableFuture.complete(res2);
                         });
                     }
-                } catch (Exception e) {
-                    Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId).thenComposeAsync(nextResp -> {
-                        completableFuture.complete(nextResp);
-                        return completableFuture;
-                    }).exceptionally(ex -> {
-                        completableFuture.completeExceptionally(ex);
-                        return new KeyLookupResult(null, ex.toString());
-                    });
-                }
-                return completableFuture;
-            });
-            return completableFuture;
-        }).exceptionally(e -> {
-            e.printStackTrace();
-            completableFuture.completeExceptionally(e);
-            return null;
+                });
+            } catch (Exception e) {
+                completableFuture.completeExceptionally(e);
+            }
         });
-
-
         return completableFuture;
+
     }
 
     public static boolean isEmpty(final CharSequence cs) {
