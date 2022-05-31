@@ -1,7 +1,7 @@
 package org.torusresearch.torusutils.apis;
 
 import com.google.gson.Gson;
-import java8.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletableFuture;
 import okhttp3.*;
 import okhttp3.internal.http2.Header;
 import org.jetbrains.annotations.NotNull;

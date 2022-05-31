@@ -1,7 +1,7 @@
 package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
-import java8.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletableFuture;
 import okhttp3.internal.http2.Header;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.*;
