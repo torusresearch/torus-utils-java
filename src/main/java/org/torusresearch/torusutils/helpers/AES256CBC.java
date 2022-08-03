@@ -15,14 +15,14 @@ import java.util.Arrays;
 
 public class AES256CBC {
     private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
-    private final BigInteger AES_ENCRYPTION_KEY;
-    private final BigInteger ENCRYPTION_IV;
+    private final byte[] AES_ENCRYPTION_KEY;
+    private final byte[] ENCRYPTION_IV;
 
     public AES256CBC(String privateKeyHex, String ephemPublicKeyHex, String encryptionIvHex) throws NoSuchAlgorithmException {
         byte[] hash = SHA512.digest(toByteArray(ecdh(privateKeyHex, ephemPublicKeyHex)));
         byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
-        AES_ENCRYPTION_KEY = new BigInteger(encKeyBytes);
-        ENCRYPTION_IV = new BigInteger(encryptionIvHex, 16);
+        AES_ENCRYPTION_KEY = encKeyBytes;
+        ENCRYPTION_IV = toByteArray(encryptionIvHex);
     }
 
     /**
@@ -40,6 +40,16 @@ public class AES256CBC {
             b = newArray;
         }
         return b;
+    }
+
+    public static byte[] toByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 
     public String encrypt(byte[] src) throws TorusException {
@@ -79,10 +89,10 @@ public class AES256CBC {
     }
 
     private Key makeKey() {
-        return new SecretKeySpec(toByteArray(AES_ENCRYPTION_KEY), "AES");
+        return new SecretKeySpec(AES_ENCRYPTION_KEY, "AES");
     }
 
     private AlgorithmParameterSpec makeIv() {
-        return new IvParameterSpec(toByteArray(ENCRYPTION_IV));
+        return new IvParameterSpec(ENCRYPTION_IV);
     }
 }
