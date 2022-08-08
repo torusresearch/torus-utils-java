@@ -81,10 +81,10 @@ public class OneKeyTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        System.out.println(retrieveSharesResponse.getPrivKey());
-        BigInteger requiredPrivateKey = new BigInteger("68ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25", 16);
+        System.out.println(retrieveSharesResponse.getPrivKey().toString(16));
+        BigInteger requiredPrivateKey = new BigInteger("296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4", 16);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
-        assertEquals("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x53010055542cCc0f2b6715a5c53838eC4aC96EF7", retrieveSharesResponse.getEthAddress());
     }
 
     @DisplayName("Login test v2")
@@ -112,6 +112,6 @@ public class OneKeyTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getEthAddress());
+        assertEquals("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B", retrieveSharesResponse.getEthAddress());
     }
 }
