@@ -1,6 +1,11 @@
 package org.torusresearch.torusutilstest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.auth0.jwt.algorithms.Algorithm;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,7 +13,11 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusCtorOptions;
+import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
 import org.torusresearch.torusutilstest.utils.VerifyParams;
@@ -25,9 +34,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-public class TorusUtilsTest {
+public class AquaTest {
 
     static FetchNodeDetails fetchNodeDetails;
 
@@ -42,9 +49,11 @@ public class TorusUtilsTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET, FetchNodeDetails.PROXY_ADDRESS_TESTNET);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.AQUA, FetchNodeDetails.PROXY_ADDRESS_AQUA);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork("testnet");
+        opts.setNetwork("aqua");
+        opts.setSignerHost("https://signer-polygon.tor.us/api/sign");
+        opts.setAllowHost("https://signer-polygon.tor.us/api/allow");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(),
@@ -55,22 +64,22 @@ public class TorusUtilsTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
-        VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL);
+        VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70", publicAddress.getAddress());
+        assertEquals("0xDfA967285AC699A70DA340F60d00DB19A272639d", publicAddress.getAddress());
     }
 
     @DisplayName("Key Assign test")
     @Test
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", email).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-aqua", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
-                nodeDetails.getTorusNodePub(), new VerifierArgs("google-lrc", email)).get();
+                nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-aqua", email)).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
-        assertNotEquals(publicAddress.getAddress(), "");
+        assertNotEquals(publicAddress.getAddress(),"");
     }
 
     @DisplayName("Login test")
@@ -83,9 +92,9 @@ public class TorusUtilsTest {
                 }},
                 JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getPrivKey());
-        BigInteger requiredPrivateKey = new BigInteger("68ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25", 16);
+        BigInteger requiredPrivateKey = new BigInteger("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d", 16);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
-        assertEquals("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x9EBE51e49d8e201b40cAA4405f5E0B86d9D27195", retrieveSharesResponse.getEthAddress());
     }
 
     @DisplayName("Aggregate Login test")
@@ -103,6 +112,7 @@ public class TorusUtilsTest {
                     put("verifier_id", TORUS_TEST_EMAIL);
                 }},
                 hashedIdToken).get();
-        assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", retrieveSharesResponse.getEthAddress());
     }
 }
+
