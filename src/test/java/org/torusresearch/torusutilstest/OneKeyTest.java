@@ -5,8 +5,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
-import org.torusresearch.fetchnodedetails.types.EthereumNetwork;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
+import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.types.*;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
@@ -42,7 +42,7 @@ public class OneKeyTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(EthereumNetwork.ROPSTEN, FetchNodeDetails.PROXY_ADDRESS_ROPSTEN);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET, FetchNodeDetails.PROXY_ADDRESS_TESTNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork("testnet");
         opts.setEnableOneKey(true);
