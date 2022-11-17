@@ -103,7 +103,7 @@ public class Utils {
                     if (x != null && !x.equals("")) {
                         try {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
-                            keyResults.add(gson.toJson(response.getResult()));
+                            keyResults.add(Utils.convertToJsonObject(response.getResult()));
                         } catch (Exception e) {
                             keyResults.add("");
                         }
@@ -219,5 +219,10 @@ public class Utils {
         }
         sb.append(inputString);
         return sb.toString();
+    }
+
+    public static String convertToJsonObject(Object obj) {
+        Gson gson = new Gson();
+        return obj == null ? "" : gson.toJson(obj);
     }
 }

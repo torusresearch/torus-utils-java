@@ -42,7 +42,7 @@ public class TorusUtilsTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET, FetchNodeDetails.PROXY_ADDRESS_TESTNET);
+        fetchNodeDetails = new FetchNodeDetails("https://small-long-brook.ropsten.quiknode.pro/e2fd2eb01412e80623787d1c40094465aa67624a", FetchNodeDetails.PROXY_ADDRESS_TESTNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork("testnet");
         torusUtils = new TorusUtils(opts);

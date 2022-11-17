@@ -133,7 +133,7 @@ public class TorusUtils {
                             Gson gson = new Gson();
                             JsonRPCResponse nodeSigResponse = gson.fromJson(respons, JsonRPCResponse.class);
                             if (nodeSigResponse != null && nodeSigResponse.getResult() != null) {
-                                nodeSigs.add(gson.toJson(nodeSigResponse.getResult()));
+                                nodeSigs.add(Utils.convertToJsonObject(nodeSigResponse.getResult()));
                             }
                         }
                     }
@@ -165,7 +165,7 @@ public class TorusUtils {
                                 if (shareResponse != null && !shareResponse.equals("")) {
                                     JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
                                     if (shareResponseJson != null && shareResponseJson.getResult() != null) {
-                                        completedResponses.add(gson.toJson(shareResponseJson.getResult()));
+                                        completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
                                     }
                                 }
                             }
@@ -176,7 +176,7 @@ public class TorusUtils {
                                     return null;
                                 }
                                 KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
-                                completedResponsesPubKeys.add(gson.toJson(keyAssignResultFirstKey.getPublicKey()));
+                                completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey()));
                             }
                             String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
                             PubKey thresholdPubKey = null;
@@ -189,7 +189,7 @@ public class TorusUtils {
                                     if (shareResponses[i] != null && !shareResponses[i].equals("")) {
                                         JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
                                         if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
-                                            KeyAssignResult currentShareResponse = gson.fromJson(gson.toJson(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
+                                            KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
                                             if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
                                                 KeyAssignment firstKey = currentShareResponse.getKeys()[0];
                                                 if (firstKey.getMetadata() != null) {
