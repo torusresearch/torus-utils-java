@@ -317,6 +317,10 @@ public class TorusUtils {
         String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
         String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
         String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
+        if (!options.isLegacyNonce()) {
+            derivedPubKeyX = Utils.stripPaddingLeft(derivedPubKeyX, '0');
+            derivedPubKeyY = Utils.stripPaddingLeft(derivedPubKeyY, '0');
+        }
         Gson gson = new Gson();
         String setDataString = gson.toJson(setData);
         byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
