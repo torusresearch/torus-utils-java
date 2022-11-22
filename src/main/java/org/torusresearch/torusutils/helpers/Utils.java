@@ -221,6 +221,14 @@ public class Utils {
         return sb.toString();
     }
 
+    public static String stripPaddingLeft(String inputString, Character padChar) {
+        StringBuilder sb = new StringBuilder(inputString);
+        while (sb.length() > 1 &&  sb.charAt(0) == padChar) {
+            sb.deleteCharAt(0);
+        }
+        return sb.toString();
+    }
+
     public static String convertToJsonObject(Object obj) {
         Gson gson = new Gson();
         return obj == null ? "" : gson.toJson(obj);

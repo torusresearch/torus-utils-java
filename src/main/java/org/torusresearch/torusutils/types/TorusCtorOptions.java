@@ -12,6 +12,8 @@ public class TorusCtorOptions {
     private String origin;
     private String network = "mainnet";
 
+    private boolean legacyNonce = false;
+
     public TorusCtorOptions(String origin) {
         this.origin = origin;
     }
@@ -70,5 +72,13 @@ public class TorusCtorOptions {
 
     public void setMetadataHost(String _metadataHost) {
         this.metadataHost = _metadataHost;
+    }
+
+    public boolean isLegacyNonce() {
+        return legacyNonce;
+    }
+
+    public void setLegacyNonce(boolean legacyNonce) {
+        this.legacyNonce = legacyNonce;
     }
 }
