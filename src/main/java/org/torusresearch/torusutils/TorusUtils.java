@@ -97,7 +97,7 @@ public class TorusUtils {
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();
-            String pubKey = tmpKey.getPublicKey().toString(16);
+            String pubKey = Utils.padLeft(tmpKey.getPublicKey().toString(16), '0', 128);
             String pubKeyX = pubKey.substring(0, pubKey.length() / 2);
             String pubKeyY = pubKey.substring(pubKey.length() / 2);
             String tokenCommitment = org.web3j.crypto.Hash.sha3String(idToken);
@@ -224,9 +224,9 @@ public class TorusUtils {
                                     BigInteger derivedPrivateKey = this.lagrangeInterpolation(currentCombiSharesValues.toArray(new BigInteger[0]), currentCombiSharesIndexes.toArray(new BigInteger[0]));
                                     assert derivedPrivateKey != null;
                                     ECKeyPair derivedECKeyPair = ECKeyPair.create(derivedPrivateKey);
-                                    String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
-                                    String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
-                                    String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
+                                    String derivedPubKeyString = Utils.padLeft(derivedECKeyPair.getPublicKey().toString(16), '0', 128);
+                                    String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2); // this will be padded
+                                    String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);  // this will be padded
                                     if (new BigInteger(derivedPubKeyX, 16).compareTo(new BigInteger(thresholdPubKey.getX(), 16)) == 0 && new BigInteger(derivedPubKeyY, 16).compareTo(new BigInteger(thresholdPubKey.getY(), 16)) == 0) {
                                         privateKey = derivedPrivateKey;
                                         break;
@@ -263,7 +263,7 @@ public class TorusUtils {
                 }
                 try {
                     ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
-                    String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
+                    String derivedPubKeyString = Utils.padLeft(derivedECKeyPair.getPublicKey().toString(16), '0', 128);
                     String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
                     String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
                     BigInteger metadataNonce;
@@ -314,7 +314,7 @@ public class TorusUtils {
         BigInteger timestamp = this.options.getServerTimeOffset().add(new BigInteger(String.valueOf(timeMillis)));
         MetadataParams.MetadataSetData setData = new MetadataParams.MetadataSetData(message, timestamp.toString(16));
         ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
-        String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
+        String derivedPubKeyString = Utils.padLeft(derivedECKeyPair.getPublicKey().toString(16), '0', 128);
         String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
         String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
         if (!options.isLegacyNonce()) {
