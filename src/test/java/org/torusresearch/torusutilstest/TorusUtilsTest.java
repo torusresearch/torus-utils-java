@@ -47,8 +47,7 @@ public class TorusUtilsTest {
         opts.setNetwork("testnet");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
-        ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(),
-                privateKey.getParams()));
+        ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
         algorithmRs = Algorithm.ECDSA256(publicKey, privateKey);
     }
 
@@ -61,13 +60,36 @@ public class TorusUtilsTest {
         assertEquals("0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70", publicAddress.getAddress());
     }
 
+
+    @DisplayName("Fetch User Type and Public Address")
+    @Test
+    public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException {
+        VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
+        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        assertEquals("0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70", key.getAddress());
+        assertEquals(TypeOfUser.v1, key.getTypeOfUser());
+
+        String v2Verifier = "tkey-google-lrc";
+        // 1/1 user
+        String v2TestEmail = "somev2user@gmail.com";
+        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail)).get();
+        assertEquals("0xE91200d82029603d73d6E307DbCbd9A7D0129d8D", key2.getAddress());
+        assertEquals(TypeOfUser.v2, key2.getTypeOfUser());
+
+        // 2/n user
+        String v2nTestEmail = "caspertorus@gmail.com";
+        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail)).get();
+        assertEquals("0x1016DA7c47A04C76036637Ea02AcF1d29c64a456", key3.getAddress());
+        assertEquals(TypeOfUser.v2, key3.getTypeOfUser());
+    }
+
     @DisplayName("Key Assign test")
     @Test
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
-                nodeDetails.getTorusNodePub(), new VerifierArgs("google-lrc", email)).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("google-lrc", email)).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
         assertNotEquals(publicAddress.getAddress(), "");
@@ -77,11 +99,9 @@ public class TorusUtilsTest {
     @Test
     public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(),
-                nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
-                    put("verifier_id", TORUS_TEST_EMAIL);
-                }},
-                JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
+        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
+            put("verifier_id", TORUS_TEST_EMAIL);
+        }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getPrivKey());
         BigInteger requiredPrivateKey = new BigInteger("68ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25", 16);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
@@ -94,15 +114,11 @@ public class TorusUtilsTest {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(),
-                nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
-                    put("verify_params", new VerifyParams[]{
-                            new VerifyParams(idToken, TORUS_TEST_EMAIL)
-                    });
-                    put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
-                    put("verifier_id", TORUS_TEST_EMAIL);
-                }},
-                hashedIdToken).get();
+        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
+            put("verify_params", new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
+            put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
+            put("verifier_id", TORUS_TEST_EMAIL);
+        }}, hashedIdToken).get();
         assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getEthAddress());
     }
 }

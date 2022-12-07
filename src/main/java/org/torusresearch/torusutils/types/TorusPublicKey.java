@@ -11,6 +11,7 @@ public class TorusPublicKey extends TorusNodePub {
     private BigInteger metadataNonce;
     @Nullable
     private GetOrSetNonceResult.PubNonce pubNonce;
+    private boolean upgraded;
 
     public TorusPublicKey(String _X, String _Y, String _address) {
         super(_X, _Y);
@@ -48,5 +49,13 @@ public class TorusPublicKey extends TorusNodePub {
 
     public void setPubNonce(GetOrSetNonceResult.PubNonce pubNonce) {
         this.pubNonce = pubNonce;
+    }
+
+    public boolean getUpgraded() {
+        return upgraded;
+    }
+
+    public void setUpgraded(boolean upgraded) {
+        this.upgraded = upgraded;
     }
 }
