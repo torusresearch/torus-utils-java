@@ -387,7 +387,7 @@ public class TorusUtils {
         }).thenComposeAsync(verifierLookupItem -> {
             CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
             try {
-                GetOrSetNonceResult nonceResult;
+                GetOrSetNonceResult nonceResult = null;
                 BigInteger nonce;
                 ECPoint modifiedPubKey;
                 TypeOfUser typeOfUser;
@@ -437,6 +437,7 @@ public class TorusUtils {
                     key.setTypeOfUser(typeOfUser);
                     key.setMetadataNonce(nonce);
                     key.setPubNonce(pubNonce);
+                    key.setUpgraded(nonceResult != null && nonceResult.isUpgraded());
                     keyCf.complete(key);
                 }
                 return keyCf;
@@ -588,6 +589,7 @@ public class TorusUtils {
                 key.setTypeOfUser(typeOfUser);
                 key.setMetadataNonce(nonce);
                 key.setPubNonce(pubNonce);
+                key.setUpgraded(nonceResult.isUpgraded());
                 keyCf.complete(key);
 
                 return keyCf;
