@@ -175,7 +175,7 @@ public class TorusUtils {
                                         if (shareResponseJson != null && shareResponseJson.getResult() != null) {
                                             completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
                                         }
-                                        validShareResponses.add(shareResponse)
+                                        validShareResponses.add(shareResponse);
                                     } catch (JsonSyntaxException e) {
                                         // discard this, we don't care
                                     }
@@ -198,7 +198,7 @@ public class TorusUtils {
                             if (completedResponses.size() >= k && thresholdPubKey != null) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
                                 for (int i = 0; i < validShareResponses.size(); i++) {
-                                    if (validShareResponses[i] != null && !validShareResponses[i].equals("")) {
+                                    if (validShareResponses.get(i) != null && !validShareResponses.get(i).equals("")) {
                                         JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
                                         if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
                                             KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
