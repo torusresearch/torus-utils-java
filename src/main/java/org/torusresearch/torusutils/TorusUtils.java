@@ -199,7 +199,7 @@ public class TorusUtils {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
                                 for (int i = 0; i < validShareResponses.size(); i++) {
                                     if (validShareResponses.get(i) != null && !validShareResponses.get(i).equals("")) {
-                                        JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
+                                        JsonRPCResponse currentJsonRPCResponse = gson.fromJson(validShareResponses.get(i), JsonRPCResponse.class);
                                         if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
                                             KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
                                             if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
