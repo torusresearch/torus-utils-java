@@ -2,6 +2,8 @@ package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+
 import okhttp3.internal.http2.Header;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -131,9 +133,13 @@ public class TorusUtils {
                     for (String respons : responses) {
                         if (respons != null && !respons.equals("")) {
                             Gson gson = new Gson();
-                            JsonRPCResponse nodeSigResponse = gson.fromJson(respons, JsonRPCResponse.class);
-                            if (nodeSigResponse != null && nodeSigResponse.getResult() != null) {
-                                nodeSigs.add(Utils.convertToJsonObject(nodeSigResponse.getResult()));
+                            try {
+                                JsonRPCResponse nodeSigResponse = gson.fromJson(respons, JsonRPCResponse.class);
+                                if (nodeSigResponse != null && nodeSigResponse.getResult() != null) {
+                                    nodeSigs.add(Utils.convertToJsonObject(nodeSigResponse.getResult()));
+                                }
+                            } catch (JsonSyntaxException e) {
+                                // discard this, we don't care
                             }
                         }
                     }
@@ -163,9 +169,13 @@ public class TorusUtils {
                             Gson gson = new Gson();
                             for (String shareResponse : shareResponses) {
                                 if (shareResponse != null && !shareResponse.equals("")) {
-                                    JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
-                                    if (shareResponseJson != null && shareResponseJson.getResult() != null) {
-                                        completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
+                                    try {
+                                        JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
+                                        if (shareResponseJson != null && shareResponseJson.getResult() != null) {
+                                            completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
+                                        }
+                                    } catch (JsonSyntaxException e) {
+                                        // discard this, we don't care
                                     }
                                 }
                             }
