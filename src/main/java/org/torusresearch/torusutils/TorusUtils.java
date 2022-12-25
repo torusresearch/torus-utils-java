@@ -166,6 +166,7 @@ public class TorusUtils {
                             // check if threshold number of nodes have returned the same user public key
                             BigInteger privateKey = null;
                             List<String> completedResponses = new ArrayList<>();
+                            List<String> validShareResponses = new ArrayList<>();
                             Gson gson = new Gson();
                             for (String shareResponse : shareResponses) {
                                 if (shareResponse != null && !shareResponse.equals("")) {
@@ -174,6 +175,7 @@ public class TorusUtils {
                                         if (shareResponseJson != null && shareResponseJson.getResult() != null) {
                                             completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
                                         }
+                                        validShareResponses.add(shareResponse)
                                     } catch (JsonSyntaxException e) {
                                         // discard this, we don't care
                                     }
@@ -195,8 +197,8 @@ public class TorusUtils {
                             }
                             if (completedResponses.size() >= k && thresholdPubKey != null) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
-                                for (int i = 0; i < shareResponses.length; i++) {
-                                    if (shareResponses[i] != null && !shareResponses[i].equals("")) {
+                                for (int i = 0; i < validShareResponses.size(); i++) {
+                                    if (validShareResponses[i] != null && !validShareResponses[i].equals("")) {
                                         JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
                                         if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
                                             KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
