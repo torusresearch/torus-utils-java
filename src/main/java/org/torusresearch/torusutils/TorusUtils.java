@@ -3,7 +3,6 @@ package org.torusresearch.torusutils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-
 import okhttp3.internal.http2.Header;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
