@@ -2,6 +2,8 @@ package org.torusresearch.torusutils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+
 import okhttp3.internal.http2.Header;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -131,9 +133,13 @@ public class TorusUtils {
                     for (String respons : responses) {
                         if (respons != null && !respons.equals("")) {
                             Gson gson = new Gson();
-                            JsonRPCResponse nodeSigResponse = gson.fromJson(respons, JsonRPCResponse.class);
-                            if (nodeSigResponse != null && nodeSigResponse.getResult() != null) {
-                                nodeSigs.add(Utils.convertToJsonObject(nodeSigResponse.getResult()));
+                            try {
+                                JsonRPCResponse nodeSigResponse = gson.fromJson(respons, JsonRPCResponse.class);
+                                if (nodeSigResponse != null && nodeSigResponse.getResult() != null) {
+                                    nodeSigs.add(Utils.convertToJsonObject(nodeSigResponse.getResult()));
+                                }
+                            } catch (JsonSyntaxException e) {
+                                // discard this, we don't care
                             }
                         }
                     }
@@ -163,9 +169,13 @@ public class TorusUtils {
                             Gson gson = new Gson();
                             for (String shareResponse : shareResponses) {
                                 if (shareResponse != null && !shareResponse.equals("")) {
-                                    JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
-                                    if (shareResponseJson != null && shareResponseJson.getResult() != null) {
-                                        completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
+                                    try {
+                                        JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
+                                        if (shareResponseJson != null && shareResponseJson.getResult() != null) {
+                                            completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
+                                        }
+                                    } catch (JsonSyntaxException e) {
+                                        // discard this, we don't care
                                     }
                                 }
                             }
@@ -187,25 +197,29 @@ public class TorusUtils {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
                                 for (int i = 0; i < shareResponses.length; i++) {
                                     if (shareResponses[i] != null && !shareResponses[i].equals("")) {
-                                        JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
-                                        if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
-                                            KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
-                                            if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
-                                                KeyAssignment firstKey = currentShareResponse.getKeys()[0];
-                                                if (firstKey.getMetadata() != null) {
-                                                    try {
-                                                        AES256CBC aes256cbc = new AES256CBC(tmpKey.getPrivateKey().toString(16), firstKey.getMetadata().getEphemPublicKey(), firstKey.getMetadata().getIv());
-                                                        // Implementation specific oddity - hex string actually gets passed as a base64 string
-                                                        String hexUTF8AsBase64 = firstKey.getShare();
-                                                        String hexUTF8 = new String(Base64.decode(hexUTF8AsBase64), StandardCharsets.UTF_8);
-                                                        byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
-                                                        BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes)));
-                                                        decryptedShares.add(new DecryptedShare(indexes[i], share));
-                                                    } catch (Exception e) {
-                                                        e.printStackTrace();
+                                        try {
+                                            JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
+                                            if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
+                                                KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
+                                                if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
+                                                    KeyAssignment firstKey = currentShareResponse.getKeys()[0];
+                                                    if (firstKey.getMetadata() != null) {
+                                                        try {
+                                                            AES256CBC aes256cbc = new AES256CBC(tmpKey.getPrivateKey().toString(16), firstKey.getMetadata().getEphemPublicKey(), firstKey.getMetadata().getIv());
+                                                            // Implementation specific oddity - hex string actually gets passed as a base64 string
+                                                            String hexUTF8AsBase64 = firstKey.getShare();
+                                                            String hexUTF8 = new String(Base64.decode(hexUTF8AsBase64), StandardCharsets.UTF_8);
+                                                            byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
+                                                            BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes)));
+                                                            decryptedShares.add(new DecryptedShare(indexes[i], share));
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                        }
                                                     }
                                                 }
                                             }
+                                        } catch (JsonSyntaxException e) {
+                                            continue;
                                         }
                                     }
                                 }
