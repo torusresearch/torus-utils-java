@@ -1,15 +1,22 @@
 package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
-import okhttp3.internal.http2.Header;
+
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.*;
+import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.JsonRPCResponse;
+import org.torusresearch.torusutils.apis.KeyAssignParams;
+import org.torusresearch.torusutils.apis.KeyLookupResult;
+import org.torusresearch.torusutils.apis.SignerResponse;
+import org.torusresearch.torusutils.apis.VerifierLookupRequestParams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+
+import okhttp3.internal.http2.Header;
 
 public class Utils {
     private Utils() {
@@ -167,6 +174,10 @@ public class Utils {
                 Gson gson = new Gson();
                 SignerResponse signerResponse = gson.fromJson(signedData, SignerResponse.class);
                 Header[] signerHeaders = new Header[3];
+                if (signerResponse.getTorus_timestamp() == null || signerResponse.getTorus_nonce() == null || signerResponse.getTorus_signature() == null) {
+                    completableFuture.completeExceptionally(new Exception("Invalid signer response. Please retry!"));
+                    return;
+                }
                 signerHeaders[0] = new Header("torus-timestamp", signerResponse.getTorus_timestamp());
                 signerHeaders[1] = new Header("torus-nonce", signerResponse.getTorus_nonce());
                 signerHeaders[2] = new Header("torus-signature", signerResponse.getTorus_signature());
@@ -223,7 +234,7 @@ public class Utils {
 
     public static String stripPaddingLeft(String inputString, Character padChar) {
         StringBuilder sb = new StringBuilder(inputString);
-        while (sb.length() > 1 &&  sb.charAt(0) == padChar) {
+        while (sb.length() > 1 && sb.charAt(0) == padChar) {
             sb.deleteCharAt(0);
         }
         return sb.toString();
