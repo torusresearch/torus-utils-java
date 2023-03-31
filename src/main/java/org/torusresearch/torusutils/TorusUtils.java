@@ -367,33 +367,41 @@ public class TorusUtils {
             } else if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier + VerifierID has not yet been assigned")) {
                 return Utils.keyAssign(endpoints, torusNodePubs, null, null, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.options.getSignerHost(), this.options.getNetwork()).thenComposeAsync(k -> Utils.waitKeyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), 1000)).thenComposeAsync(res -> {
                     CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
-                    if (res == null || res.getKeyResult() == null) {
-                        lookupCf.completeExceptionally(new Exception("could not get lookup, no results"));
-                        return lookupCf;
+                    try {
+                        if (res == null || res.getKeyResult() == null) {
+                            lookupCf.completeExceptionally(new Exception("could not get lookup, no results"));
+                            return lookupCf;
+                        }
+                        VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(res.getKeyResult(), VerifierLookupRequestResult.class);
+                        if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
+                            lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + res.getKeyResult() + res.getErrResult()));
+                            return lookupCf;
+                        }
+                        VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
+                        lookupCf.complete(verifierLookupItem);
+                        isNewKey.set(true);
+                    } catch (Exception ex) {
+                        lookupCf.completeExceptionally(ex);
                     }
-                    VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(res.getKeyResult(), VerifierLookupRequestResult.class);
-                    if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
-                        lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + res.getKeyResult() + res.getErrResult()));
-                        return lookupCf;
-                    }
-                    VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
-                    lookupCf.complete(verifierLookupItem);
-                    isNewKey.set(true);
                     return lookupCf;
                 });
             }
             CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
-            if (keyLookupResult.getKeyResult() != null) {
-                VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(keyLookupResult.getKeyResult(), VerifierLookupRequestResult.class);
-                if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
-                    lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + keyLookupResult.getKeyResult() + keyLookupResult.getErrResult()));
+            try {
+                if (keyLookupResult.getKeyResult() != null) {
+                    VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(keyLookupResult.getKeyResult(), VerifierLookupRequestResult.class);
+                    if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
+                        lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + keyLookupResult.getKeyResult() + keyLookupResult.getErrResult()));
+                        return lookupCf;
+                    }
+                    VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
+                    lookupCf.complete(verifierLookupItem);
                     return lookupCf;
                 }
-                VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
-                lookupCf.complete(verifierLookupItem);
-                return lookupCf;
+                lookupCf.completeExceptionally(new Exception("could not get lookup, no valid key result or error result"));
+            } catch (Exception ex) {
+                lookupCf.completeExceptionally(ex);
             }
-            lookupCf.completeExceptionally(new Exception("could not get lookup, no valid key result or error result"));
             return lookupCf;
         }).thenComposeAsync(verifierLookupItem -> {
             CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
@@ -522,33 +530,41 @@ public class TorusUtils {
                 }
                 return Utils.keyAssign(endpoints, torusNodePubs, null, null, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.options.getSignerHost(), this.options.getNetwork()).thenComposeAsync(k -> Utils.waitKeyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), 1000)).thenComposeAsync(res -> {
                     CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
-                    if (res == null || res.getKeyResult() == null) {
-                        lookupCf.completeExceptionally(new Exception("could not get lookup, no results"));
-                        return lookupCf;
+                    try {
+                        if (res == null || res.getKeyResult() == null) {
+                            lookupCf.completeExceptionally(new Exception("could not get lookup, no results"));
+                            return lookupCf;
+                        }
+                        VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(res.getKeyResult(), VerifierLookupRequestResult.class);
+                        if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
+                            lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + res.getKeyResult() + res.getErrResult()));
+                            return lookupCf;
+                        }
+                        VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
+                        lookupCf.complete(verifierLookupItem);
+                        isNewKey.set(true);
+                    } catch (Exception ex) {
+                        lookupCf.completeExceptionally(ex);
                     }
-                    VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(res.getKeyResult(), VerifierLookupRequestResult.class);
-                    if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
-                        lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + res.getKeyResult() + res.getErrResult()));
-                        return lookupCf;
-                    }
-                    VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
-                    lookupCf.complete(verifierLookupItem);
-                    isNewKey.set(true);
                     return lookupCf;
                 });
             }
             CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
-            if (keyLookupResult.getKeyResult() != null) {
-                VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(keyLookupResult.getKeyResult(), VerifierLookupRequestResult.class);
-                if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
-                    lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + keyLookupResult.getKeyResult() + keyLookupResult.getErrResult()));
+            try {
+                if (keyLookupResult.getKeyResult() != null) {
+                    VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(keyLookupResult.getKeyResult(), VerifierLookupRequestResult.class);
+                    if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
+                        lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + keyLookupResult.getKeyResult() + keyLookupResult.getErrResult()));
+                        return lookupCf;
+                    }
+                    VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
+                    lookupCf.complete(verifierLookupItem);
                     return lookupCf;
                 }
-                VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
-                lookupCf.complete(verifierLookupItem);
-                return lookupCf;
+                lookupCf.completeExceptionally(new Exception("could not get lookup, no valid key result or error result"));
+            } catch (Exception ex) {
+                lookupCf.completeExceptionally(ex);
             }
-            lookupCf.completeExceptionally(new Exception("could not get lookup, no valid key result or error result"));
             return lookupCf;
         }).thenComposeAsync(verifierLookupItem -> {
             CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();

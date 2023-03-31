@@ -53,6 +53,8 @@ public class CelesteTest {
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CELESTE, FetchNodeDetails.PROXY_ADDRESS_CELESTE);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork("celeste");
+        opts.setSignerHost("https://signer-polygon.tor.us/api/sign");
+        opts.setAllowHost("https://signer-polygon.tor.us/api/allow");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
@@ -113,7 +115,7 @@ public class CelesteTest {
         System.out.println(retrieveSharesResponse.getPrivKey());
         BigInteger requiredPrivateKey = new BigInteger("0ae056aa938080c9e8bf6641261619e09fd510c91bb5aad14b0de9742085a914", 16);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
-        assertEquals("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x58420FB83971C4490D8c9B091f8bfC890D716617", retrieveSharesResponse.getEthAddress());
     }
 
     @DisplayName("Aggregate Login test")

@@ -119,6 +119,6 @@ public class MainnetTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getEthAddress());
     }
 }

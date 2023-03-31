@@ -173,30 +173,34 @@ public class Utils {
 
                 CompletableFuture<String> cf = APIUtils.post(endpoints[nodeNum], data, signerHeaders, false);
                 cf.whenCompleteAsync((resp, keyAssignErr) -> {
-                    // we only retry if keyassign api fails..
-                    // All other cases, we just complete exceptionally
-                    if (keyAssignErr != null) {
-                        Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId, signerHost, network).whenCompleteAsync((res2, err2) -> {
-                            if (err2 != null) {
-                                completableFuture.completeExceptionally(err2);
-                                return;
-                            }
-                            completableFuture.complete(res2);
-                        });
-                        return;
-                    }
-                    JsonRPCResponse jsonRPCResponse = gson.fromJson(resp, JsonRPCResponse.class);
-                    String result = jsonRPCResponse.getResult().toString();
-                    if (result != null && !result.equals("")) {
-                        completableFuture.complete(new KeyLookupResult(result, null));
-                    } else {
-                        Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId, signerHost, network).whenCompleteAsync((res2, err2) -> {
-                            if (err2 != null) {
-                                completableFuture.completeExceptionally(err2);
-                                return;
-                            }
-                            completableFuture.complete(res2);
-                        });
+                    try {
+                        // we only retry if keyassign api fails..
+                        // All other cases, we just complete exceptionally
+                        if (keyAssignErr != null) {
+                            Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId, signerHost, network).whenCompleteAsync((res2, err2) -> {
+                                if (err2 != null) {
+                                    completableFuture.completeExceptionally(err2);
+                                    return;
+                                }
+                                completableFuture.complete(res2);
+                            });
+                            return;
+                        }
+                        JsonRPCResponse jsonRPCResponse = gson.fromJson(resp, JsonRPCResponse.class);
+                        String result = jsonRPCResponse.getResult().toString();
+                        if (result != null && !result.equals("")) {
+                            completableFuture.complete(new KeyLookupResult(result, null));
+                        } else {
+                            Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId, signerHost, network).whenCompleteAsync((res2, err2) -> {
+                                if (err2 != null) {
+                                    completableFuture.completeExceptionally(err2);
+                                    return;
+                                }
+                                completableFuture.complete(res2);
+                            });
+                        }
+                    } catch (Exception ex) {
+                        completableFuture.completeExceptionally(ex);
                     }
                 });
             } catch (Exception e) {
