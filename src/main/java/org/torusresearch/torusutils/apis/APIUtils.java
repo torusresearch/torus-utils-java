@@ -1,20 +1,42 @@
 package org.torusresearch.torusutils.apis;
 
 import com.google.gson.Gson;
-import java.util.concurrent.CompletableFuture;
-import okhttp3.*;
-import okhttp3.internal.http2.Header;
+
 import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.helpers.Utils;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.ConnectionPool;
+import okhttp3.Dispatcher;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.internal.http2.Header;
 
 public class APIUtils {
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    private static final OkHttpClient client = new OkHttpClient().newBuilder().writeTimeout(12, TimeUnit.SECONDS).build();
+    private static final OkHttpClient client = new OkHttpClient().newBuilder()
+            .writeTimeout(12, TimeUnit.SECONDS)
+            .connectionPool(new ConnectionPool(64, 5, TimeUnit.MILLISECONDS))
+            .dispatcher(createDispatcher())
+            .build();
     private static String apiKey;
+
+    private static Dispatcher createDispatcher() {
+        final Dispatcher dispatcher = new Dispatcher(Executors.newCachedThreadPool());
+        dispatcher.setMaxRequests(64);
+        dispatcher.setMaxRequestsPerHost(64);
+        return dispatcher;
+    }
 
     private APIUtils() {
     }
