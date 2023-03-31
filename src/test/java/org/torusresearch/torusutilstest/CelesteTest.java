@@ -49,7 +49,7 @@ public class CelesteTest {
 
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        System.out.println("Setup Starting");
+        System.out.println("Setup Startingg");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CELESTE, FetchNodeDetails.PROXY_ADDRESS_CELESTE);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork("celeste");
