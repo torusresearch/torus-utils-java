@@ -26,7 +26,7 @@ public class APIUtils {
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final OkHttpClient client = new OkHttpClient().newBuilder()
             .writeTimeout(12, TimeUnit.SECONDS)
-            .connectionPool(new ConnectionPool(64, 5, TimeUnit.MILLISECONDS))
+            .connectionPool(new ConnectionPool(64, 5, TimeUnit.SECONDS))
             .dispatcher(createDispatcher())
             .build();
     private static String apiKey;
