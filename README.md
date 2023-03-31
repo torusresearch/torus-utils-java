@@ -29,7 +29,7 @@ repositories {
         maven { url "https://jitpack.io" }
    }
    dependencies {
-         implementation 'org.torusresearch:torus-utils-java:2.0.1'
+         implementation 'org.torusresearch:torus-utils-java:3.1.2'
    }
 ```
 
