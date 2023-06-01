@@ -4,11 +4,11 @@ import com.google.gson.Gson;
 
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.GetPubKeyOrKeyAssignRequestParams;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.KeyAssignParams;
 import org.torusresearch.torusutils.apis.KeyLookupResult;
 import org.torusresearch.torusutils.apis.SignerResponse;
-import org.torusresearch.torusutils.apis.VerifierLookupRequestParams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,7 +86,7 @@ public class Utils {
         } catch (InterruptedException e) {
             completableFuture.completeExceptionally(e);
         }
-        Utils.keyLookup(endpoints, verifier, verifierId).whenComplete((res, err) -> {
+        Utils.keyLookup(endpoints, verifier, verifierId, "").whenComplete((res, err) -> {
             if (err != null) {
                 completableFuture.completeExceptionally(err);
             }
@@ -95,11 +95,13 @@ public class Utils {
         return completableFuture;
     }
 
-    public static CompletableFuture<KeyLookupResult> keyLookup(String[] endpoints, String verifier, String verifierId) {
+    public static CompletableFuture<KeyLookupResult> keyLookup(String[] endpoints, String verifier, String verifierId, String extendedVerifierId) {
         int k = endpoints.length / 2 + 1;
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
-            lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId)), false));
+            lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("GetPubKeyOrKeyAssign",
+                    new GetPubKeyOrKeyAssignRequestParams(verifier, verifierId, extendedVerifierId,
+                            true, true)), false));
         }
         return new Some<>(lookupPromises, (lookupResults, resolved) -> {
             try {
@@ -129,7 +131,7 @@ public class Utils {
                 String errorResult = thresholdSame(errorResults, k);
                 String keyResult = thresholdSame(keyResults, k);
                 if ((errorResult != null && !errorResult.equals("")) || (keyResult != null && !keyResult.equals(""))) {
-                    return CompletableFuture.completedFuture(new KeyLookupResult(keyResult, errorResult));
+                    return CompletableFuture.completedFuture(new KeyLookupResult(keyResult, errorResult, nodeIndexes, nonceResult));
                 }
                 CompletableFuture<KeyLookupResult> failedFuture = new CompletableFuture<>();
                 failedFuture.completeExceptionally(new Exception("invalid results from KeyLookup " + gson.toJson(lookupResults)));
@@ -200,7 +202,7 @@ public class Utils {
                         JsonRPCResponse jsonRPCResponse = gson.fromJson(resp, JsonRPCResponse.class);
                         String result = jsonRPCResponse.getResult().toString();
                         if (result != null && !result.equals("")) {
-                            completableFuture.complete(new KeyLookupResult(result, null));
+                            completableFuture.complete(new KeyLookupResult(result, null, nodeIndexes, nonceResult));
                         } else {
                             Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId, signerHost, network).whenCompleteAsync((res2, err2) -> {
                                 if (err2 != null) {

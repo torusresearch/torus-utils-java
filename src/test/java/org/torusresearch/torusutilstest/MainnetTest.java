@@ -17,7 +17,6 @@ import org.torusresearch.torusutils.types.RetrieveSharesResponse;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusPublicKey;
-import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
@@ -62,34 +61,10 @@ public class MainnetTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
-        VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL);
+        VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, "extendedVerifierId");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", publicAddress.getAddress());
-    }
-
-
-    @DisplayName("Fetch User Type and Public Address")
-    @Test
-    public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException {
-        VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", key.getAddress());
-        assertEquals(TypeOfUser.v1, key.getTypeOfUser());
-
-        String v2Verifier = "tkey-google";
-        // 1/1 user
-        String v2TestEmail = "somev2user@gmail.com";
-        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail)).get();
-        assertEquals("0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526", key2.getAddress());
-        assertEquals(TypeOfUser.v2, key2.getTypeOfUser());
-
-        // v1 user
-        String v2nTestEmail = "caspertorus@gmail.com";
-        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail)).get();
-        assertEquals("0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53", key3.getAddress());
-        assertEquals(TypeOfUser.v1, key3.getTypeOfUser());
     }
 
     @DisplayName("Key Assign test")
@@ -97,7 +72,7 @@ public class MainnetTest {
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google", email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("google", email)).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("google", email, "extendedVerifierId")).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
         assertNotEquals(publicAddress.getAddress(), "");

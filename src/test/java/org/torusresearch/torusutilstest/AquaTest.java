@@ -1,6 +1,11 @@
 package org.torusresearch.torusutilstest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.auth0.jwt.algorithms.Algorithm;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,7 +13,11 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusCtorOptions;
+import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
 import org.torusresearch.torusutilstest.utils.VerifyParams;
@@ -24,8 +33,6 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class AquaTest {
 
@@ -57,7 +64,7 @@ public class AquaTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
-        VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL);
+        VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0xDfA967285AC699A70DA340F60d00DB19A272639d", publicAddress.getAddress());
@@ -69,7 +76,7 @@ public class AquaTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-aqua", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
-                nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-aqua", email)).get();
+                nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-aqua", email, "")).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
         assertNotEquals(publicAddress.getAddress(), "");

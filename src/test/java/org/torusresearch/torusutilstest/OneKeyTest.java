@@ -1,6 +1,11 @@
 package org.torusresearch.torusutilstest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.auth0.jwt.algorithms.Algorithm;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,7 +13,12 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusCtorOptions;
+import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.TypeOfUser;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
 import org.torusresearch.torusutilstest.utils.VerifyParams;
@@ -24,8 +34,6 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class OneKeyTest {
 
@@ -45,7 +53,6 @@ public class OneKeyTest {
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET, FetchNodeDetails.PROXY_ADDRESS_TESTNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork("testnet");
-        opts.setEnableOneKey(true);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
@@ -55,7 +62,7 @@ public class OneKeyTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
-        VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, "Jonathan.Nolan@hotmail.com");
+        VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, "Jonathan.Nolan@hotmail.com", "extendedVerifierId");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args, true).get();
         assertEquals(TypeOfUser.v2, publicAddress.getTypeOfUser());
@@ -67,7 +74,7 @@ public class OneKeyTest {
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(TORUS_TEST_VERIFIER, email), true).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(TORUS_TEST_VERIFIER, email, ""), true).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
         assertNotEquals(publicAddress.getAddress(), "");

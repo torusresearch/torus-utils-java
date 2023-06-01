@@ -3,15 +3,40 @@ package org.torusresearch.torusutils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import okhttp3.internal.http2.Header;
+
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.*;
-import org.torusresearch.torusutils.helpers.*;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.CommitmentRequestParams;
+import org.torusresearch.torusutils.apis.JsonRPCResponse;
+import org.torusresearch.torusutils.apis.KeyAssignResult;
+import org.torusresearch.torusutils.apis.KeyAssignment;
+import org.torusresearch.torusutils.apis.NodeSignature;
+import org.torusresearch.torusutils.apis.PubKey;
+import org.torusresearch.torusutils.apis.ShareRequestParams;
+import org.torusresearch.torusutils.apis.VerifierLookupItem;
+import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
+import org.torusresearch.torusutils.helpers.AES256CBC;
+import org.torusresearch.torusutils.helpers.Base64;
+import org.torusresearch.torusutils.helpers.PredicateFailedException;
+import org.torusresearch.torusutils.helpers.Some;
+import org.torusresearch.torusutils.helpers.Utils;
+import org.torusresearch.torusutils.types.DecryptedShare;
+import org.torusresearch.torusutils.types.GetOrSetNonceError;
+import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.types.ImportedShare;
+import org.torusresearch.torusutils.types.MetadataParams;
+import org.torusresearch.torusutils.types.MetadataPubKey;
+import org.torusresearch.torusutils.types.MetadataResponse;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusCtorOptions;
+import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.TypeOfUser;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
@@ -26,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import okhttp3.internal.http2.Header;
 
 public class TorusUtils {
 
@@ -92,9 +119,10 @@ public class TorusUtils {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, HashMap<String, Object> extraParams) {
+    public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, HashMap<String, Object> extraParams, ImportedShare[] importedShares) {
         try {
-            APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork())}, true).get();
+            APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork()),
+                    new Header("network", this.options.getClientId())}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();
@@ -105,12 +133,21 @@ public class TorusUtils {
             int t = endpoints.length / 4;
             int k = t * 2 + 1;
 
+            boolean isImportShareReq = false;
+            if (importedShares.length > 0) {
+                if (importedShares.length != endpoints.length) {
+                    throw new Error("Invalid imported shares length");
+                }
+                isImportShareReq = true;
+            }
+
             // make commitment requests to endpoints
             for (int i = 0; i < endpoints.length; i++) {
                 CompletableFuture<String> p = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.substring(2), pubKeyX, pubKeyY, String.valueOf(System.currentTimeMillis()), verifier)), false);
                 promiseArr.add(i, p);
             }
             // send share request once k + t number of commitment requests have completed
+            boolean finalIsImportShareReq = isImportShareReq;
             return new Some<>(promiseArr, (resultArr, commitmentsResolved) -> {
                 List<String> completedRequests = new ArrayList<>();
                 for (String result : resultArr) {
@@ -157,8 +194,12 @@ public class TorusUtils {
                         add(verifierParams);
                     }};
                     for (String endpoint : endpoints) {
-                        String req = APIUtils.generateJsonRPCObject("ShareRequest", new ShareRequestParams(shareRequestItems));
-                        promiseArrRequests.add(APIUtils.post(endpoint, req, false));
+                        if (finalIsImportShareReq) {
+
+                        } else {
+                            String req = APIUtils.generateJsonRPCObject("ShareRequest", new ShareRequestParams(shareRequestItems));
+                            promiseArrRequests.add(APIUtils.post(endpoint, req, false));
+                        }
                     }
                     return new Some<>(promiseArrRequests, (shareResponses, predicateResolved) -> {
                         try {
@@ -289,7 +330,7 @@ public class TorusUtils {
                     }
                     privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
                     String ethAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
-                    return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, privateKey, metadataNonce));
+                    return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, privateKey, metadataNonce, sessionTokens, x, y, postboxPubKeyX, postboxPubKeyY, sessionAuthKey, nodeIndexes));
                 } catch (Exception ex) {
                     CompletableFuture<RetrieveSharesResponse> cfRes = new CompletableFuture<>();
                     cfRes.completeExceptionally(new TorusException("Torus Internal Error", ex));
@@ -305,7 +346,7 @@ public class TorusUtils {
     }
 
     public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null);
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, options.getClientId(), new ImportedShare());
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
@@ -359,7 +400,7 @@ public class TorusUtils {
     CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
         AtomicBoolean isNewKey = new AtomicBoolean(false);
         Gson gson = new Gson();
-        return Utils.keyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId()).thenComposeAsync(keyLookupResult -> {
+        return Utils.keyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), verifierArgs.getExtendedVerifierId()).thenComposeAsync(keyLookupResult -> {
             if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier not supported")) {
                 CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
                 lookupCf.completeExceptionally(new Exception("Verifier not supported. Check if you: \\n\n" + "      1. Are on the right network (Torus testnet/mainnet) \\n\n" + "      2. Have setup a verifier on dashboard.web3auth.io?"));
@@ -508,114 +549,6 @@ public class TorusUtils {
 
     public CompletableFuture<GetOrSetNonceResult> getNonce(BigInteger privKey) {
         return this.getOrSetNonce(privKey, true);
-    }
-
-    public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs) {
-        return this.getUserTypeAndAddress(endpoints, torusNodePubs, verifierArgs, false);
-    }
-
-    public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean doesKeyAssign) {
-        AtomicBoolean isNewKey = new AtomicBoolean(false);
-        Gson gson = new Gson();
-        return Utils.keyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId()).thenComposeAsync(keyLookupResult -> {
-            if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier not supported")) {
-                CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
-                lookupCf.completeExceptionally(new Exception("Verifier not supported. Check if you: \\n\n" + "      1. Are on the right network (Torus testnet/mainnet) \\n\n" + "      2. Have setup a verifier on dashboard.web3auth.io?"));
-                return lookupCf;
-            } else if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier + VerifierID has not yet been assigned")) {
-                if (!doesKeyAssign) {
-                    CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
-                    lookupCf.completeExceptionally(new Exception("Verifier + VerifierID has not yet been assigned"));
-                    return lookupCf;
-                }
-                return Utils.keyAssign(endpoints, torusNodePubs, null, null, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.options.getSignerHost(), this.options.getNetwork()).thenComposeAsync(k -> Utils.waitKeyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), 1000)).thenComposeAsync(res -> {
-                    CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
-                    try {
-                        if (res == null || res.getKeyResult() == null) {
-                            lookupCf.completeExceptionally(new Exception("could not get lookup, no results"));
-                            return lookupCf;
-                        }
-                        VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(res.getKeyResult(), VerifierLookupRequestResult.class);
-                        if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
-                            lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + res.getKeyResult() + res.getErrResult()));
-                            return lookupCf;
-                        }
-                        VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
-                        lookupCf.complete(verifierLookupItem);
-                        isNewKey.set(true);
-                    } catch (Exception ex) {
-                        lookupCf.completeExceptionally(ex);
-                    }
-                    return lookupCf;
-                });
-            }
-            CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
-            try {
-                if (keyLookupResult.getKeyResult() != null) {
-                    VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(keyLookupResult.getKeyResult(), VerifierLookupRequestResult.class);
-                    if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
-                        lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + keyLookupResult.getKeyResult() + keyLookupResult.getErrResult()));
-                        return lookupCf;
-                    }
-                    VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
-                    lookupCf.complete(verifierLookupItem);
-                    return lookupCf;
-                }
-                lookupCf.completeExceptionally(new Exception("could not get lookup, no valid key result or error result"));
-            } catch (Exception ex) {
-                lookupCf.completeExceptionally(ex);
-            }
-            return lookupCf;
-        }).thenComposeAsync(verifierLookupItem -> {
-            CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
-            try {
-                GetOrSetNonceResult nonceResult;
-                BigInteger nonce;
-                ECPoint modifiedPubKey;
-                TypeOfUser typeOfUser;
-                GetOrSetNonceResult.PubNonce pubNonce = null;
-                ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
-
-                try {
-                    nonceResult = this.getOrSetNonce(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y(), !isNewKey.get()).get();
-                    nonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
-                    typeOfUser = nonceResult.getTypeOfUser();
-                } catch (Exception e) {
-                    // Sometimes we take special action if `get or set nonce` api is not available
-                    keyCf.completeExceptionally(new GetOrSetNonceError(e));
-                    return keyCf;
-                }
-
-                modifiedPubKey = curve.getCurve().createPoint(new BigInteger(verifierLookupItem.getPub_key_X(), 16), new BigInteger(verifierLookupItem.getPub_key_Y(), 16));
-                if (nonceResult.getTypeOfUser() == TypeOfUser.v1) {
-                    modifiedPubKey = modifiedPubKey.add(curve.getG().multiply(nonce)).normalize();
-                } else if (nonceResult.getTypeOfUser() == TypeOfUser.v2) {
-                    // pubNonce is never deleted, so we can use it to always get the tkey
-                    assert nonceResult.getPubNonce() != null;
-                    ECPoint oneKeyMetadataPoint = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
-                    modifiedPubKey = modifiedPubKey.add(oneKeyMetadataPoint).normalize();
-                    pubNonce = nonceResult.getPubNonce();
-                } else {
-                    keyCf.completeExceptionally(new Exception("getOrSetNonce should always return typeOfUser."));
-                    return keyCf;
-                }
-
-                String finalPubKey = Utils.padLeft(modifiedPubKey.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(modifiedPubKey.getAffineYCoord().toString(), '0', 64);
-                String address = Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
-
-                TorusPublicKey key = new TorusPublicKey(finalPubKey.substring(0, finalPubKey.length() / 2), finalPubKey.substring(finalPubKey.length() / 2), address);
-                key.setTypeOfUser(typeOfUser);
-                key.setMetadataNonce(nonce);
-                key.setPubNonce(pubNonce);
-                key.setUpgraded(nonceResult.isUpgraded());
-                keyCf.complete(key);
-
-                return keyCf;
-            } catch (Exception ex) {
-                keyCf.completeExceptionally(ex);
-                return keyCf;
-            }
-        });
     }
 
 }

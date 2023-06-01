@@ -5,12 +5,12 @@ import java.math.BigInteger;
 public class TorusCtorOptions {
     private String metadataHost = "https://metadata.tor.us";
     private String allowHost = "https://signer.tor.us/api/allow";
-    private boolean enableOneKey = false;
     private String signerHost = "https://signer.tor.us/api/sign";
     // in seconds
     private BigInteger serverTimeOffset = new BigInteger("0");
     private String origin;
     private String network = "mainnet";
+    private String clientId;
 
     private boolean legacyNonce = false;
 
@@ -50,14 +50,6 @@ public class TorusCtorOptions {
         this.signerHost = signerHost;
     }
 
-    public boolean isEnableOneKey() {
-        return enableOneKey;
-    }
-
-    public void setEnableOneKey(boolean enableOneKey) {
-        this.enableOneKey = enableOneKey;
-    }
-
     public String getAllowHost() {
         return allowHost;
     }
@@ -80,5 +72,13 @@ public class TorusCtorOptions {
 
     public void setLegacyNonce(boolean legacyNonce) {
         this.legacyNonce = legacyNonce;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 }
