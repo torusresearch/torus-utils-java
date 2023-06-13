@@ -194,12 +194,13 @@ public class TorusUtils {
                         add(verifierParams);
                     }};
                     for (String endpoint : endpoints) {
+                        String req;
                         if (finalIsImportShareReq) {
-
+                            req = APIUtils.generateJsonRPCObject("ImportShare", new ShareRequestParams(shareRequestItems));
                         } else {
-                            String req = APIUtils.generateJsonRPCObject("ShareRequest", new ShareRequestParams(shareRequestItems));
-                            promiseArrRequests.add(APIUtils.post(endpoint, req, false));
+                            req = APIUtils.generateJsonRPCObject("GetShareOrKeyAssign", new ShareRequestParams(shareRequestItems));
                         }
+                        promiseArrRequests.add(APIUtils.post(endpoint, req, true));
                     }
                     return new Some<>(promiseArrRequests, (shareResponses, predicateResolved) -> {
                         try {
@@ -330,7 +331,17 @@ public class TorusUtils {
                     }
                     privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
                     String ethAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
-                    return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress, privateKey, metadataNonce, sessionTokens, x, y, postboxPubKeyX, postboxPubKeyY, sessionAuthKey, nodeIndexes));
+
+                    return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress,
+                            privateKey,
+                            metadataNonce,
+                            sessionTokens,
+                            x, y,
+                            derivedPubKeyX,
+                            derivedPubKeyY,
+                            pubKey,
+                            nodeIndexes
+                    ));
                 } catch (Exception ex) {
                     CompletableFuture<RetrieveSharesResponse> cfRes = new CompletableFuture<>();
                     cfRes.completeExceptionally(new TorusException("Torus Internal Error", ex));
