@@ -322,21 +322,32 @@ public class TorusUtils {
                     String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
                     String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
                     BigInteger metadataNonce;
-
+                    GetOrSetNonceResult nonceResult = null;
                     if (this.options.isEnableOneKey()) {
-                        GetOrSetNonceResult result = this.getNonce(privateKey).get();
-                        metadataNonce = new BigInteger(Utils.isEmpty(result.getNonce()) ? "0" : result.getNonce(), 16);
+                        nonceResult = this.getNonce(privateKey).get();
+                        metadataNonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
                     } else {
                         metadataNonce = this.getMetadata(new MetadataPubKey(derivedPubKeyX, derivedPubKeyY)).get();
                     }
                     privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
                     String ethAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
+                    ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
+                    ECPoint modifiedPubKey;
+                    if (verifierParams.get("extended_verifier_id") != null) {
+                        // for tss key no need to add pub nonce
+                        modifiedPubKey = curve.getCurve().createPoint(new BigInteger(derivedPubKeyX, 16), new BigInteger(derivedPubKeyY, 16));
+                    } else {
+                        ECPoint publicKey = curve.getCurve().createPoint(new BigInteger(derivedPubKeyX, 16), new BigInteger(derivedPubKeyY, 16));
+                        ECPoint noncePublicKey = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
+                        modifiedPubKey = publicKey.add(noncePublicKey);
+                    }
 
                     return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress,
                             privateKey,
                             metadataNonce,
                             sessionTokens,
-                            x, y,
+                            modifiedPubKey.getXCoord().toString(),
+                            modifiedPubKey.getXCoord().toString(),
                             derivedPubKeyX,
                             derivedPubKeyY,
                             pubKey,
