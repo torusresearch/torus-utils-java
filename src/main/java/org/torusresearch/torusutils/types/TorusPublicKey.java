@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 
 import java.math.BigInteger;
+import java.util.List;
 
 public class TorusPublicKey extends TorusNodePub {
     private final String address;
@@ -12,6 +13,7 @@ public class TorusPublicKey extends TorusNodePub {
     @Nullable
     private GetOrSetNonceResult.PubNonce pubNonce;
     private boolean upgraded;
+    private List<Integer> nodeIndexes;
 
     public TorusPublicKey(String _X, String _Y, String _address) {
         super(_X, _Y);
@@ -21,6 +23,16 @@ public class TorusPublicKey extends TorusNodePub {
     public TorusPublicKey(String _address) {
         super(null, null);
         address = _address;
+    }
+
+    public TorusPublicKey(String _address, String _X, String _Y, BigInteger _metadataNonce, GetOrSetNonceResult.PubNonce _pubNonce,
+                          boolean _upgraded, List<Integer> _nodeIndexes) {
+        super(_X, _Y);
+        address = _address;
+        metadataNonce = _metadataNonce;
+        pubNonce = _pubNonce;
+        upgraded = _upgraded;
+        nodeIndexes = _nodeIndexes;
     }
 
     public String getAddress() {
@@ -57,5 +69,13 @@ public class TorusPublicKey extends TorusNodePub {
 
     public void setUpgraded(boolean upgraded) {
         this.upgraded = upgraded;
+    }
+
+    public List<Integer> getNodeIndexes() {
+        return nodeIndexes;
+    }
+
+    public void setNodeIndexes(List<Integer> nodeIndexes) {
+        this.nodeIndexes = nodeIndexes;
     }
 }

@@ -2,6 +2,9 @@ package org.torusresearch.torusutils.helpers;
 
 import com.google.gson.Gson;
 
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.math.ec.ECPoint;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.GetPubKeyOrKeyAssignRequestParams;
@@ -9,7 +12,10 @@ import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.KeyAssignParams;
 import org.torusresearch.torusutils.apis.KeyLookupResult;
 import org.torusresearch.torusutils.apis.SignerResponse;
+import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.types.VerifierLookupResponse;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +85,7 @@ public class Utils {
         return combs;
     }
 
-    public static CompletableFuture<KeyLookupResult> waitKeyLookup(String[] endpoints, String verifier, String verifierId, int timeout) {
+    /*public static CompletableFuture<KeyLookupResult> waitKeyLookup(String[] endpoints, String verifier, String verifierId, int timeout) {
         CompletableFuture<KeyLookupResult> completableFuture = new CompletableFuture<>();
         try {
             Thread.sleep(timeout);
@@ -93,9 +99,9 @@ public class Utils {
             completableFuture.complete(res);
         });
         return completableFuture;
-    }
+    }*/
 
-    public static CompletableFuture<KeyLookupResult> keyLookup(String[] endpoints, String verifier, String verifierId, String extendedVerifierId) {
+    public static CompletableFuture<KeyLookupResult> getPubKeyOrKeyAssign(String[] endpoints, String verifier, String verifierId, String extendedVerifierId) {
         int k = endpoints.length / 2 + 1;
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
@@ -107,6 +113,8 @@ public class Utils {
             try {
                 List<String> errorResults = new ArrayList<>();
                 List<String> keyResults = new ArrayList<>();
+                List<Integer> nodeIndexes = new ArrayList<>();
+                GetOrSetNonceResult nonceResult = null;
                 Gson gson = new Gson();
                 for (String x : lookupResults) {
                     if (x != null && !x.equals("")) {
@@ -128,8 +136,31 @@ public class Utils {
                         }
                     }
                 }
+                for (String x : lookupResults) {
+                    if (x != null && !x.equals("")) {
+                        try {
+                            JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
+                            VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
+                            String pubNonceX = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce().getX();
+                            if (pubNonceX != null) {
+                                nonceResult = verifierLookupResponse.getKeys().get(0).getNonceData();
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
                 String errorResult = thresholdSame(errorResults, k);
                 String keyResult = thresholdSame(keyResults, k);
+                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null)) || errorResult != null) {
+                    for (String x : lookupResults) {
+                        JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
+                        VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
+                        if (response.getResult() != null) {
+                            nodeIndexes.add(verifierLookupResponse.getNodeIndex());
+                        }
+                    }
+                }
                 if ((errorResult != null && !errorResult.equals("")) || (keyResult != null && !keyResult.equals(""))) {
                     return CompletableFuture.completedFuture(new KeyLookupResult(keyResult, errorResult, nodeIndexes, nonceResult));
                 }
@@ -202,7 +233,7 @@ public class Utils {
                         JsonRPCResponse jsonRPCResponse = gson.fromJson(resp, JsonRPCResponse.class);
                         String result = jsonRPCResponse.getResult().toString();
                         if (result != null && !result.equals("")) {
-                            completableFuture.complete(new KeyLookupResult(result, null, nodeIndexes, nonceResult));
+                            completableFuture.complete(new KeyLookupResult(result, null, null, null));
                         } else {
                             Utils.keyAssign(endpoints, torusNodePubs, nodeNum + 1, finalInitialPoint, verifier, verifierId, signerHost, network).whenCompleteAsync((res2, err2) -> {
                                 if (err2 != null) {
@@ -249,5 +280,12 @@ public class Utils {
     public static String convertToJsonObject(Object obj) {
         Gson gson = new Gson();
         return obj == null ? "" : gson.toJson(obj);
+    }
+
+    public static ECPoint getPublicKeyFromHex(String X, String Y) {
+        BigInteger x = new BigInteger(X, 16);
+        BigInteger y = new BigInteger(Y, 16);
+        ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
+        return curve.getCurve().createPoint(x, y);
     }
 }

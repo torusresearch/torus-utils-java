@@ -35,7 +35,6 @@ import org.torusresearch.torusutils.types.RetrieveSharesResponse;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusPublicKey;
-import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import okhttp3.internal.http2.Header;
 
@@ -419,10 +417,10 @@ public class TorusUtils {
         return Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
     }
 
-    CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
+    /*CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
         AtomicBoolean isNewKey = new AtomicBoolean(false);
         Gson gson = new Gson();
-        return Utils.keyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), verifierArgs.getExtendedVerifierId()).thenComposeAsync(keyLookupResult -> {
+        return Utils.getPubKeyOrKeyAssign(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), verifierArgs.getExtendedVerifierId()).thenComposeAsync(keyLookupResult -> {
             if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier not supported")) {
                 CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
                 lookupCf.completeExceptionally(new Exception("Verifier not supported. Check if you: \\n\n" + "      1. Are on the right network (Torus testnet/mainnet) \\n\n" + "      2. Have setup a verifier on dashboard.web3auth.io?"));
@@ -524,7 +522,70 @@ public class TorusUtils {
                 return keyCf;
             }
         });
+    }*/
+
+    public CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
+        System.out.println("> torusUtils.java/getPublicAddress " + endpoints + " " + verifierArgs + " " + isExtended);
+        Gson gson = new Gson();
+        return Utils.getPubKeyOrKeyAssign(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), verifierArgs.getExtendedVerifierId())
+                .thenApply(keyAssignResult -> {
+                    String errorResult = keyAssignResult.getErrResult();
+                    String keyResult = keyAssignResult.getKeyResult();
+                    List<Integer> nodeIndexes = keyAssignResult.getNodeIndexes();
+                    GetOrSetNonceResult nonceResult = keyAssignResult.getNonceResult();
+
+                    if (errorResult != null && errorResult.toLowerCase().contains("verifier not supported")) {
+                        throw new RuntimeException("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
+                    }
+
+                    if (errorResult != null) {
+                        throw new RuntimeException("node results do not match at first lookup " + keyResult + ", " + errorResult);
+                    }
+
+                    System.out.println("> torusUtils.java/getPublicAddress " + keyResult);
+                    VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(keyAssignResult.getKeyResult(), VerifierLookupRequestResult.class);
+                    if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null) {
+                        throw new RuntimeException("node results do not match at final lookup " + keyResult + ", " + errorResult);
+                    }
+
+                    if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null) {
+                        try {
+                            throw new GetOrSetNonceError(new Exception("metadata nonce is missing in share response"));
+                        } catch (GetOrSetNonceError e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
+                    String X = verifierLookupItem.getPub_key_X();
+                    String Y = verifierLookupRequestResult.getKeys()[0].getPub_key_Y();
+                    ECPoint modifiedPubKey;
+                    GetOrSetNonceResult.PubNonce pubNonce = null;
+                    BigInteger nonce = new BigInteger(nonceResult != null ? nonceResult.getNonce() : "0", 16);
+
+                    if (verifierArgs.getExtendedVerifierId() != null) {
+                        modifiedPubKey = Utils.getPublicKeyFromHex(X, Y);
+                    } else {
+                        ECPoint pubKey = Utils.getPublicKeyFromHex(X, Y);
+                        ECPoint noncePubKey = Utils.getPublicKeyFromHex(nonceResult.getPubNonce().getX(), nonceResult.getPubNonce().getY());
+                        modifiedPubKey = pubKey.add(noncePubKey);
+                        pubNonce = nonceResult.getPubNonce();
+                    }
+
+                    X = modifiedPubKey.normalize().getAffineXCoord().toBigInteger().toString(16);
+                    Y = modifiedPubKey.normalize().getAffineYCoord().toBigInteger().toString(16);
+
+                    String address = generateAddressFromPubKey(modifiedPubKey.normalize().getAffineXCoord().toBigInteger(), modifiedPubKey.normalize().getAffineYCoord().toBigInteger());
+                    System.out.println("> torusUtils.java/getPublicAddress " + X + " " + Y + " " + address + " " + nonce.toString(16) + " " + pubNonce);
+
+                    if (!isExtended) {
+                        return new TorusPublicKey(address);
+                    } else {
+                        return new TorusPublicKey(address, X, Y, nonce, pubNonce, nonceResult != null && nonceResult.isUpgraded(), nodeIndexes);
+                    }
+                });
     }
+
 
     public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
         return _getPublicAddress(endpoints, torusNodePubs, verifierArgs, isExtended);
