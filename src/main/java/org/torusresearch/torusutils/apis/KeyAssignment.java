@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.apis;
 
+import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+
 import java.util.HashMap;
 
 public class KeyAssignment {
@@ -9,6 +11,10 @@ public class KeyAssignment {
     private HashMap<String, String[]> Verifiers;
     private String Share;
     private ShareMetadata Metadata;
+    private GetOrSetNonceResult nonceResult;
+
+    public KeyAssignment() {
+    }
 
     public String getIndex() {
         return Index;
@@ -32,5 +38,9 @@ public class KeyAssignment {
 
     public ShareMetadata getMetadata() {
         return Metadata;
+    }
+
+    public GetOrSetNonceResult getNonceResult() {
+        return nonceResult;
     }
 }

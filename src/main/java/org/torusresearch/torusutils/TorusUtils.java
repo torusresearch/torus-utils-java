@@ -212,6 +212,7 @@ public class TorusUtils {
                                         JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
                                         if (shareResponseJson != null && shareResponseJson.getResult() != null) {
                                             completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
+
                                         }
                                     } catch (JsonSyntaxException e) {
                                         // discard this, we don't care
@@ -219,6 +220,7 @@ public class TorusUtils {
                                 }
                             }
                             List<String> completedResponsesPubKeys = new ArrayList<>();
+                            GetOrSetNonceResult thresholdNonceData = null;
                             for (String x : completedResponses) {
                                 KeyAssignResult keyAssignResult = gson.fromJson(x, KeyAssignResult.class);
                                 if (keyAssignResult == null || keyAssignResult.getKeys() == null || keyAssignResult.getKeys().length == 0) {
@@ -226,9 +228,24 @@ public class TorusUtils {
                                 }
                                 KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
                                 completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey()));
+                                thresholdNonceData = keyAssignResult.getKeys()[0].getNonceResult();
                             }
                             String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
                             PubKey thresholdPubKey = null;
+
+                            if (thresholdPublicKeyString == null) {
+                                throw new RuntimeException("Invalid result from nodes, threshold number of public key results are not matching");
+                            }
+
+                            // If both thresholdNonceData and extended_verifier_id are not available,
+                            // then we need to throw an error; otherwise, the address would be incorrect.
+                            if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") != null) {
+                                throw new RuntimeException(String.format(
+                                        "Invalid metadata result from nodes, nonce metadata is empty for verifier: %s and verifierId: %s",
+                                        verifier, verifierParams.get("verifier_id"))
+                                );
+                            }
+
                             if (thresholdPublicKeyString != null && !thresholdPublicKeyString.equals("")) {
                                 thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
                             }
