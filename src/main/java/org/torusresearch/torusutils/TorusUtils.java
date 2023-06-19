@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import jdk.internal.org.jline.reader.Buffer;
 import jdk.internal.org.jline.utils.Log;
@@ -125,6 +126,8 @@ public class TorusUtils {
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork()),
                     new Header("network", this.options.getClientId())}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
+            List<SessionToken> sessionTokenData = new ArrayList<>();
+            List<Integer> nodeIndexes = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();
             String pubKey = Utils.padLeft(tmpKey.getPublicKey().toString(16), '0', 128);
@@ -255,10 +258,9 @@ public class TorusUtils {
                             if (completedResponses.size() >= k && thresholdPubKey != null &&
                                     (thresholdNonceData != null || verifierParams.get("extended_verifier_id") != null)) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
+                                List<CompletableFuture<Void>> sharePromises = new ArrayList<>();
                                 List<CompletableFuture<Void>> sessionTokenSigPromises = new ArrayList<>();
                                 List<CompletableFuture<Void>> sessionTokenPromises = new ArrayList<>();
-                                List<BN> nodeIndexes = new ArrayList<>();
-                                List<SessionToken> sessionTokenData = new ArrayList<>();
 
                                 for (int i = 0; i < shareResponses.length; i++) {
                                     if (shareResponses[i] != null && !shareResponses[i].equals("")) {
@@ -266,6 +268,26 @@ public class TorusUtils {
                                             JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
                                             if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
                                                 KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
+                                                if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
+                                                    // Decrypt sessionSig if enc metadata is sent
+                                                    if (currentShareResponse.getSessionTokenMetadata() != null && currentShareResponse.getSessionTokenMetadata()[0] != null &&
+                                                            currentShareResponse.getSessionTokenMetadata()[0].getValue("ephemPublicKey") != null) {
+                                                        try {
+                                                            sessionTokenPromises.add(
+                                                                    CompletableFuture.supplyAsync(() -> decryptNodeData(currentShareResponse.getSessionTokenSigMetadata()[0],
+                                                                            currentShareResponse.getSessionTokenSigs()[0], tmpKey))
+                                                            );
+                                                        } catch (Exception ex) {
+                                                            Log.debug("session sig decryption", ex);
+                                                            return null;
+                                                        }
+                                                    } else {
+                                                        sessionTokenSigPromises.add(CompletableFuture.completedFuture(Buffer.from(currentShareResponse.getSessionTokenSigs()[0], "hex")));
+                                                    }
+                                                } else {
+                                                    sessionTokenSigPromises.add(CompletableFuture.completedFuture(null));
+                                                }
+
                                                 if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
                                                     // Decrypt sessionSig if enc metadata is sent
                                                     if (currentShareResponse.getSessionTokenMetadata() != null && currentShareResponse.getSessionTokenMetadata()[0] != null &&
@@ -280,11 +302,93 @@ public class TorusUtils {
                                                             return null;
                                                         }
                                                     } else {
-                                                        sessionTokenSigPromises.add(CompletableFuture.completedFuture(Buffer.from(currentShareResponse.getSessionTokenSigs()[0], "hex")));
+                                                        sessionTokenSigPromises.add(CompletableFuture.completedFuture(Buffer.from(currentShareResponse.getSessionTokens()[0], "hex")));
                                                     }
                                                 } else {
                                                     sessionTokenSigPromises.add(CompletableFuture.completedFuture(null));
                                                 }
+
+                                                if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
+                                                    KeyAssignment latestKey = currentShareResponse.getKeys()[0];
+                                                    nodeIndexes.add(latestKey.getNodeIndex());
+                                                    if (latestKey.getShareMetadata() != null) {
+                                                        try {
+                                                            sharePromises.add(
+                                                                    decryptNodeData(
+                                                                            latestKey.getShareMetadata(),
+                                                                            Utils.padLeft(latestKey.getShare(), '0', 64),
+                                                                            tmpKey));
+                                                        } catch (Exception ex) {
+                                                            Log.debug("share decryption error", ex);
+                                                            return null;
+                                                        }
+                                                    } else {
+                                                        nodeIndexes.add(null);
+                                                        sharePromises.add(null);
+                                                    }
+                                                }
+
+                                                CompletableFuture<Void> allPromises = CompletableFuture.allOf(
+                                                                sharePromises.toArray(new CompletableFuture[0]))
+                                                        .thenCombineAsync(CompletableFuture.allOf(
+                                                                        sessionTokenSigPromises.toArray(new CompletableFuture[0])),
+                                                                (Void, Void) -> null)
+                                                        .thenCombineAsync(CompletableFuture.allOf(
+                                                                        sessionTokenPromises.toArray(new CompletableFuture[0])),
+                                                                (Void, Void) -> null);
+
+                                                List<Object> allResults = allPromises.thenApply(Void -> {
+                                                    List<Object> results = new ArrayList<>();
+                                                    for (CompletableFuture<java.lang.Void> sharePromise : sharePromises) {
+                                                        results.add(sharePromise.join());
+                                                    }
+                                                    for (CompletableFuture<java.lang.Void> sessionTokenSigPromise : sessionTokenSigPromises) {
+                                                        results.add(sessionTokenSigPromise.join());
+                                                    }
+                                                    for (CompletableFuture<java.lang.Void> sessionTokenPromise : sessionTokenPromises) {
+                                                        results.add(sessionTokenPromise.join());
+                                                    }
+                                                    return results;
+                                                }).join();
+
+                                                List<Object> sharesResolved = allResults.subList(0, sharePromises.size());
+                                                List<Object> sessionSigsResolved = allResults.subList(
+                                                        sharePromises.size(), sharePromises.size() + sessionTokenSigPromises.size());
+                                                List<Object> sessionTokensResolved = allResults.subList(
+                                                        sharePromises.size() + sessionTokenSigPromises.size(), allResults.size());
+
+                                                List<Object> validSigs = sessionSigsResolved.stream()
+                                                        .filter(sig -> sig != null)
+                                                        .collect(Collectors.toList());
+
+                                                int minThresholdRequired = endpoints.length / 2 + 1;
+                                                if (verifierParams != null && !verifierParams.containsKey("extended_verifier_id") &&
+                                                        validSigs.size() < minThresholdRequired) {
+                                                    throw new RuntimeException("Insufficient number of signatures from nodes, required: " +
+                                                            minThresholdRequired + ", found: " + validSigs.size());
+                                                }
+
+                                                List<Object> validTokens = sessionTokensResolved.stream()
+                                                        .filter(token -> token != null)
+                                                        .collect(Collectors.toList());
+
+                                                if (verifierParams != null && !verifierParams.containsKey("extended_verifier_id") &&
+                                                        validTokens.size() < minThresholdRequired) {
+                                                    throw new RuntimeException("Insufficient number of session tokens from nodes, required: " +
+                                                            minThresholdRequired + ", found: " + validTokens.size());
+                                                }
+
+                                                for (int index = 0; index < sessionTokensResolved.size(); index++) {
+                                                    if (sessionSigsResolved.get(index) == null) {
+                                                        sessionTokenData.add(null);
+                                                    } else {
+                                                        sessionTokenData.add(new SessionToken(java.util.Base64.getEncoder().encodeToString((byte[]) sessionSigsResolved.get(index)),
+                                                                Utils.bytesToHex((byte[]) sessionSigsResolved.get(index)),
+                                                                currentShareResponse.getNodePubx(),
+                                                                currentShareResponse.getNodePuby()));
+                                                    }
+                                                }
+
 
                                                 if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
                                                     KeyAssignment firstKey = currentShareResponse.getKeys()[0];
@@ -389,7 +493,7 @@ public class TorusUtils {
                     return CompletableFuture.completedFuture(new RetrieveSharesResponse(ethAddress,
                             privateKey,
                             metadataNonce,
-                            sessionTokens,
+                            sessionTokenData,
                             modifiedPubKey.getXCoord().toString(),
                             modifiedPubKey.getXCoord().toString(),
                             derivedPubKeyX,
