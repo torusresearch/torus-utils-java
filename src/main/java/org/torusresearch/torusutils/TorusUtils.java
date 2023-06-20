@@ -52,8 +52,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import jdk.internal.org.jline.reader.Buffer;
-import jdk.internal.org.jline.utils.Log;
 import okhttp3.internal.http2.Header;
 
 public class TorusUtils {
@@ -121,7 +119,7 @@ public class TorusUtils {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, HashMap<String, Object> extraParams, ImportedShare[] importedShares) {
+    /*public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, HashMap<String, Object> extraParams, ImportedShare[] importedShares) {
         try {
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork()),
                     new Header("network", this.options.getClientId())}, true).get();
@@ -278,7 +276,7 @@ public class TorusUtils {
                                                                             currentShareResponse.getSessionTokenSigs()[0], tmpKey))
                                                             );
                                                         } catch (Exception ex) {
-                                                            Log.debug("session sig decryption", ex);
+                                                            System.out.println("session sig decryption" + ex);
                                                             return null;
                                                         }
                                                     } else {
@@ -298,7 +296,7 @@ public class TorusUtils {
                                                                             currentShareResponse.getSessionTokens()[0], tmpKey))
                                                             );
                                                         } catch (Exception ex) {
-                                                            Log.debug("session sig decryption", ex);
+                                                            System.out.println("session sig decryption" + ex);
                                                             return null;
                                                         }
                                                     } else {
@@ -319,7 +317,7 @@ public class TorusUtils {
                                                                             Utils.padLeft(latestKey.getShare(), '0', 64),
                                                                             tmpKey));
                                                         } catch (Exception ex) {
-                                                            Log.debug("share decryption error", ex);
+                                                            System.out.println("share decryption error" + ex);
                                                             return null;
                                                         }
                                                     } else {
@@ -514,10 +512,10 @@ public class TorusUtils {
             return cfRes;
         }
     }
-
-    public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, options.getClientId(), new ImportedShare());
-    }
+*/
+    /*public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, options.getClientId(), new ImportedShare[]);
+    }*/
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
         try {
@@ -674,7 +672,7 @@ public class TorusUtils {
         });
     }*/
 
-    public CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
+    public CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) {
         System.out.println("> torusUtils.java/getPublicAddress " + endpoints + " " + verifierArgs + " " + isExtended);
         Gson gson = new Gson();
         return Utils.getPubKeyOrKeyAssign(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), verifierArgs.getExtendedVerifierId())
@@ -688,7 +686,7 @@ public class TorusUtils {
                         throw new RuntimeException("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
                     }
 
-                    if (errorResult != null) {
+                    if (errorResult != null && errorResult.length() > 0) {
                         throw new RuntimeException("node results do not match at first lookup " + keyResult + ", " + errorResult);
                     }
 
@@ -737,12 +735,12 @@ public class TorusUtils {
     }
 
 
-    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
-        return _getPublicAddress(endpoints, torusNodePubs, verifierArgs, isExtended);
+    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) {
+        return _getPublicAddress(endpoints, verifierArgs, isExtended);
     }
 
-    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs) {
-        return _getPublicAddress(endpoints, torusNodePubs, verifierArgs, false);
+    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, VerifierArgs verifierArgs) {
+        return _getPublicAddress(endpoints, verifierArgs, false);
     }
 
     private CompletableFuture<GetOrSetNonceResult> _getOrSetNonce(MetadataParams data) {

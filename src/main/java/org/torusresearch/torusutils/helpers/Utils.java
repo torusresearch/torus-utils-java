@@ -141,7 +141,10 @@ public class Utils {
                         try {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
                             VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
-                            String pubNonceX = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce().getX();
+                            String pubNonceX = null;
+                            if (verifierLookupResponse.getKeys().get(0).getNonceData() != null) {
+                                pubNonceX = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce().getX();
+                            }
                             if (pubNonceX != null) {
                                 nonceResult = verifierLookupResponse.getKeys().get(0).getNonceData();
                             }
