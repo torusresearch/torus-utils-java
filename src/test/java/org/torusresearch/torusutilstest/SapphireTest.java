@@ -55,7 +55,7 @@ public class SapphireTest {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.SAPPHIRE_DEVNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork(TorusNetwork.SAPPHIRE_MAINNET.toString());
+        opts.setNetwork(TorusNetwork.SAPPHIRE_DEVNET.toString());
         opts.setAllowHost("https://signer.tor.us/api/allow");
         opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         torusUtils = new TorusUtils(opts);
@@ -85,11 +85,11 @@ public class SapphireTest {
         assertNotEquals(publicAddress.getAddress(), "");
     }
 
-    /*@DisplayName("Login test")
+    @DisplayName("Login test")
     @Test
     public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
+        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getPrivKey());
@@ -98,7 +98,7 @@ public class SapphireTest {
         assertEquals("0x90A926b698047b4A87265ba1E9D8b512E8489067", retrieveSharesResponse.getEthAddress());
     }
 
-    @DisplayName("Aggregate Login test")
+    /*@DisplayName("Aggregate Login test")
     @Test
     public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);

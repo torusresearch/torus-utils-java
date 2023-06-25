@@ -52,7 +52,9 @@ public class OneKeyTest {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork("testnet");
+        opts.setNetwork(TorusNetwork.TESTNET.toString());
+        opts.setAllowHost("https://signer.tor.us/api/allow");
+        opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
@@ -81,7 +83,7 @@ public class OneKeyTest {
         assertEquals(TypeOfUser.v2, publicAddress.getTypeOfUser());
     }
 
-    /*@DisplayName("Login test v1")
+    @DisplayName("Login test v1")
     @Test
     public void shouldLoginV1() throws ExecutionException, InterruptedException, TorusException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
@@ -120,5 +122,5 @@ public class OneKeyTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertEquals("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B", retrieveSharesResponse.getEthAddress());
-    }*/
+    }
 }
