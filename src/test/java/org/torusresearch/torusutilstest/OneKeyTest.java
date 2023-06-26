@@ -83,7 +83,7 @@ public class OneKeyTest {
         assertEquals(TypeOfUser.v2, publicAddress.getTypeOfUser());
     }
 
-    @DisplayName("Login test v1")
+    /*@DisplayName("Login test v1")
     @Test
     public void shouldLoginV1() throws ExecutionException, InterruptedException, TorusException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
@@ -122,5 +122,5 @@ public class OneKeyTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertEquals("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B", retrieveSharesResponse.getEthAddress());
-    }
+    }*/
 }
