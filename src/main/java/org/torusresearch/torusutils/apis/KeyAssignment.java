@@ -2,13 +2,14 @@ package org.torusresearch.torusutils.apis;
 
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 
 public class KeyAssignment {
     private Index index;
     private PubKey public_key;
     private Integer threshold;
-    private Integer node_index;
+    private BigInteger node_index;
     private HashMap<String, String[]> Verifiers;
     private String share;
     private ShareMetadata metadata;
@@ -47,7 +48,7 @@ public class KeyAssignment {
         return nonceResult;
     }
 
-    public Integer getNodeIndex() {
+    public BigInteger getNodeIndex() {
         return node_index;
     }
 
