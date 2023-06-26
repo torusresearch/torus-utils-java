@@ -1,34 +1,34 @@
 package org.torusresearch.torusutils.apis;
 
-import org.torusresearch.torusutils.types.EciesHex;
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
 
 import java.util.HashMap;
 
 public class KeyAssignment {
-    private String Index;
-    private PubKey PublicKey;
-    private Integer Threshold;
+    private Index index;
+    private PubKey public_key;
+    private Integer threshold;
     private Integer node_index;
     private HashMap<String, String[]> Verifiers;
-    private String Share;
-    private ShareMetadata Metadata;
+    private String share;
+    private ShareMetadata metadata;
     private GetOrSetNonceResult nonceResult;
-    private EciesHex share_metadata;
+    private ShareMetadata share_metadata;
+    private GetOrSetNonceResult nonce_data;
 
     public KeyAssignment() {
     }
 
-    public String getIndex() {
-        return Index;
+    public Index getIndex() {
+        return index;
     }
 
     public PubKey getPublicKey() {
-        return PublicKey;
+        return public_key;
     }
 
     public Integer getThreshold() {
-        return Threshold;
+        return threshold;
     }
 
     public HashMap<String, String[]> getVerifiers() {
@@ -36,11 +36,11 @@ public class KeyAssignment {
     }
 
     public String getShare() {
-        return Share;
+        return share;
     }
 
     public ShareMetadata getMetadata() {
-        return Metadata;
+        return metadata;
     }
 
     public GetOrSetNonceResult getNonceResult() {
@@ -51,7 +51,12 @@ public class KeyAssignment {
         return node_index;
     }
 
-    public EciesHex getShareMetadata() {
+    public ShareMetadata getShareMetadata() {
         return share_metadata;
     }
+
+    public GetOrSetNonceResult getNonceData() {
+        return nonce_data;
+    }
 }
+

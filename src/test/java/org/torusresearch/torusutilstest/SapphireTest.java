@@ -48,7 +48,7 @@ public class SapphireTest {
     static String TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com";
     static String HashEnabledVerifier = "torus-test-verifierid-hash";
 
-    static String TORUS_TEST_EMAIL = "hello@tor.us";
+    static String TORUS_TEST_EMAIL = "saasas@tr.us";
 
     @BeforeAll
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
@@ -70,7 +70,7 @@ public class SapphireTest {
         VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL, "extendedVerifierId");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), args).get();
-        assertEquals("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4", publicAddress.getAddress());
+        assertEquals("0xac997dE675Fb69FCb0F4115A23c0061A892A2772", publicAddress.getAddress());
     }
 
     @DisplayName("Key Assign test")

@@ -5,9 +5,9 @@ import org.torusresearch.torusutils.types.EciesHex;
 public class KeyAssignResult {
     private KeyAssignment[] keys;
     private String[] session_tokens;
-    private EciesHex[] session_token_metadata;
+    private ShareMetadata[] session_token_metadata;
     private String[] session_token_sigs;
-    private EciesHex[] session_token_sig_metadata;
+    private ShareMetadata[] session_token_sig_metadata;
     private String node_pubx;
     private String node_puby;
 
@@ -15,11 +15,11 @@ public class KeyAssignResult {
         return keys;
     }
 
-    public EciesHex[] getSessionTokenMetadata() {
+    public ShareMetadata[] getSessionTokenMetadata() {
         return session_token_metadata;
     }
 
-    public EciesHex[] getSessionTokenSigMetadata() {
+    public ShareMetadata[] getSessionTokenSigMetadata() {
         return session_token_sig_metadata;
     }
 
