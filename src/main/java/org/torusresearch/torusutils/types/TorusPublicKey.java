@@ -26,13 +26,14 @@ public class TorusPublicKey extends TorusNodePub {
     }
 
     public TorusPublicKey(String _address, String _X, String _Y, BigInteger _metadataNonce, GetOrSetNonceResult.PubNonce _pubNonce,
-                          boolean _upgraded, List<Integer> _nodeIndexes) {
+                          boolean _upgraded, List<Integer> _nodeIndexes, TypeOfUser _typeOfUser) {
         super(_X, _Y);
         address = _address;
         metadataNonce = _metadataNonce;
         pubNonce = _pubNonce;
         upgraded = _upgraded;
         nodeIndexes = _nodeIndexes;
+        typeOfUser = _typeOfUser;
     }
 
     public String getAddress() {

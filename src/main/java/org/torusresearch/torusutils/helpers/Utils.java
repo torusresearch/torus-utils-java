@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.helpers;
 
+import static org.torusresearch.torusutils.TorusUtils.LEGACY_NETWORKS_ROUTE_MAP;
+
 import com.google.gson.Gson;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -101,7 +103,7 @@ public class Utils {
         return completableFuture;
     }*/
 
-    public static CompletableFuture<KeyLookupResult> getPubKeyOrKeyAssign(String[] endpoints, String verifier, String verifierId, String extendedVerifierId) {
+    public static CompletableFuture<KeyLookupResult> getPubKeyOrKeyAssign(String[] endpoints, String network, String verifier, String verifierId, String extendedVerifierId) {
         int k = endpoints.length / 2 + 1;
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
@@ -155,7 +157,8 @@ public class Utils {
                 }
                 String errorResult = thresholdSame(errorResults, k);
                 String keyResult = thresholdSame(keyResults, k);
-                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null)) || errorResult != null) {
+                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null || LEGACY_NETWORKS_ROUTE_MAP.contains(network)))
+                        || errorResult != null) {
                     for (String x : lookupResults) {
                         JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
                         VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);

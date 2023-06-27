@@ -11,6 +11,7 @@ public class TorusCtorOptions {
     private String origin;
     private String network = "mainnet";
     private String clientId;
+    private boolean enableOneKey = false;
 
     private boolean legacyNonce = false;
 
@@ -80,5 +81,13 @@ public class TorusCtorOptions {
 
     public void setClientId(String clientId) {
         this.clientId = clientId;
+    }
+
+    public boolean isEnableOneKey() {
+        return enableOneKey;
+    }
+
+    public void setEnableOneKey(boolean enableOneKey) {
+        this.enableOneKey = enableOneKey;
     }
 }

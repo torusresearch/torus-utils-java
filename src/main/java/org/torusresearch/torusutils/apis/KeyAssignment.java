@@ -9,7 +9,7 @@ public class KeyAssignment {
     private Index index;
     private PubKey public_key;
     private Integer threshold;
-    private BigInteger node_index;
+    private Long node_index;
     private HashMap<String, String[]> Verifiers;
     private String share;
     private ShareMetadata metadata;
@@ -48,7 +48,7 @@ public class KeyAssignment {
         return nonceResult;
     }
 
-    public BigInteger getNodeIndex() {
+    public Long getNodeIndex() {
         return node_index;
     }
 

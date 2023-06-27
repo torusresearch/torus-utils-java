@@ -8,7 +8,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
-import org.torusresearch.fetchnodedetails.types.TorusNodePub;
+import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.CommitmentRequestParams;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
@@ -16,6 +16,7 @@ import org.torusresearch.torusutils.apis.KeyAssignResult;
 import org.torusresearch.torusutils.apis.KeyAssignment;
 import org.torusresearch.torusutils.apis.NodeSignature;
 import org.torusresearch.torusutils.apis.PubKey;
+import org.torusresearch.torusutils.apis.ShareMetadata;
 import org.torusresearch.torusutils.apis.ShareRequestParams;
 import org.torusresearch.torusutils.apis.VerifierLookupItem;
 import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
@@ -31,11 +32,13 @@ import org.torusresearch.torusutils.types.ImportedShare;
 import org.torusresearch.torusutils.types.MetadataParams;
 import org.torusresearch.torusutils.types.MetadataPubKey;
 import org.torusresearch.torusutils.types.MetadataResponse;
+import org.torusresearch.torusutils.types.PrivateKeyWithNonceResult;
 import org.torusresearch.torusutils.types.RetrieveSharesResponse;
 import org.torusresearch.torusutils.types.SessionToken;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
@@ -47,10 +50,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.annotations.Nullable;
 import okhttp3.internal.http2.Header;
@@ -77,6 +81,8 @@ public class TorusUtils {
         return err instanceof GetOrSetNonceError;
     }
 
+    public static List<String> LEGACY_NETWORKS_ROUTE_MAP = Arrays.asList(TorusNetwork.AQUA.name(), TorusNetwork.CELESTE.name(),
+            TorusNetwork.CYAN.name(), TorusNetwork.TESTNET.name(), TorusNetwork.MAINNET.name());
 
     BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
         if (shares.length != nodeIndex.length) {
@@ -127,7 +133,7 @@ public class TorusUtils {
                     new Header("network", this.options.getClientId())}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             List<SessionToken> sessionTokenData = new ArrayList<>();
-            List<Integer> nodeIndexes = new ArrayList<>();
+            List<BigInteger> nodeIndexes = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();
             String pubKey = Utils.padLeft(tmpKey.getPublicKey().toString(16), '0', 128);
@@ -514,13 +520,14 @@ public class TorusUtils {
     }
 
     public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams,
-                                                                    String idToken, HashMap<String, Object> extraParams, @Nullable ImportedShare[] importedShares) {
+                                                                    String idToken, HashMap<String, Object> extraParams,
+                                                                    @Nullable ImportedShare[] importedShares) {
         try {
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork()),
                     new Header("network", this.options.getClientId())}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             List<SessionToken> sessionTokenData = new ArrayList<>();
-            List<Integer> nodeIndexes = new ArrayList<>();
+            List<BigInteger> nodeIndexes = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();
             String pubKey = Utils.padLeft(tmpKey.getPublicKey().toString(16), '0', 128);
@@ -649,14 +656,61 @@ public class TorusUtils {
                             }
                             if (completedResponses.size() >= k && thresholdPubKey != null && thresholdNonceData != null) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
+                                List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
+                                List<CompletableFuture<byte[]>> sessionTokenSigPromises = new ArrayList<>();
+                                List<CompletableFuture<byte[]>> sessionTokenPromises = new ArrayList<>();
+
                                 for (int i = 0; i < shareResponses.length; i++) {
                                     if (shareResponses[i] != null && !shareResponses[i].equals("")) {
                                         try {
                                             JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
                                             if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
                                                 KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
-                                                if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
+
+                                                if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
+                                                    // Decrypt sessionSig if enc metadata is sent
+                                                    ShareMetadata[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
+                                                    if (sessionTokenSigMetaData != null && sessionTokenSigMetaData[0] != null && sessionTokenSigMetaData[0].getEphemPublicKey() != null) {
+                                                        try {
+                                                            AES256CBC aes256cbc = new AES256CBC(tmpKey.getPrivateKey().toString(16), sessionTokenSigMetaData[0].getEphemPublicKey(),
+                                                                    sessionTokenSigMetaData[0].getIv());
+                                                            byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokenSigs()[0], 16));
+                                                            sessionTokenSigPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
+                                                        } catch (Exception ex) {
+                                                            System.out.println("session sig decryption" + ex);
+                                                            return null;
+                                                        }
+                                                    } else {
+                                                        sessionTokenSigPromises.add(CompletableFuture.completedFuture(currentShareResponse.getSessionTokenSigs()[0].getBytes(StandardCharsets.UTF_8)));
+                                                    }
+                                                } else {
+                                                    sessionTokenSigPromises.add(CompletableFuture.completedFuture(null));
+                                                }
+
+                                                if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
+                                                    // Decrypt sessionToken if enc metadata is sent
+                                                    ShareMetadata[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
+                                                    if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
+                                                            currentShareResponse.getSessionTokenMetadata()[0].getEphemPublicKey() != null) {
+                                                        try {
+                                                            AES256CBC aes256cbc = new AES256CBC(tmpKey.getPrivateKey().toString(16), sessionTokenMetaData[0].getEphemPublicKey(),
+                                                                    sessionTokenMetaData[0].getIv());
+                                                            byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokens()[0], 16));
+                                                            sessionTokenPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
+                                                        } catch (Exception ex) {
+                                                            System.out.println("session token decryption" + ex);
+                                                            return null;
+                                                        }
+                                                    } else {
+                                                        sessionTokenPromises.add(CompletableFuture.completedFuture(currentShareResponse.getSessionTokens()[0].getBytes(StandardCharsets.UTF_8)));
+                                                    }
+                                                } else {
+                                                    sessionTokenSigPromises.add(CompletableFuture.completedFuture(null));
+                                                }
+
+                                                if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
                                                     KeyAssignment firstKey = currentShareResponse.getKeys()[0];
+                                                    nodeIndexes.add(BigInteger.valueOf(firstKey.getNodeIndex()));
                                                     if (firstKey.getMetadata() != null) {
                                                         try {
                                                             AES256CBC aes256cbc = new AES256CBC(tmpKey.getPrivateKey().toString(16), firstKey.getMetadata().getEphemPublicKey(), firstKey.getMetadata().getIv());
@@ -669,6 +723,52 @@ public class TorusUtils {
                                                         } catch (Exception e) {
                                                             e.printStackTrace();
                                                         }
+                                                    } else {
+                                                        nodeIndexes.add(null);
+                                                        sharePromises.add(null);
+                                                    }
+                                                }
+
+                                                List<CompletableFuture<byte[]>> allPromises = new ArrayList<>();
+                                                allPromises.addAll(sharePromises);
+                                                allPromises.addAll(sessionTokenSigPromises);
+                                                allPromises.addAll(sessionTokenPromises);
+
+                                                CompletableFuture.allOf(allPromises.toArray(new CompletableFuture[0])).join();
+
+                                                List<CompletableFuture<byte[]>> sharesResolved = allPromises.subList(0, sharePromises.size());
+                                                List<CompletableFuture<byte[]>> sessionSigsResolved = allPromises.subList(sharePromises.size(), sharePromises.size() + sessionTokenSigPromises.size());
+                                                List<CompletableFuture<byte[]>> sessionTokensResolved = allPromises.subList(sharePromises.size() + sessionTokenSigPromises.size(), allPromises.size());
+
+                                                /*List<CompletableFuture<byte[]>> validSigs = sessionSigsResolved.stream()
+                                                        .filter(sig -> sig != null)
+                                                        .collect(Collectors.toList());
+
+                                                int minThresholdRequired = endpoints.length / 2 + 1;
+                                                if (!verifierParams.containsKey("extended_verifier_id") &&
+                                                        validSigs.size() < minThresholdRequired) {
+                                                    throw new RuntimeException("Insufficient number of signatures from nodes, required: " +
+                                                            minThresholdRequired + ", found: " + validSigs.size());
+                                                }
+
+                                                List<Object> validTokens = sessionTokensResolved.stream()
+                                                        .filter(token -> token != null)
+                                                        .collect(Collectors.toList());
+
+                                                if (!verifierParams.containsKey("extended_verifier_id") &&
+                                                        validTokens.size() < minThresholdRequired) {
+                                                    throw new RuntimeException("Insufficient number of session tokens from nodes, required: " +
+                                                            minThresholdRequired + ", found: " + validTokens.size());
+                                                }*/
+
+                                                for (int index = 0; index < sessionTokensResolved.size(); index++) {
+                                                    if (sessionSigsResolved == null || sessionSigsResolved.get(index) == null) {
+                                                        sessionTokenData.add(null);
+                                                    } else {
+                                                        sessionTokenData.add(new SessionToken(java.util.Base64.getEncoder().encodeToString(sessionSigsResolved.get(index).get()),
+                                                                Utils.bytesToHex(sessionSigsResolved.get(index).get()),
+                                                                currentShareResponse.getNodePubx(),
+                                                                currentShareResponse.getNodePuby()));
                                                     }
                                                 }
                                             }
@@ -700,30 +800,32 @@ public class TorusUtils {
                                         break;
                                     }
                                 }
-                                CompletableFuture<BigInteger> response = new CompletableFuture<>();
+                                CompletableFuture<PrivateKeyWithNonceResult> response = new CompletableFuture<>();
                                 if (privateKey == null) {
                                     response.completeExceptionally(new PredicateFailedException("could not derive private key"));
                                 } else {
-                                    response.complete(privateKey);
+                                    response.complete(new PrivateKeyWithNonceResult(privateKey, thresholdNonceData));
                                 }
                                 return response;
                             } else {
-                                CompletableFuture<BigInteger> response = new CompletableFuture<>();
+                                CompletableFuture<PrivateKeyWithNonceResult> response = new CompletableFuture<>();
                                 response.completeExceptionally(new PredicateFailedException("could not get enough shares"));
                                 return response;
                             }
                         } catch (Exception ex) {
-                            CompletableFuture<BigInteger> cfRes = new CompletableFuture<>();
+                            CompletableFuture<PrivateKeyWithNonceResult> cfRes = new CompletableFuture<>();
                             cfRes.completeExceptionally(new TorusException("Torus Internal Error", ex));
                             return cfRes;
                         }
                     }).getCompletableFuture();
                 } catch (Exception ex) {
-                    CompletableFuture<BigInteger> cfRes = new CompletableFuture<>();
+                    CompletableFuture<PrivateKeyWithNonceResult> cfRes = new CompletableFuture<>();
                     cfRes.completeExceptionally(new TorusException("Torus Internal Error", ex));
                     return cfRes;
                 }
-            }).thenComposeAsync((privateKey) -> {
+            }).thenComposeAsync((privateKeyWithNonceResult) -> {
+                BigInteger privateKey = privateKeyWithNonceResult.getPrivateKey();
+                GetOrSetNonceResult thresholdNonceData = privateKeyWithNonceResult.getNonceResult();
                 CompletableFuture<RetrieveSharesResponse> cf = new CompletableFuture<>();
                 if (privateKey == null) {
                     cf.completeExceptionally(new TorusException("could not get private key"));
@@ -735,11 +837,9 @@ public class TorusUtils {
                     String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
                     String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
                     BigInteger metadataNonce;
-                    GetOrSetNonceResult nonceResult = null;
-                    Boolean isEnableOneKey = false;
-                    if (isEnableOneKey) {
-                        nonceResult = this.getNonce(privateKey).get();
-                        metadataNonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
+                    if (this.options.isEnableOneKey()) {
+                        thresholdNonceData = this.getNonce(privateKey).get();
+                        metadataNonce = new BigInteger(Utils.isEmpty(thresholdNonceData.getNonce()) ? "0" : thresholdNonceData.getNonce(), 16);
                     } else {
                         metadataNonce = this.getMetadata(new MetadataPubKey(derivedPubKeyX, derivedPubKeyY)).get();
                     }
@@ -747,14 +847,33 @@ public class TorusUtils {
                     String ethAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
                     ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
                     ECPoint modifiedPubKey = null;
+                    BigInteger nonce;
+                    TypeOfUser typeOfUser;
                     if (verifierParams.get("extended_verifier_id") != null) {
                         // for tss key no need to add pub nonce
                         modifiedPubKey = curve.getCurve().createPoint(new BigInteger(derivedPubKeyX, 16), new BigInteger(derivedPubKeyY, 16));
+                    } else if (LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
+                        if (this.options.isEnableOneKey()) {
+                            GetOrSetNonceResult nonceResult = this.getNonce(privateKey).get();
+                            nonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
+                            typeOfUser = nonceResult.getTypeOfUser();
+                            metadataNonce = new BigInteger(Utils.isEmpty(thresholdNonceData.getNonce()) ? "0" : thresholdNonceData.getNonce(), 16);
+                            if (typeOfUser.equals("v2")) {
+                                ECPoint oneKeyMetadataPoint = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
+                                modifiedPubKey = modifiedPubKey.add(oneKeyMetadataPoint).normalize();
+                            }
+                        } else {
+                            metadataNonce = this.getMetadata(new MetadataPubKey(derivedPubKeyX, derivedPubKeyY)).get();
+                        }
                     } else {
                         ECPoint publicKey = curve.getCurve().createPoint(new BigInteger(derivedPubKeyX, 16), new BigInteger(derivedPubKeyY, 16));
-                        if (nonceResult != null) {
-                            ECPoint noncePublicKey = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
+                        if (thresholdNonceData != null) {
+                            ECPoint noncePublicKey = curve.getCurve().createPoint(new BigInteger(thresholdNonceData.getPubNonce().getX(), 16), new BigInteger(thresholdNonceData.getPubNonce().getY(), 16));
                             modifiedPubKey = publicKey.add(noncePublicKey);
+                        }
+                        BigInteger privateKeyWithNonce = privateKey.add(metadataNonce).mod(curve.getN());
+                        if (modifiedPubKey == null) {
+                            modifiedPubKey = modifiedPubKey.multiply(privateKeyWithNonce).normalize();
                         }
                     }
 
@@ -945,8 +1064,9 @@ public class TorusUtils {
 
     public CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) {
         System.out.println("> torusUtils.java/getPublicAddress " + endpoints + " " + verifierArgs + " " + isExtended);
+        AtomicBoolean isNewKey = new AtomicBoolean(false);
         Gson gson = new Gson();
-        return Utils.getPubKeyOrKeyAssign(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), verifierArgs.getExtendedVerifierId())
+        return Utils.getPubKeyOrKeyAssign(endpoints, this.options.getNetwork(), verifierArgs.getVerifier(), verifierArgs.getVerifierId(), verifierArgs.getExtendedVerifierId())
                 .thenApply(keyAssignResult -> {
                     String errorResult = keyAssignResult.getErrResult();
                     String keyResult = keyAssignResult.getKeyResult();
@@ -967,7 +1087,8 @@ public class TorusUtils {
                         throw new RuntimeException("node results do not match at final lookup " + keyResult + ", " + errorResult);
                     }
 
-                    if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null) {
+                    if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null &&
+                            LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
                         try {
                             throw new GetOrSetNonceError(new Exception("metadata nonce is missing in share response"));
                         } catch (GetOrSetNonceError e) {
@@ -976,14 +1097,56 @@ public class TorusUtils {
                     }
 
                     VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
+                    isNewKey.set(true);
                     String X = verifierLookupItem.getPub_key_X();
                     String Y = verifierLookupRequestResult.getKeys()[0].getPub_key_Y();
                     ECPoint modifiedPubKey;
+                    TypeOfUser typeOfUser = null;
                     GetOrSetNonceResult.PubNonce pubNonce = null;
+                    ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
                     BigInteger nonce = new BigInteger(nonceResult != null ? nonceResult.getNonce() : "0", 16);
+                    CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
 
                     if (verifierArgs.getExtendedVerifierId() != null) {
                         modifiedPubKey = Utils.getPublicKeyFromHex(X, Y);
+                    } else if (LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
+                        if (this.options.isEnableOneKey()) {
+                            try {
+                                nonceResult = this.getOrSetNonce(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y(), !isNewKey.get()).get();
+                                nonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
+                                typeOfUser = nonceResult.getTypeOfUser();
+                            } catch (Exception e) {
+                                // Sometimes we take special action if `get or set nonce` api is not available
+                                try {
+                                    throw new GetOrSetNonceError(e);
+                                } catch (GetOrSetNonceError ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+
+                            modifiedPubKey = curve.getCurve().createPoint(new BigInteger(verifierLookupItem.getPub_key_X(), 16), new BigInteger(verifierLookupItem.getPub_key_Y(), 16));
+                            if (nonceResult.getTypeOfUser() == TypeOfUser.v1) {
+                                modifiedPubKey = modifiedPubKey.add(curve.getG().multiply(nonce)).normalize();
+                            } else if (nonceResult.getTypeOfUser() == TypeOfUser.v2) {
+                                if (!nonceResult.isUpgraded()) {
+                                    assert nonceResult.getPubNonce() != null;
+                                    ECPoint oneKeyMetadataPoint = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
+                                    modifiedPubKey = modifiedPubKey.add(oneKeyMetadataPoint).normalize();
+                                    pubNonce = nonceResult.getPubNonce();
+                                }
+                            } else {
+                                throw new RuntimeException("getOrSetNonce should always return typeOfUser.");
+                            }
+                        } else {
+                            typeOfUser = TypeOfUser.v1;
+                            try {
+                                nonce = this.getMetadata(new MetadataPubKey(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y())).get();
+                            } catch (Exception ex) {
+                                throw new RuntimeException("getMetadata API error.");
+                            }
+                            modifiedPubKey = curve.getCurve().createPoint(new BigInteger(verifierLookupItem.getPub_key_X(), 16), new BigInteger(verifierLookupItem.getPub_key_Y(), 16));
+                            modifiedPubKey = modifiedPubKey.add(curve.getG().multiply(nonce)).normalize();
+                        }
                     } else {
                         ECPoint pubKey = Utils.getPublicKeyFromHex(X, Y);
                         ECPoint noncePubKey = Utils.getPublicKeyFromHex(nonceResult.getPubNonce().getX(), nonceResult.getPubNonce().getY());
@@ -1000,7 +1163,8 @@ public class TorusUtils {
                     if (!isExtended) {
                         return new TorusPublicKey(address);
                     } else {
-                        return new TorusPublicKey(address, X, Y, nonce, pubNonce, nonceResult != null && nonceResult.isUpgraded(), nodeIndexes);
+                        return new TorusPublicKey(address, X, Y, nonce, pubNonce, nonceResult != null && nonceResult.isUpgraded(),
+                                nodeIndexes, typeOfUser);
                     }
                 });
     }

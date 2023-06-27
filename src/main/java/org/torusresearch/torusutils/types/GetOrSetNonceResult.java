@@ -9,6 +9,11 @@ public class GetOrSetNonceResult {
     @Nullable
     private PubNonce pubNonce;
     private boolean upgraded;
+    private final TypeOfUser typeOfUser;
+
+    public GetOrSetNonceResult(TypeOfUser typeOfUser) {
+        this.typeOfUser = typeOfUser;
+    }
 
     @Nullable
     public String getNonce() {
@@ -44,6 +49,9 @@ public class GetOrSetNonceResult {
         this.ipfs = ipfs;
     }
 
+    public TypeOfUser getTypeOfUser() {
+        return typeOfUser;
+    }
 
     public static class PubNonce {
         private final String x;
