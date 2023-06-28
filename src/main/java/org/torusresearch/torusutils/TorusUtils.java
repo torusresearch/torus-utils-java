@@ -473,17 +473,25 @@ public class TorusUtils {
                     if (extraParams != null) {
                         verifierParams.putAll(extraParams);
                     }
-                    List<HashMap<String, Object>> shareRequestItems = new ArrayList<HashMap<String, Object>>() {{
-                        add(verifierParams);
-                    }};
-                    for (String endpoint : endpoints) {
+                    for (int i = 0; i < endpoints.length; i++) {
                         String req;
+                        List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
                         if (finalIsImportShareReq) {
+                            verifierParams.put("pub_key_x", importedShares[i].getPub_key_x());
+                            verifierParams.put("pub_key_y", importedShares[i].getPub_key_y());
+                            verifierParams.put("encrypted_share", importedShares[i].getEncrypted_share());
+                            verifierParams.put("encrypted_share_metadata", importedShares[i].getEncrypted_share());
+                            verifierParams.put("node_index", importedShares[i].getNode_index());
+                            verifierParams.put("key_type", importedShares[i].getKey_type());
+                            verifierParams.put("nonce_data", importedShares[i].getNonce_data());
+                            verifierParams.put("nonce_signature", importedShares[i].getNonce_signature());
+                            shareRequestItems.add(verifierParams);
                             req = APIUtils.generateJsonRPCObject("ImportShare", new ShareRequestParams(shareRequestItems));
                         } else {
+                            shareRequestItems.add(verifierParams);
                             req = APIUtils.generateJsonRPCObject("GetShareOrKeyAssign", new ShareRequestParams(shareRequestItems));
                         }
-                        promiseArrRequests.add(APIUtils.post(endpoint, req, true));
+                        promiseArrRequests.add(APIUtils.post(endpoints[i], req, true));
                     }
                     return new Some<>(promiseArrRequests, (shareResponses, predicateResolved) -> {
                         try {
