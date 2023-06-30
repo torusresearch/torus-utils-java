@@ -531,7 +531,8 @@ public class TorusUtils {
 
                             // If both thresholdNonceData and extended_verifier_id are not available,
                             // then we need to throw an error; otherwise, the address would be incorrect.
-                            if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") != null) {
+                            if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") == null &&
+                                    !LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
                                 throw new RuntimeException(String.format(
                                         "Invalid metadata result from nodes, nonce metadata is empty for verifier: %s and verifierId: %s",
                                         verifier, verifierParams.get("verifier_id"))
@@ -541,7 +542,8 @@ public class TorusUtils {
                             if (thresholdPublicKeyString != null && !thresholdPublicKeyString.equals("")) {
                                 thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
                             }
-                            if (completedResponses.size() >= k && thresholdPubKey != null && thresholdNonceData != null) {
+                            if (completedResponses.size() >= k && thresholdPubKey != null && (thresholdNonceData != null ||
+                                    LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork()))) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sessionTokenSigPromises = new ArrayList<>();
@@ -975,7 +977,7 @@ public class TorusUtils {
                     }
 
                     if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null &&
-                            LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
+                            !LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
                         try {
                             throw new GetOrSetNonceError(new Exception("metadata nonce is missing in share response"));
                         } catch (GetOrSetNonceError e) {
