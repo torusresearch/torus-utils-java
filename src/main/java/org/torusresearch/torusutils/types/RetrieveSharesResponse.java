@@ -8,13 +8,13 @@ public class RetrieveSharesResponse {
     private final BigInteger privKey;
 
     private final BigInteger nonce;
-    private final List<SessionToken> sessionTokens;
-    private final String X;
-    private final String Y;
-    private final String postboxPubKeyX;
-    private final String postboxPubKeyY;
-    private final String sessionAuthKey;
-    private final List<BigInteger> nodeIndexes;
+    private List<SessionToken> sessionTokens;
+    private String X;
+    private String Y;
+    private String postboxPubKeyX;
+    private String postboxPubKeyY;
+    private String sessionAuthKey;
+    private List<BigInteger> nodeIndexes;
 
 
     public RetrieveSharesResponse(String _ethAddress, BigInteger _privKey, BigInteger _nonce, List<SessionToken> _sessionTokens,
@@ -29,6 +29,12 @@ public class RetrieveSharesResponse {
         this.postboxPubKeyY = _postboxPubKeyY;
         this.sessionAuthKey = _sessionAuthKey;
         this.nodeIndexes = _nodeIndexes;
+    }
+
+    public RetrieveSharesResponse(String _ethAddress, BigInteger _privKey, BigInteger _nonce) {
+        ethAddress = _ethAddress;
+        privKey = _privKey;
+        nonce = _nonce;
     }
 
     public String getEthAddress() {

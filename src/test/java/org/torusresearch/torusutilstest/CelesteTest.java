@@ -51,9 +51,9 @@ public class CelesteTest {
         System.out.println("Setup Startingg");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CELESTE);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork("celeste");
-        opts.setSignerHost("https://signer-polygon.tor.us/api/sign");
-        opts.setAllowHost("https://signer-polygon.tor.us/api/allow");
+        opts.setNetwork(TorusNetwork.CELESTE.name());
+        opts.setAllowHost("https://signer.tor.us/api/allow");
+        opts.setClientId("BE4QJC39vkx56M_CaOZFGYuTKve17TpYta9ABSjHWBS_Z1MOMOhOYnjrQDT9YGXJXZvSXM6JULzzukqUB_7a5X0");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
@@ -65,7 +65,7 @@ public class CelesteTest {
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs("tkey-google-celeste", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
+        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", publicAddress.getAddress());
     }
 
@@ -75,7 +75,7 @@ public class CelesteTest {
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-celeste", email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs("tkey-google-celeste", email, "")).get();
+        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-celeste", email, "")).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
         assertNotEquals(publicAddress.getAddress(), "");

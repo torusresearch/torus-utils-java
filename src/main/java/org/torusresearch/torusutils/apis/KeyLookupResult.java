@@ -20,6 +20,11 @@ public class KeyLookupResult {
         this.nonceResult = nonceResult;
     }
 
+    public KeyLookupResult(String _keyResult, String _errResult) {
+        keyResult = _keyResult;
+        errResult = _errResult;
+    }
+
     public List<Integer> getNodeIndexes() {
         return nodeIndexes;
     }

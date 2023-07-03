@@ -66,9 +66,9 @@ public class OneKeyTest {
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, "Jonathan.Nolan@hotmail.com", "extendedVerifierId");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args, true).get();
-        assertEquals(TypeOfUser.v2, publicAddress.getTypeOfUser());
-        assertEquals("0x2876820fd9536BD5dd874189A85d71eE8bDf64c2", publicAddress.getAddress());
+        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args, true).get();
+        assertEquals(TypeOfUser.v1, publicAddress.getTypeOfUser());
+        assertEquals("0x54de3Df0CA76AAe3e171FB410F0626Ab759f3c24", publicAddress.getAddress());
     }
 
     @DisplayName("Key Assign test")
@@ -76,11 +76,11 @@ public class OneKeyTest {
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(TORUS_TEST_VERIFIER, email, ""), true).get();
+        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(TORUS_TEST_VERIFIER, email, ""), true).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
         assertNotEquals(publicAddress.getAddress(), "");
-        assertEquals(TypeOfUser.v2, publicAddress.getTypeOfUser());
+        assertEquals(TypeOfUser.v1, publicAddress.getTypeOfUser());
     }
 
     /*@DisplayName("Login test v1")

@@ -14,6 +14,7 @@ import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.KeyAssignParams;
 import org.torusresearch.torusutils.apis.KeyLookupResult;
 import org.torusresearch.torusutils.apis.SignerResponse;
+import org.torusresearch.torusutils.apis.VerifierLookupRequestParams;
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
 import org.torusresearch.torusutils.types.VerifierLookupResponse;
 
@@ -87,21 +88,66 @@ public class Utils {
         return combs;
     }
 
-    /*public static CompletableFuture<KeyLookupResult> waitKeyLookup(String[] endpoints, String verifier, String verifierId, int timeout) {
+    public static CompletableFuture<KeyLookupResult> waitKeyLookup(String[] endpoints, String verifier, String verifierId, int timeout) {
         CompletableFuture<KeyLookupResult> completableFuture = new CompletableFuture<>();
         try {
             Thread.sleep(timeout);
         } catch (InterruptedException e) {
             completableFuture.completeExceptionally(e);
         }
-        Utils.keyLookup(endpoints, verifier, verifierId, "").whenComplete((res, err) -> {
+        Utils.keyLookup(endpoints, verifier, verifierId).whenComplete((res, err) -> {
             if (err != null) {
                 completableFuture.completeExceptionally(err);
             }
             completableFuture.complete(res);
         });
         return completableFuture;
-    }*/
+    }
+
+    public static CompletableFuture<KeyLookupResult> keyLookup(String[] endpoints, String verifier, String verifierId) {
+        int k = endpoints.length / 2 + 1;
+        List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
+        for (int i = 0; i < endpoints.length; i++) {
+            lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("VerifierLookupRequest", new VerifierLookupRequestParams(verifier, verifierId)), false));
+        }
+        return new Some<>(lookupPromises, (lookupResults, resolved) -> {
+            try {
+                List<String> errorResults = new ArrayList<>();
+                List<String> keyResults = new ArrayList<>();
+                Gson gson = new Gson();
+                for (String x : lookupResults) {
+                    if (x != null && !x.equals("")) {
+                        try {
+                            JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
+                            keyResults.add(Utils.convertToJsonObject(response.getResult()));
+                        } catch (Exception e) {
+                            keyResults.add("");
+                        }
+                    }
+                }
+                for (String x : lookupResults) {
+                    if (x != null && !x.equals("")) {
+                        try {
+                            JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
+                            errorResults.add(response.getError().getData());
+                        } catch (Exception e) {
+                            errorResults.add("");
+                        }
+                    }
+                }
+                String errorResult = thresholdSame(errorResults, k);
+                String keyResult = thresholdSame(keyResults, k);
+                if ((errorResult != null && !errorResult.equals("")) || (keyResult != null && !keyResult.equals(""))) {
+                    return CompletableFuture.completedFuture(new KeyLookupResult(keyResult, errorResult));
+                }
+                CompletableFuture<KeyLookupResult> failedFuture = new CompletableFuture<>();
+                failedFuture.completeExceptionally(new Exception("invalid results from KeyLookup " + gson.toJson(lookupResults)));
+                return failedFuture;
+            } catch (Exception e) {
+                return null;
+            }
+        }).getCompletableFuture();
+    }
 
     public static CompletableFuture<KeyLookupResult> getPubKeyOrKeyAssign(String[] endpoints, String network, String verifier, String verifierId, String extendedVerifierId) {
         int k = endpoints.length / 2 + 1;
