@@ -737,6 +737,10 @@ public class TorusUtils {
         return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, importedShares);
     }
 
+    public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, new ImportedShare[]{});
+    }
+
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
         try {
             Gson gson = new Gson();
