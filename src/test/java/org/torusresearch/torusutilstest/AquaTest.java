@@ -50,7 +50,7 @@ public class AquaTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.AQUA);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.AQUA, FetchNodeDetails.PROXY_ADDRESS_AQUA);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork(TorusNetwork.AQUA.name());
         opts.setAllowHost("https://signer.tor.us/api/allow");
@@ -75,7 +75,7 @@ public class AquaTest {
     @Test
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-aqua", email).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails("tkey-google-aqua", email).get();
         TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(),
                 new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL, "")).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
@@ -86,7 +86,7 @@ public class AquaTest {
     /*@DisplayName("Login test")
     @Test
     public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retriveShares(nodeDetails.getTorusNodeEndpoints(),
                 nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
                     put("verifier_id", TORUS_TEST_EMAIL);
@@ -103,7 +103,7 @@ public class AquaTest {
     public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retriveShares(nodeDetails.getTorusNodeEndpoints(),
                 nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
                     put("verify_params", new VerifyParams[]{

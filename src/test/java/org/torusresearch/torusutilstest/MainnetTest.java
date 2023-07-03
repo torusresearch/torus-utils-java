@@ -49,11 +49,11 @@ public class MainnetTest {
     @BeforeAll
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.MAINNET);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.MAINNET, FetchNodeDetails.PROXY_ADDRESS_MAINNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork(TorusNetwork.MAINNET.name());
         opts.setAllowHost("https://signer.tor.us/api/allow");
-        opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
+        opts.setClientId("BEaGnq-mY0ZOXk2UT1ivWUe0PZ_iJX4Vyb6MtpOp7RMBu_6ErTrATlfuK3IaFcvHJr27h6L1T4owkBH6srLphIw");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
@@ -73,7 +73,7 @@ public class MainnetTest {
     @Test
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google", email).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails("google", email).get();
         TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("google", email, "extendedVerifierId")).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
@@ -83,7 +83,7 @@ public class MainnetTest {
     /*@DisplayName("Login test")
     @Test
     public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
@@ -98,12 +98,12 @@ public class MainnetTest {
     public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
+        NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
+        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retriveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
             put("verify_params", new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
-        }}, hashedIdToken).get();
+        }}, hashedIdToken, null).get();
         assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getEthAddress());
     }*/
 }
