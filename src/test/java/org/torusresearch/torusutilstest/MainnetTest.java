@@ -15,7 +15,6 @@ import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.types.RetrieveSharesResponse;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
-import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusPublicKey;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
@@ -80,9 +79,9 @@ public class MainnetTest {
         assertNotEquals(publicAddress.getAddress(), "");
     }
 
-    /*@DisplayName("Login test")
+    @DisplayName("Login test")
     @Test
-    public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldLogin() throws ExecutionException, InterruptedException {
         NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
@@ -95,7 +94,7 @@ public class MainnetTest {
 
     @DisplayName("Aggregate Login test")
     @Test
-    public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldAggregateLogin() throws ExecutionException, InterruptedException {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
         NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
@@ -105,5 +104,5 @@ public class MainnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken, null).get();
         assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getEthAddress());
-    }*/
+    }
 }

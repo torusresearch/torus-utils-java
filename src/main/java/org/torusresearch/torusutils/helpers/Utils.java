@@ -348,4 +348,16 @@ public class Utils {
         }
         return sb.toString();
     }
+
+    public static boolean isSapphireNetwork(String network) {
+        return network.contains("sapphire");
+    }
+
+    public static String getJsonRPCObjectMethodName(String network) {
+        if (isSapphireNetwork(network)) {
+            return "GetShareOrKeyAssign";
+        } else {
+            return "ShareRequest";
+        }
+    }
 }

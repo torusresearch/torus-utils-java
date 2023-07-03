@@ -81,7 +81,7 @@ public class CelesteTest {
         assertNotEquals(publicAddress.getAddress(), "");
     }
 
-    /*@DisplayName("Login test")
+    @DisplayName("Login test")
     @Test
     public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
@@ -106,6 +106,6 @@ public class CelesteTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertEquals("0x535Eb1AefFAc6f699A2a1A5846482d7b5b2BD564", retrieveSharesResponse.getEthAddress());
-    }*/
+    }
 }
 
