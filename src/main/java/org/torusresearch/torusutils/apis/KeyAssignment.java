@@ -2,7 +2,6 @@ package org.torusresearch.torusutils.apis;
 
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
 
-import java.math.BigInteger;
 import java.util.HashMap;
 
 public class KeyAssignment {
