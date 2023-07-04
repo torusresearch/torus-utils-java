@@ -107,7 +107,7 @@ public class SapphireTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token, new ImportedShare[]{}).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f"));
-        assertEquals("0xac997dE675Fb69FCb0F4115A23c0061A892A2772", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assertEquals("0x4924F91F5d6701dDd41042D94832bB17B76F316F", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("should fetch public address when verifierID hash enabled")

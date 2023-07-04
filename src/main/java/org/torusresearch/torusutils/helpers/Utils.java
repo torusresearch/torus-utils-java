@@ -1,12 +1,11 @@
 package org.torusresearch.torusutils.helpers;
 
-import static org.torusresearch.torusutils.TorusUtils.LEGACY_NETWORKS_ROUTE_MAP;
-
 import com.google.gson.Gson;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.GetPubKeyOrKeyAssignRequestParams;
@@ -203,7 +202,7 @@ public class Utils {
                 }
                 String errorResult = thresholdSame(errorResults, k);
                 String keyResult = thresholdSame(keyResults, k);
-                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null || LEGACY_NETWORKS_ROUTE_MAP.contains(network)))
+                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null || FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)))
                         || errorResult != null) {
                     for (String x : lookupResults) {
                         JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);

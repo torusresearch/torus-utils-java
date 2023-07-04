@@ -8,7 +8,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
-import org.torusresearch.fetchnodedetails.types.TorusNetwork;
+import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.CommitmentRequestParams;
@@ -56,7 +56,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -86,9 +85,6 @@ public class TorusUtils {
     public static boolean isGetOrSetNonceError(Exception err) {
         return err instanceof GetOrSetNonceError;
     }
-
-    public static List<String> LEGACY_NETWORKS_ROUTE_MAP = Arrays.asList(TorusNetwork.AQUA.toString(), TorusNetwork.CELESTE.toString(),
-            TorusNetwork.CYAN.toString(), TorusNetwork.TESTNET.toString(), TorusNetwork.MAINNET.toString());
 
     BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
         if (shares.length != nodeIndex.length) {
@@ -266,7 +262,7 @@ public class TorusUtils {
                             // If both thresholdNonceData and extended_verifier_id are not available,
                             // then we need to throw an error; otherwise, the address would be incorrect.
                             if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") == null &&
-                                    !LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
+                                    !FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
                                 throw new RuntimeException(String.format(
                                         "Invalid metadata result from nodes, nonce metadata is empty for verifier: %s and verifierId: %s",
                                         verifier, verifierParams.get("verifier_id"))
@@ -277,7 +273,7 @@ public class TorusUtils {
                                 thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
                             }
                             if (completedResponses.size() >= k && thresholdPubKey != null && (thresholdNonceData != null ||
-                                    LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork()))) {
+                                    FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork()))) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sessionTokenSigPromises = new ArrayList<>();
@@ -457,7 +453,7 @@ public class TorusUtils {
                         typeOfUser = TypeOfUser.v2;
                         // for tss key no need to add pub nonce
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
-                    } else if (LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
+                    } else if (FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
                         if (this.options.isEnableOneKey()) {
                             GetOrSetNonceResult nonceResult = this.getNonce(privateKey).get();
                             nonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
@@ -709,7 +705,7 @@ public class TorusUtils {
                     }
 
                     if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null &&
-                            !LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
+                            !FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
                         try {
                             throw new GetOrSetNonceError(new Exception("metadata nonce is missing in share response"));
                         } catch (GetOrSetNonceError e) {
@@ -730,7 +726,7 @@ public class TorusUtils {
 
                     if (verifierArgs.getExtendedVerifierId() != null) {
                         modifiedPubKey = Utils.getPublicKeyFromHex(X, Y);
-                    } else if (LEGACY_NETWORKS_ROUTE_MAP.contains(this.options.getNetwork())) {
+                    } else if (FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
                         if (this.options.isEnableOneKey()) {
                             try {
                                 nonceResult = this.getOrSetNonce(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y(), !isNewKey.get()).get();
