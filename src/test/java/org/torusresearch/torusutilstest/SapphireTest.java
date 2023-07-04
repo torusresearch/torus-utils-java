@@ -93,7 +93,6 @@ public class SapphireTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), new ImportedShare[]{}).get();
-        System.out.println(retrieveSharesResponse.getPrivKey());
         BigInteger requiredPrivateKey = new BigInteger("cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f", 16);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
         assertEquals("0xac997dE675Fb69FCb0F4115A23c0061A892A2772", retrieveSharesResponse.getEthAddress());
@@ -109,7 +108,6 @@ public class SapphireTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(torusNodeEndpoints, nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token, new ImportedShare[]{}).get();
-        System.out.println(retrieveSharesResponse.getPrivKey());
         BigInteger requiredPrivateKey = new BigInteger("cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f", 16);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
         assertEquals("0xac997dE675Fb69FCb0F4115A23c0061A892A2772", retrieveSharesResponse.getEthAddress());

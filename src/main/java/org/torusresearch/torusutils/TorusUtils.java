@@ -360,27 +360,6 @@ public class TorusUtils {
                                                 List<CompletableFuture<byte[]>> sessionSigsResolved = allPromises.subList(sharePromises.size(), sharePromises.size() + sessionTokenSigPromises.size());
                                                 List<CompletableFuture<byte[]>> sessionTokensResolved = allPromises.subList(sharePromises.size() + sessionTokenSigPromises.size(), allPromises.size());
 
-                                                /*List<CompletableFuture<byte[]>> validSigs = sessionSigsResolved.stream()
-                                                        .filter(sig -> sig != null)
-                                                        .collect(Collectors.toList());
-
-                                                int minThresholdRequired = endpoints.length / 2 + 1;
-                                                if (!verifierParams.containsKey("extended_verifier_id") &&
-                                                        validSigs.size() < minThresholdRequired) {
-                                                    throw new RuntimeException("Insufficient number of signatures from nodes, required: " +
-                                                            minThresholdRequired + ", found: " + validSigs.size());
-                                                }
-
-                                                List<Object> validTokens = sessionTokensResolved.stream()
-                                                        .filter(token -> token != null)
-                                                        .collect(Collectors.toList());
-
-                                                if (!verifierParams.containsKey("extended_verifier_id") &&
-                                                        validTokens.size() < minThresholdRequired) {
-                                                    throw new RuntimeException("Insufficient number of session tokens from nodes, required: " +
-                                                            minThresholdRequired + ", found: " + validTokens.size());
-                                                }*/
-
                                                 for (int index = 0; index < sessionTokensResolved.size(); index++) {
                                                     if (sessionSigsResolved == null || sessionSigsResolved.get(index) == null) {
                                                         sessionTokenData.add(null);
