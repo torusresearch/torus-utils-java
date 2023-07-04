@@ -66,7 +66,7 @@ public class AquaTest {
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0xDfA967285AC699A70DA340F60d00DB19A272639d", publicAddress.getAddress());
     }
 
@@ -75,7 +75,7 @@ public class AquaTest {
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-aqua", email).get();
-        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(),
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(),
                 new VerifierArgs("tkey-google-aqua", email, "")).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());

@@ -66,7 +66,7 @@ public class CelesteTest {
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs("tkey-google-celeste", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", publicAddress.getAddress());
     }
 
@@ -98,7 +98,7 @@ public class CelesteTest {
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-celeste", email).get();
-        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-celeste", email, "")).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-celeste", email, "")).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
         assertNotEquals(publicAddress.getAddress(), "");

@@ -65,7 +65,7 @@ public class TorusUtilsTest {
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL, "extendedVerifierId");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0x5b56E06009528Bffb1d6336575731ee3B63f6150", publicAddress.getAddress());
     }
 
@@ -97,7 +97,7 @@ public class TorusUtilsTest {
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", email).get();
-        TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("google-lrc", email, "extendedVerifierId")).get();
+        TorusPublicKey publicAddress = torusUtils._getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("google-lrc", email, ""), false).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
         assertNotNull(publicAddress.getAddress());
         assertNotEquals(publicAddress.getAddress(), "");
