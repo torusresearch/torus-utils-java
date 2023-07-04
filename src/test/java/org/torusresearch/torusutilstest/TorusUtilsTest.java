@@ -125,6 +125,6 @@ public class TorusUtilsTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
     }
 }

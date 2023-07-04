@@ -111,7 +111,7 @@ public class AquaTest {
                     put("verifier_id", TORUS_TEST_EMAIL);
                 }},
                 hashedIdToken).get();
-        assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", retrieveSharesResponse.getoAuthKeyData().evmAddress);
     }
 }
 

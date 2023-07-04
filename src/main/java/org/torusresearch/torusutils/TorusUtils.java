@@ -470,6 +470,8 @@ public class TorusUtils {
                         } else {
                             typeOfUser = TypeOfUser.v1;
                             metadataNonce = this.getMetadata(new MetadataPubKey(oAuthPubkeyX, oAuthPubkeyY)).get();
+                            finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
+                            finalPubKey = finalPubKey.add(curve.getG().multiply(metadataNonce)).normalize();
                         }
                     } else {
                         typeOfUser = TypeOfUser.v2;
@@ -484,6 +486,9 @@ public class TorusUtils {
                         }
                     }
 
+                    String finalEvmAddress = generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger(), finalPubKey.normalize().getAffineYCoord().toBigInteger());
+                    ;
+                    String finalPrivKey = privateKey.toString(16);
                     Boolean isUpgraded = false;
                     if (typeOfUser.equals(TypeOfUser.v1)) {
                         isUpgraded = null;
@@ -491,10 +496,10 @@ public class TorusUtils {
                         isUpgraded = metadataNonce.equals(BigInteger.ZERO);
                     }
 
-                    return CompletableFuture.completedFuture(new RetrieveSharesResponse(new FinalKeyData(oAuthKeyAddress,
+                    return CompletableFuture.completedFuture(new RetrieveSharesResponse(new FinalKeyData(finalEvmAddress,
                             finalPubKey != null ? finalPubKey.getXCoord().toString() : null,
                             finalPubKey != null ? finalPubKey.getYCoord().toString() : null,
-                            privateKey.toString(16)),
+                            finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthPubkeyX, oAuthPubkeyY, Utils.padLeft(oAuthPubKey, '0', 64)),
                             new SessionData(sessionTokenData, pubKey),
                             new Metadata(metadataNonce, typeOfUser, isUpgraded),
@@ -774,7 +779,7 @@ public class TorusUtils {
                     Y = modifiedPubKey.normalize().getAffineYCoord().toBigInteger().toString(16);
 
                     String address = generateAddressFromPubKey(modifiedPubKey.normalize().getAffineXCoord().toBigInteger(), modifiedPubKey.normalize().getAffineYCoord().toBigInteger());
-                    System.out.println("> torusUtils.java/getPublicAddress " + X + " " + Y + " " + address + " " + nonce.toString(16) + " " + pubNonce);
+                    System.out.println("> torusUtils.java/getPublicAddress " + address + " " + nonce.toString(16));
 
                     if (!isExtended) {
                         return new TorusPublicKey(address);

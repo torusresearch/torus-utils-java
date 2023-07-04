@@ -67,7 +67,7 @@ public class SapphireTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
-        VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL, "extendedVerifierId");
+        VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), args).get();
         assertEquals("0xac997dE675Fb69FCb0F4115A23c0061A892A2772", torusPublicKey.getAddress());
@@ -77,7 +77,7 @@ public class SapphireTest {
     @Test
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
-        VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL, "extendedVerifierId");
+        VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), args).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
@@ -93,7 +93,7 @@ public class SapphireTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), new ImportedShare[]{}).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f"));
-        assertEquals("0xac997dE675Fb69FCb0F4115A23c0061A892A2772", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assertEquals("0x4924F91F5d6701dDd41042D94832bB17B76F316F", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("Should be able to login even when node is down")

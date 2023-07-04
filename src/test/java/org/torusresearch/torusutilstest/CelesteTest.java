@@ -127,7 +127,7 @@ public class CelesteTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0x535Eb1AefFAc6f699A2a1A5846482d7b5b2BD564", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assertEquals("0x535Eb1AefFAc6f699A2a1A5846482d7b5b2BD564", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
     }
 }
 
