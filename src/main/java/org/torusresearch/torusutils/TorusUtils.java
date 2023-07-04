@@ -146,7 +146,7 @@ public class TorusUtils {
             int k = t * 2 + 1;
 
             boolean isImportShareReq = false;
-            if (importedShares.length > 0) {
+            if (importedShares != null && importedShares.length > 0) {
                 if (importedShares.length != endpoints.length) {
                     throw new Error("Invalid imported shares length");
                 }

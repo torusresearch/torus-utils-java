@@ -91,9 +91,9 @@ public class OneKeyTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getPrivKey().toString(16));
-        BigInteger requiredPrivateKey = new BigInteger("296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4", 16);
+        BigInteger requiredPrivateKey = new BigInteger("68ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25", 16);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
-        assertEquals("0x53010055542cCc0f2b6715a5c53838eC4aC96EF7", retrieveSharesResponse.getEthAddress());
+        assertEquals("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4", retrieveSharesResponse.getEthAddress());
     }
 
     @DisplayName("Login test v2")
@@ -104,10 +104,10 @@ public class OneKeyTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", email);
         }}, JwtUtils.generateIdToken(email, algorithmRs)).get();
-        BigInteger requiredPrivateKey = new BigInteger("9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075", 16);
+        BigInteger requiredPrivateKey = new BigInteger("f4b7e0fb1e6f6fbac539c55e22aff2900947de652d2d6254a9cd8709f505f83a", 16);
         System.out.println(retrieveSharesResponse.getPrivKey().toString(16) + " priv key " + retrieveSharesResponse.getEthAddress() + " nonce " + retrieveSharesResponse.getNonce().toString(16));
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
-        assertEquals("0x2876820fd9536BD5dd874189A85d71eE8bDf64c2", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x54de3Df0CA76AAe3e171FB410F0626Ab759f3c24", retrieveSharesResponse.getEthAddress());
     }
 
     @DisplayName("Aggregate Login test")
@@ -121,6 +121,6 @@ public class OneKeyTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2", retrieveSharesResponse.getEthAddress());
     }
 }
