@@ -24,7 +24,6 @@ import org.torusresearch.torusutilstest.utils.VerifyParams;
 import org.web3j.crypto.Hash;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
@@ -110,10 +109,8 @@ public class MainnetTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        System.out.println(retrieveSharesResponse.getPrivKey());
-        BigInteger requiredPrivateKey = new BigInteger("129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44", 16);
-        assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
-        assertEquals("0x90A926b698047b4A87265ba1E9D8b512E8489067", retrieveSharesResponse.getEthAddress());
+        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
+        assertEquals("0x90A926b698047b4A87265ba1E9D8b512E8489067", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("Aggregate Login test")
@@ -127,6 +124,6 @@ public class MainnetTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 }

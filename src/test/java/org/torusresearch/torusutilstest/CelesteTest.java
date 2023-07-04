@@ -25,7 +25,6 @@ import org.torusresearch.torusutilstest.utils.VerifyParams;
 import org.web3j.crypto.Hash;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
@@ -112,10 +111,9 @@ public class CelesteTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        System.out.println(retrieveSharesResponse.getPrivKey());
-        BigInteger requiredPrivateKey = new BigInteger("0ae056aa938080c9e8bf6641261619e09fd510c91bb5aad14b0de9742085a914", 16);
-        assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
-        assertEquals("0x58420FB83971C4490D8c9B091f8bfC890D716617", retrieveSharesResponse.getEthAddress());
+        System.out.println(retrieveSharesResponse.getFinalKeyData().getPrivKey());
+        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("ae056aa938080c9e8bf6641261619e09fd510c91bb5aad14b0de9742085a914"));
+        assertEquals("0x58420FB83971C4490D8c9B091f8bfC890D716617", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("Aggregate Login test")
@@ -129,7 +127,7 @@ public class CelesteTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0x535Eb1AefFAc6f699A2a1A5846482d7b5b2BD564", retrieveSharesResponse.getEthAddress());
+        assertEquals("0x535Eb1AefFAc6f699A2a1A5846482d7b5b2BD564", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 }
 
