@@ -849,4 +849,112 @@ public class TorusUtils {
         return this.getOrSetNonce(privKey, true);
     }
 
+    public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs) {
+        return this.getUserTypeAndAddress(endpoints, torusNodePubs, verifierArgs, false);
+    }
+
+    public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean doesKeyAssign) {
+        AtomicBoolean isNewKey = new AtomicBoolean(false);
+        Gson gson = new Gson();
+        return Utils.keyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId()).thenComposeAsync(keyLookupResult -> {
+            if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier not supported")) {
+                CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
+                lookupCf.completeExceptionally(new Exception("Verifier not supported. Check if you: \\n\n" + "      1. Are on the right network (Torus testnet/mainnet) \\n\n" + "      2. Have setup a verifier on dashboard.web3auth.io?"));
+                return lookupCf;
+            } else if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier + VerifierID has not yet been assigned")) {
+                if (!doesKeyAssign) {
+                    CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
+                    lookupCf.completeExceptionally(new Exception("Verifier + VerifierID has not yet been assigned"));
+                    return lookupCf;
+                }
+                return Utils.keyAssign(endpoints, torusNodePubs, null, null, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.options.getSignerHost(), this.options.getNetwork()).thenComposeAsync(k -> Utils.waitKeyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), 1000)).thenComposeAsync(res -> {
+                    CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
+                    try {
+                        if (res == null || res.getKeyResult() == null) {
+                            lookupCf.completeExceptionally(new Exception("could not get lookup, no results"));
+                            return lookupCf;
+                        }
+                        VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(res.getKeyResult(), VerifierLookupRequestResult.class);
+                        if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
+                            lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + res.getKeyResult() + res.getErrResult()));
+                            return lookupCf;
+                        }
+                        VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
+                        lookupCf.complete(verifierLookupItem);
+                        isNewKey.set(true);
+                    } catch (Exception ex) {
+                        lookupCf.completeExceptionally(ex);
+                    }
+                    return lookupCf;
+                });
+            }
+            CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
+            try {
+                if (keyLookupResult.getKeyResult() != null) {
+                    VerifierLookupRequestResult verifierLookupRequestResult = gson.fromJson(keyLookupResult.getKeyResult(), VerifierLookupRequestResult.class);
+                    if (verifierLookupRequestResult == null || verifierLookupRequestResult.getKeys() == null || verifierLookupRequestResult.getKeys().length == 0) {
+                        lookupCf.completeExceptionally(new Exception("could not get lookup, no keys" + keyLookupResult.getKeyResult() + keyLookupResult.getErrResult()));
+                        return lookupCf;
+                    }
+                    VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
+                    lookupCf.complete(verifierLookupItem);
+                    return lookupCf;
+                }
+                lookupCf.completeExceptionally(new Exception("could not get lookup, no valid key result or error result"));
+            } catch (Exception ex) {
+                lookupCf.completeExceptionally(ex);
+            }
+            return lookupCf;
+        }).thenComposeAsync(verifierLookupItem -> {
+            CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
+            try {
+                GetOrSetNonceResult nonceResult;
+                BigInteger nonce;
+                ECPoint modifiedPubKey;
+                TypeOfUser typeOfUser;
+                GetOrSetNonceResult.PubNonce pubNonce = null;
+                ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
+
+                try {
+                    nonceResult = this.getOrSetNonce(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y(), !isNewKey.get()).get();
+                    nonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
+                    typeOfUser = nonceResult.getTypeOfUser();
+                } catch (Exception e) {
+                    // Sometimes we take special action if `get or set nonce` api is not available
+                    keyCf.completeExceptionally(new GetOrSetNonceError(e));
+                    return keyCf;
+                }
+
+                modifiedPubKey = curve.getCurve().createPoint(new BigInteger(verifierLookupItem.getPub_key_X(), 16), new BigInteger(verifierLookupItem.getPub_key_Y(), 16));
+                if (nonceResult.getTypeOfUser() == TypeOfUser.v1) {
+                    modifiedPubKey = modifiedPubKey.add(curve.getG().multiply(nonce)).normalize();
+                } else if (nonceResult.getTypeOfUser() == TypeOfUser.v2) {
+                    // pubNonce is never deleted, so we can use it to always get the tkey
+                    assert nonceResult.getPubNonce() != null;
+                    ECPoint oneKeyMetadataPoint = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
+                    modifiedPubKey = modifiedPubKey.add(oneKeyMetadataPoint).normalize();
+                    pubNonce = nonceResult.getPubNonce();
+                } else {
+                    keyCf.completeExceptionally(new Exception("getOrSetNonce should always return typeOfUser."));
+                    return keyCf;
+                }
+
+                String finalPubKey = Utils.padLeft(modifiedPubKey.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(modifiedPubKey.getAffineYCoord().toString(), '0', 64);
+                String address = Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
+
+                TorusPublicKey key = new TorusPublicKey(finalPubKey.substring(0, finalPubKey.length() / 2), finalPubKey.substring(finalPubKey.length() / 2), address);
+                key.setTypeOfUser(typeOfUser);
+                key.setMetadataNonce(nonce);
+                key.setPubNonce(pubNonce);
+                key.setUpgraded(nonceResult.isUpgraded());
+                keyCf.complete(key);
+
+                return keyCf;
+            } catch (Exception ex) {
+                keyCf.completeExceptionally(ex);
+                return keyCf;
+            }
+        });
+    }
+
 }

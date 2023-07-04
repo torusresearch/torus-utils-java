@@ -17,6 +17,7 @@ import org.torusresearch.torusutils.types.RetrieveSharesResponse;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
@@ -70,6 +71,28 @@ public class CelesteTest {
         assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", publicAddress.getAddress());
     }
 
+    @DisplayName("Fetch User Type and Public Address")
+    @Test
+    public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException {
+        VerifierArgs args = new VerifierArgs("tkey-google-celeste", TORUS_TEST_EMAIL, "");
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
+        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", key.getAddress());
+        assertEquals(TypeOfUser.v1, key.getTypeOfUser());
+
+        String v2Verifier = "tkey-google-celeste";
+        // 1/1 user
+        String v2TestEmail = "somev2user@gmail.com";
+        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
+        assertEquals("0x69fB3A96016817F698a1279aE2d65F3916F3Db6F", key2.getAddress());
+        assertEquals(TypeOfUser.v1, key2.getTypeOfUser());
+
+        // 2/n user
+        String v2nTestEmail = "caspertorus@gmail.com";
+        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
+        assertEquals("0x24aCac36F8A4bD93052207dA410dA71AF92258b7", key3.getAddress());
+        assertEquals(TypeOfUser.v1, key3.getTypeOfUser());
+    }
 
     @DisplayName("Key Assign test")
     @Test
