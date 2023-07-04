@@ -52,7 +52,8 @@ public class AquaTest {
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.AQUA, FetchNodeDetails.PROXY_ADDRESS_AQUA);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork("aqua");
-        opts.setAllowHost("https://signer.tor.us/api/allow");
+        opts.setSignerHost("https://signer-polygon.tor.us/api/sign");
+        opts.setAllowHost("https://signer-polygon.tor.us/api/allow");
         opts.setClientId("BE4QJC39vkx56M_CaOZFGYuTKve17TpYta9ABSjHWBS_Z1MOMOhOYnjrQDT9YGXJXZvSXM6JULzzukqUB_7a5X0");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
@@ -74,7 +75,7 @@ public class AquaTest {
     @Test
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
-        NodeDetails nodeDetails = fetchNodeDetails.getLegacyNodeDetails("tkey-google-aqua", email).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-aqua", email).get();
         TorusPublicKey publicAddress = torusUtils.getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(),
                 new VerifierArgs("tkey-google-aqua", email, "")).get();
         System.out.println(email + " -> " + publicAddress.getAddress());
