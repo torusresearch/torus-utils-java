@@ -52,7 +52,7 @@ public class OneKeyTest {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork(TorusNetwork.TESTNET.name());
+        opts.setNetwork(TorusNetwork.TESTNET.toString());
         opts.setAllowHost("https://signer.tor.us/api/allow");
         opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         torusUtils = new TorusUtils(opts);

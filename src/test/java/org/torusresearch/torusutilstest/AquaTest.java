@@ -51,7 +51,7 @@ public class AquaTest {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.AQUA, FetchNodeDetails.PROXY_ADDRESS_AQUA);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork(TorusNetwork.AQUA.name());
+        opts.setNetwork("aqua");
         opts.setAllowHost("https://signer.tor.us/api/allow");
         opts.setClientId("BE4QJC39vkx56M_CaOZFGYuTKve17TpYta9ABSjHWBS_Z1MOMOhOYnjrQDT9YGXJXZvSXM6JULzzukqUB_7a5X0");
         torusUtils = new TorusUtils(opts);

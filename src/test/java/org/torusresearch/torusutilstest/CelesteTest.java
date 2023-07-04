@@ -51,7 +51,7 @@ public class CelesteTest {
         System.out.println("Setup Startingg");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CELESTE);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork(TorusNetwork.CELESTE.name());
+        opts.setNetwork(TorusNetwork.CELESTE.toString());
         opts.setAllowHost("https://signer.tor.us/api/allow");
         opts.setClientId("BE4QJC39vkx56M_CaOZFGYuTKve17TpYta9ABSjHWBS_Z1MOMOhOYnjrQDT9YGXJXZvSXM6JULzzukqUB_7a5X0");
         torusUtils = new TorusUtils(opts);

@@ -51,7 +51,7 @@ public class CyanTest {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CYAN);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork(TorusNetwork.CYAN.name());
+        opts.setNetwork(TorusNetwork.CYAN.toString());
         opts.setAllowHost("https://signer.tor.us/api/allow");
         opts.setClientId("BA5akJpGy6j5bVNL33RKpe64AXTiPGTSCYOI0i-BbDtbOYWtFQNdLzaC-WKibRtQ0sV_TVHC42TdOTbyZXdN-XI");
         torusUtils = new TorusUtils(opts);

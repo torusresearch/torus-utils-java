@@ -82,8 +82,8 @@ public class TorusUtils {
         return err instanceof GetOrSetNonceError;
     }
 
-    public static List<String> LEGACY_NETWORKS_ROUTE_MAP = Arrays.asList(TorusNetwork.AQUA.name(), TorusNetwork.CELESTE.name(),
-            TorusNetwork.CYAN.name(), TorusNetwork.TESTNET.name(), TorusNetwork.MAINNET.name());
+    public static List<String> LEGACY_NETWORKS_ROUTE_MAP = Arrays.asList(TorusNetwork.AQUA.toString(), TorusNetwork.CELESTE.toString(),
+            TorusNetwork.CYAN.toString(), TorusNetwork.TESTNET.toString(), TorusNetwork.MAINNET.toString());
 
     BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
         if (shares.length != nodeIndex.length) {

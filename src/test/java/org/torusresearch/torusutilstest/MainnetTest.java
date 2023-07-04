@@ -50,7 +50,7 @@ public class MainnetTest {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.MAINNET, FetchNodeDetails.PROXY_ADDRESS_MAINNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork(TorusNetwork.MAINNET.name());
+        opts.setNetwork(TorusNetwork.MAINNET.toString());
         opts.setAllowHost("https://signer.tor.us/api/allow");
         opts.setClientId("BEaGnq-mY0ZOXk2UT1ivWUe0PZ_iJX4Vyb6MtpOp7RMBu_6ErTrATlfuK3IaFcvHJr27h6L1T4owkBH6srLphIw");
         torusUtils = new TorusUtils(opts);
