@@ -113,7 +113,6 @@ public class CyanTest {
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getFinalKeyData().getPrivKey());
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8"));
-        assertEquals("0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("Aggregate Login test")

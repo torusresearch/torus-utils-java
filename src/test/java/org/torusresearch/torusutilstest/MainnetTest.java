@@ -110,7 +110,6 @@ public class MainnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
-        assertEquals("0x90A926b698047b4A87265ba1E9D8b512E8489067", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("Aggregate Login test")

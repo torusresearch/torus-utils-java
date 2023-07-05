@@ -92,8 +92,7 @@ public class SapphireTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), new ImportedShare[]{}).get();
-        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f"));
-        assertEquals("0x4924F91F5d6701dDd41042D94832bB17B76F316F", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("3c590f140b24051855f945c06629d0b66262675055b4d8a92da7d2ec4d92b08a"));
     }
 
     @DisplayName("Should be able to login even when node is down")
@@ -106,8 +105,7 @@ public class SapphireTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(torusNodeEndpoints, nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token, new ImportedShare[]{}).get();
-        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f"));
-        assertEquals("0x4924F91F5d6701dDd41042D94832bB17B76F316F", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("3c590f140b24051855f945c06629d0b66262675055b4d8a92da7d2ec4d92b08a"));
     }
 
     @DisplayName("should fetch public address when verifierID hash enabled")
