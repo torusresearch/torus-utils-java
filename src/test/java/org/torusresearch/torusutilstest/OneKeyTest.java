@@ -66,8 +66,8 @@ public class OneKeyTest {
         VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, "Jonathan.Nolan@hotmail.com", "extendedVerifierId");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils._getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args, true).get();
-        assertEquals(TypeOfUser.v1, publicAddress.getTypeOfUser());
-        assertEquals("0x54de3Df0CA76AAe3e171FB410F0626Ab759f3c24", publicAddress.getAddress());
+        assertEquals(TypeOfUser.v1, publicAddress.getMetadata().getTypeOfUser());
+        assertEquals("0x54de3Df0CA76AAe3e171FB410F0626Ab759f3c24", publicAddress.getFinalPubKeyData().getEvmAddress());
     }
 
     @DisplayName("Key Assign test")
@@ -76,10 +76,10 @@ public class OneKeyTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey publicAddress = torusUtils._getLegacyPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(TORUS_TEST_VERIFIER, email, ""), true).get();
-        System.out.println(email + " -> " + publicAddress.getAddress());
-        assertNotNull(publicAddress.getAddress());
-        assertNotEquals(publicAddress.getAddress(), "");
-        assertEquals(TypeOfUser.v1, publicAddress.getTypeOfUser());
+        System.out.println(email + " -> " + publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertNotNull(publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertNotEquals(publicAddress.getFinalPubKeyData().getEvmAddress(), "");
+        assertEquals(TypeOfUser.v1, publicAddress.getMetadata().getTypeOfUser());
     }
 
     @DisplayName("Login test v1")

@@ -70,7 +70,7 @@ public class SapphireTest {
         VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), null, args).get();
-        assertEquals("0xac997dE675Fb69FCb0F4115A23c0061A892A2772", torusPublicKey.getAddress());
+        assertEquals("0xac997dE675Fb69FCb0F4115A23c0061A892A2772", torusPublicKey.getFinalPubKeyData().getEvmAddress());
     }
 
     @DisplayName("Key Assign test")
@@ -80,9 +80,9 @@ public class SapphireTest {
         VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), null, args).get();
-        System.out.println(email + " -> " + publicAddress.getAddress());
-        assertNotNull(publicAddress.getAddress());
-        assertNotEquals(publicAddress.getAddress(), "");
+        System.out.println(email + " -> " + publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertNotNull(publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertNotEquals(publicAddress.getFinalPubKeyData().getEvmAddress(), "");
     }
 
     @DisplayName("Login test")
@@ -115,7 +115,7 @@ public class SapphireTest {
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "extendedVerifierId");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, null, args).get();
-        assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getAddress());
+        assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getFinalPubKeyData().getEvmAddress());
     }
 
     @DisplayName("Should fetch user type and public address when verifierID hash enabled")
@@ -125,7 +125,7 @@ public class SapphireTest {
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, null, args, true).get();
-        assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getAddress());
+        assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getFinalPubKeyData().getEvmAddress());
     }
 
     @DisplayName("Aggregate Login test")
@@ -143,6 +143,22 @@ public class SapphireTest {
         assertNotEquals("", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 
+    @DisplayName("should fetch public address of a legacy v1 user")
+    @Test
+    public void testFetchPublicAddressOfLegacyV1User() throws ExecutionException, InterruptedException {
+        VerifierArgs verifierDetails = new VerifierArgs("google-lrc", "himanshu@tor.us", ""); // Replace with the actual verifier ID
+        TorusCtorOptions opts = new TorusCtorOptions("Custom");
+        opts.setNetwork(TorusNetwork.TESTNET.toString());
+        opts.setAllowHost("https://signer.tor.us/api/allow");
+        opts.setClientId("");
+        opts.setEnableOneKey(true);
+        torusUtils = new TorusUtils(opts);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", "himanshu@tor.us").get();
+        TorusPublicKey publicKeyData = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), verifierDetails).get();
+        assertEquals("0x930abEDDCa6F9807EaE77A3aCc5c78f20B168Fd1", publicKeyData.getFinalPubKeyData().getEvmAddress());
+        assertEquals("v1", publicKeyData.getMetadata().getTypeOfUser());
+    }
+
     // TODO Check below test case is failing
     @DisplayName("Should fetch pub address of tss verifier id")
     @Test
@@ -154,8 +170,8 @@ public class SapphireTest {
         VerifierArgs verifierArgs = new VerifierArgs(TORUS_TEST_VERIFIER, email, tssVerifierId);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), null, verifierArgs).get();
-        assertEquals("0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30", torusPublicKey.getAddress());
+        assertEquals("0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30", torusPublicKey.getFinalPubKeyData().getEvmAddress());
         TorusPublicKey torusPublicKey1 = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), null, verifierArgs).get();
-        assertEquals(torusPublicKey1.getAddress(), torusPublicKey1.getAddress());
+        assertEquals(torusPublicKey1.getFinalPubKeyData().getEvmAddress(), torusPublicKey1.getFinalPubKeyData().getEvmAddress());
     }
 }

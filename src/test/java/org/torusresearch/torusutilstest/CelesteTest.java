@@ -67,7 +67,7 @@ public class CelesteTest {
         VerifierArgs args = new VerifierArgs("tkey-google-celeste", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", publicAddress.getAddress());
+        assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", publicAddress.getFinalPubKeyData().getEvmAddress());
     }
 
     @DisplayName("Fetch User Type and Public Address")
@@ -76,21 +76,21 @@ public class CelesteTest {
         VerifierArgs args = new VerifierArgs("tkey-google-celeste", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", key.getAddress());
-        assertEquals(TypeOfUser.v1, key.getTypeOfUser());
+        assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", key.getFinalPubKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v1, key.getMetadata().getTypeOfUser());
 
         String v2Verifier = "tkey-google-celeste";
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
         TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
-        assertEquals("0x69fB3A96016817F698a1279aE2d65F3916F3Db6F", key2.getAddress());
-        assertEquals(TypeOfUser.v1, key2.getTypeOfUser());
+        assertEquals("0x69fB3A96016817F698a1279aE2d65F3916F3Db6F", key2.getFinalPubKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v1, key2.getMetadata().getTypeOfUser());
 
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
         TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
-        assertEquals("0x24aCac36F8A4bD93052207dA410dA71AF92258b7", key3.getAddress());
-        assertEquals(TypeOfUser.v1, key3.getTypeOfUser());
+        assertEquals("0x24aCac36F8A4bD93052207dA410dA71AF92258b7", key3.getFinalPubKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v1, key3.getMetadata().getTypeOfUser());
     }
 
     @DisplayName("Key Assign test")
@@ -99,9 +99,9 @@ public class CelesteTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-celeste", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-celeste", email, "")).get();
-        System.out.println(email + " -> " + publicAddress.getAddress());
-        assertNotNull(publicAddress.getAddress());
-        assertNotEquals(publicAddress.getAddress(), "");
+        System.out.println(email + " -> " + publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertNotNull(publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertNotEquals(publicAddress.getFinalPubKeyData().getEvmAddress(), "");
     }
 
     @DisplayName("Login test")

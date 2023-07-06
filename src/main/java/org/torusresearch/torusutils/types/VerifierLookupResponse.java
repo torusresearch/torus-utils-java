@@ -1,13 +1,14 @@
 package org.torusresearch.torusutils.types;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public class VerifierLookupResponse {
     private List<KeyInfo> keys;
     private boolean isNewKey;
-    private int nodeIndex;
+    private BigInteger nodeIndex;
 
-    public VerifierLookupResponse(List<KeyInfo> keys, boolean isNewKey, int nodeIndex) {
+    public VerifierLookupResponse(List<KeyInfo> keys, boolean isNewKey, BigInteger nodeIndex) {
         this.keys = keys;
         this.isNewKey = isNewKey;
         this.nodeIndex = nodeIndex;
@@ -21,7 +22,7 @@ public class VerifierLookupResponse {
         return isNewKey;
     }
 
-    public int getNodeIndex() {
+    public BigInteger getNodeIndex() {
         return nodeIndex;
     }
 }

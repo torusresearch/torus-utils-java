@@ -67,7 +67,7 @@ public class AquaTest {
         VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xDfA967285AC699A70DA340F60d00DB19A272639d", publicAddress.getAddress());
+        assertEquals("0xDfA967285AC699A70DA340F60d00DB19A272639d", publicAddress.getFinalPubKeyData().getEvmAddress());
     }
 
     @DisplayName("Key Assign test")
@@ -77,9 +77,9 @@ public class AquaTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-aqua", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(),
                 new VerifierArgs("tkey-google-aqua", email, "")).get();
-        System.out.println(email + " -> " + publicAddress.getAddress());
-        assertNotNull(publicAddress.getAddress());
-        assertNotEquals(publicAddress.getAddress(), "");
+        System.out.println(email + " -> " + publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertNotNull(publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertNotEquals(publicAddress.getFinalPubKeyData().getEvmAddress(), "");
     }
 
     @DisplayName("Login test")

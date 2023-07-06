@@ -160,7 +160,7 @@ public class Utils {
             try {
                 List<String> errorResults = new ArrayList<>();
                 List<String> keyResults = new ArrayList<>();
-                List<Integer> nodeIndexes = new ArrayList<>();
+                List<BigInteger> nodeIndexes = new ArrayList<>();
                 GetOrSetNonceResult nonceResult = null;
                 Gson gson = new Gson();
                 for (String x : lookupResults) {
