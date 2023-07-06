@@ -4,25 +4,31 @@ import java.math.BigInteger;
 
 public class Metadata {
 
-    public BigInteger metadataNonce;
+    public GetOrSetNonceResult.PubNonce pubNonce;
+    public BigInteger nonce;
+    public boolean upgraded;
     public TypeOfUser typeOfUser;
-    public Boolean upgraded;
 
-    public Metadata(BigInteger metadataNonce, TypeOfUser typeOfUser, Boolean upgraded) {
-        this.metadataNonce = metadataNonce;
+    public Metadata(GetOrSetNonceResult.PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded) {
+        this.pubNonce = pubNonce;
+        this.nonce = nonce;
         this.typeOfUser = typeOfUser;
         this.upgraded = upgraded;
     }
 
-    public BigInteger getMetadataNonce() {
-        return metadataNonce;
+    public GetOrSetNonceResult.PubNonce getPubNonce() {
+        return pubNonce;
+    }
+
+    public BigInteger getNonce() {
+        return nonce;
+    }
+
+    public boolean isUpgraded() {
+        return upgraded;
     }
 
     public TypeOfUser getTypeOfUser() {
         return typeOfUser;
-    }
-
-    public Boolean getUpgraded() {
-        return upgraded;
     }
 }

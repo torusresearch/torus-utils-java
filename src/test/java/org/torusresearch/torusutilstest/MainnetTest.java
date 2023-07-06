@@ -1,5 +1,6 @@
 package org.torusresearch.torusutilstest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,7 +14,14 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
+import org.torusresearch.torusutils.types.FinalKeyData;
+import org.torusresearch.torusutils.types.FinalPubKeyData;
+import org.torusresearch.torusutils.types.Metadata;
+import org.torusresearch.torusutils.types.NodesData;
+import org.torusresearch.torusutils.types.OAuthKeyData;
+import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusPublicKey;
 import org.torusresearch.torusutils.types.TypeOfUser;
@@ -24,12 +32,14 @@ import org.torusresearch.torusutilstest.utils.VerifyParams;
 import org.web3j.crypto.Hash;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -66,6 +76,16 @@ public class MainnetTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
+                new OAuthPubKeyData("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A",
+                        "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
+                        "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1"),
+                new FinalPubKeyData("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A",
+                        "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
+                        "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1"),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new NodesData(new ArrayList<>())
+        ));
     }
 
     @DisplayName("Fetch User Type and Public Address")
@@ -100,6 +120,10 @@ public class MainnetTest {
         System.out.println(email + " -> " + publicAddress.getFinalPubKeyData().getEvmAddress());
         assertNotNull(publicAddress.getFinalPubKeyData().getEvmAddress());
         assertNotEquals(publicAddress.getFinalPubKeyData().getEvmAddress(), "");
+        assertNotNull(publicAddress.getoAuthPubKeyData().getEvmAddress());
+        assertNotEquals(publicAddress.getoAuthPubKeyData().getEvmAddress(), "");
+        assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v1);
+        assertEquals(publicAddress.getMetadata().isUpgraded(), false);
     }
 
     @DisplayName("Login test")
@@ -110,6 +134,19 @@ public class MainnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
+        assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
+                new FinalKeyData("0xB4d9D085AA7f28dC60De88e343A32363079b4A59",
+                        "31600521026132112170505875906080018823972474568844927151389160616822189112799",
+                        "17273036880415366106658985805391994876983148722894059515138336751166359563553",
+                        "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
+                new OAuthKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
+                        "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
+                        "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
+                        "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
+                new SessionData(new ArrayList<>(), ""),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new NodesData(new ArrayList<>())
+        ));
     }
 
     @DisplayName("Aggregate Login test")
@@ -124,5 +161,18 @@ public class MainnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
+        assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
+                new FinalKeyData("0xA5F7751515b8561Ec7aF1Fba589ac4eeAE008578",
+                        "43564288410192394462847657942154042873928392376563036841495138510673098978279",
+                        "59983272266567645178572545705333227687084077741077174039161990905110140858036",
+                        "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
+                new OAuthKeyData("0x621a4d458cFd345dAE831D9E756F10cC40A50381",
+                        "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",
+                        "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
+                        "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
+                new SessionData(null, ""),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new NodesData(null)
+        ));
     }
 }

@@ -6,9 +6,9 @@ import org.torusresearch.torusutils.types.GetOrSetNonceResult;
 import java.util.HashMap;
 
 public class KeyAssignment {
-    private Index index;
+    private String index;
     private PubKey public_key;
-    private Integer threshold;
+    private Long threshold;
     private Long node_index;
     private HashMap<String, String[]> verifiers;
     private String share;
@@ -26,7 +26,7 @@ public class KeyAssignment {
     public KeyAssignment() {
     }
 
-    public Index getIndex() {
+    public String getIndex() {
         return index;
     }
 
@@ -38,7 +38,7 @@ public class KeyAssignment {
         }
     }
 
-    public Integer getThreshold() {
+    public Long getThreshold() {
         return threshold;
     }
 

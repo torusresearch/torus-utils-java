@@ -1,18 +1,15 @@
 package org.torusresearch.torusutils.types;
 
+import java.util.Objects;
+
 public class TorusPublicKey {
 
     public OAuthPubKeyData oAuthPubKeyData;
     public FinalPubKeyData finalPubKeyData;
-    public PubKeyMetadata metadata;
+    public Metadata metadata;
     public NodesData nodesData;
-    private String address;
 
-    public TorusPublicKey(String _address) {
-        address = _address;
-    }
-
-    public TorusPublicKey(OAuthPubKeyData oAuthPubKeyData, FinalPubKeyData finalPubKeyData, PubKeyMetadata metadata, NodesData nodesData) {
+    public TorusPublicKey(OAuthPubKeyData oAuthPubKeyData, FinalPubKeyData finalPubKeyData, Metadata metadata, NodesData nodesData) {
         this.oAuthPubKeyData = oAuthPubKeyData;
         this.finalPubKeyData = finalPubKeyData;
         this.metadata = metadata;
@@ -27,11 +24,24 @@ public class TorusPublicKey {
         return finalPubKeyData;
     }
 
-    public PubKeyMetadata getMetadata() {
+    public Metadata getMetadata() {
         return metadata;
     }
 
     public NodesData getNodesData() {
         return nodesData;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TorusPublicKey)) return false;
+        TorusPublicKey that = (TorusPublicKey) o;
+        return getoAuthPubKeyData().equals(that.getoAuthPubKeyData()) && getFinalPubKeyData().equals(that.getFinalPubKeyData()) && getMetadata().equals(that.getMetadata()) && getNodesData().equals(that.getNodesData());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getoAuthPubKeyData(), getFinalPubKeyData(), getMetadata(), getNodesData());
     }
 }
