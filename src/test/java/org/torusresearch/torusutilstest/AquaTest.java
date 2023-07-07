@@ -91,6 +91,59 @@ public class AquaTest {
         ));
     }
 
+    @DisplayName("Fetch User Type and Public Address")
+    @Test
+    public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException {
+        VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL, "");
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
+        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        assertEquals("0xDfA967285AC699A70DA340F60d00DB19A272639d", key.getFinalPubKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v1, key.getMetadata().getTypeOfUser());
+        assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
+                new OAuthPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
+                        "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
+                        "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c"),
+                new FinalPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
+                        "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
+                        "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c"),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new NodesData(new ArrayList<>())
+        ));
+
+        String v2Verifier = "tkey-google-aqua";
+        // 1/1 user
+        String v2TestEmail = "somev2user@gmail.com";
+        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
+        assertEquals("0x5735dDC8d5125B23d77C3531aab3895A533584a3", key2.getFinalPubKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v1, key2.getMetadata().getTypeOfUser());
+        assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
+                new OAuthPubKeyData("0x5735dDC8d5125B23d77C3531aab3895A533584a3",
+                        "e1b419bc52b82e14b148c307f10479cfa464d20c947555fb4758c586eab12873",
+                        "75f47d7d5a271c0fcf51a790c1683a1cb3394b1d37d20e29c346ac249e3bfca2"),
+                new FinalPubKeyData("0x5735dDC8d5125B23d77C3531aab3895A533584a3",
+                        "e1b419bc52b82e14b148c307f10479cfa464d20c947555fb4758c586eab12873",
+                        "75f47d7d5a271c0fcf51a790c1683a1cb3394b1d37d20e29c346ac249e3bfca2"),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new NodesData(new ArrayList<>())
+        ));
+
+        // 2/n user
+        String v2nTestEmail = "caspertorus@gmail.com";
+        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
+        assertEquals("0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD", key3.getFinalPubKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v1, key3.getMetadata().getTypeOfUser());
+        assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
+                new OAuthPubKeyData("0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD",
+                        "e76d2f7fa2c0df324b4ab74629c3af47aa4609c35f1d2b6b90b77a47ab9a1281",
+                        "b33b35148d72d357070f66372e07fec436001bdb15c098276b120b9ed64c1e5f"),
+                new FinalPubKeyData("0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD",
+                        "e76d2f7fa2c0df324b4ab74629c3af47aa4609c35f1d2b6b90b77a47ab9a1281",
+                        "b33b35148d72d357070f66372e07fec436001bdb15c098276b120b9ed64c1e5f"),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new NodesData(new ArrayList<>())
+        ));
+    }
+
     @DisplayName("Key Assign test")
     @Test
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
@@ -109,7 +162,7 @@ public class AquaTest {
 
     @DisplayName("Login test")
     @Test
-    public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldLogin() throws ExecutionException, InterruptedException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(),
                 nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{

@@ -345,24 +345,31 @@ public class TorusUtils {
                             pubKeyNonceResult = new GetOrSetNonceResult.PubNonce(pubNonce.getX(), pubNonce.getY());
                         }
                     } else {
+                        // for imported keys in legacy networks
                         metadataNonce = this.getMetadata(new MetadataPubKey(oAuthKeyX, oAuthKeyY)).get();
-                        BigInteger privateKeyWithNonce = privateKey.add(metadataNonce).mod(secp256k1N);
+                        finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthKeyX, 16), new BigInteger(oAuthKeyX, 16));
+                        finalPubKey = finalPubKey.add(curve.getG().multiply(metadataNonce)).normalize();
+
+                        BigInteger privateKeyWithNonce = oAuthKey.add(metadataNonce).mod(secp256k1N);
+                        ECKeyPair finalKC = ECKeyPair.create(privateKeyWithNonce);
+
                         GetOrSetNonceResult nonceResult = this.getNonce(privateKeyWithNonce).get();
                         if (nonceResult.getPubNonce() != null)
                             finalPubKey = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
                     }
 
-                    privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
                     String oAuthKeyAddress = this.generateAddressFromPrivKey(oAuthKey.toString(16));
                     String finalEvmAddress = "";
                     if (finalPubKey != null) {
-                        finalEvmAddress = generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger(), finalPubKey.normalize().getAffineYCoord().toBigInteger());
+                        String s = Utils.padLeft(finalPubKey.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(finalPubKey.getAffineYCoord().toString(), '0', 64);
+                        finalEvmAddress = Keys.toChecksumAddress(Hash.sha3(s).substring(64 - 38));
+                        //finalEvmAddress = generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger(), finalPubKey.normalize().getAffineYCoord().toBigInteger());
                     }
 
                     String finalPrivKey = "";
                     if (typeOfUser.equals(TypeOfUser.v1) || (typeOfUser.equals(TypeOfUser.v2) && metadataNonce.compareTo(BigInteger.ZERO) > 0)) {
-                        BigInteger privateKeyWithNonce = privateKey.add(metadataNonce).mod(secp256k1N);
-                        finalPrivKey = Utils.padLeft(privateKeyWithNonce.toString(16), '0', 128);
+                        BigInteger privateKeyWithNonce = oAuthKey.add(metadataNonce).mod(secp256k1N);
+                        finalPrivKey = Utils.padLeft(privateKeyWithNonce.toString(16), '0', 64);
                     }
 
                     Boolean isUpgraded = false;
@@ -747,7 +754,6 @@ public class TorusUtils {
                         pubNonce = nonceResult.getPubNonce();
                     }
 
-                    privateKey = privateKey.add(metadataNonce).mod(secp256k1N);
                     String oAuthKeyAddress = this.generateAddressFromPrivKey(oAuthKey.toString(16));
                     String finalEvmAddress = "";
                     if (finalPubKey != null) {
