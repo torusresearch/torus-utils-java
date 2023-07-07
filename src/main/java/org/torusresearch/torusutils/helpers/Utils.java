@@ -1,10 +1,16 @@
 package org.torusresearch.torusutils.helpers;
 
+import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
+
 import com.google.gson.Gson;
 
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.jetbrains.annotations.Nullable;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
@@ -12,15 +18,33 @@ import org.torusresearch.torusutils.apis.GetPubKeyOrKeyAssignRequestParams;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.KeyAssignParams;
 import org.torusresearch.torusutils.apis.KeyLookupResult;
+import org.torusresearch.torusutils.apis.ShareMetadata;
 import org.torusresearch.torusutils.apis.SignerResponse;
 import org.torusresearch.torusutils.apis.VerifierLookupRequestParams;
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.types.Point;
+import org.torusresearch.torusutils.types.Polynomial;
+import org.torusresearch.torusutils.types.Share;
 import org.torusresearch.torusutils.types.VerifierLookupResponse;
+import org.web3j.crypto.ECDSASignature;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Hash;
+import org.web3j.crypto.Keys;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
@@ -358,5 +382,175 @@ public class Utils {
         } else {
             return "ShareRequest";
         }
+    }
+
+    public static ShareMetadata encParamsBufToHex(ShareMetadata encParams) {
+        return new ShareMetadata(
+                bytesToHex(encParams.getIv().getBytes(StandardCharsets.UTF_8)),
+                bytesToHex(encParams.getEphemPublicKey().getBytes(StandardCharsets.UTF_8)),
+                bytesToHex(encParams.getCiphertext().getBytes(StandardCharsets.UTF_8)),
+                bytesToHex(encParams.getMac().getBytes(StandardCharsets.UTF_8))
+        );
+    }
+
+    public static String getECDSASignature(BigInteger privateKey, String data) throws IOException {
+        ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
+        byte[] hashedData = Hash.sha3(data.getBytes(StandardCharsets.UTF_8));
+        ECDSASignature signature = derivedECKeyPair.sign(hashedData);
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(new ASN1Integer(signature.r));
+        v.add(new ASN1Integer(signature.s));
+        DERSequence der = new DERSequence(v);
+        byte[] sigBytes = der.getEncoded();
+        return bytesToHex(sigBytes);
+    }
+
+    public static String randomString(int len) {
+        String charSet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        SecureRandom rnd = new SecureRandom();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            sb.append(charSet.charAt(rnd.nextInt(charSet.length())));
+        }
+        return sb.toString();
+    }
+
+    public static String getPubKey(String sessionId) {
+        ECKeyPair derivedECKeyPair = ECKeyPair.create(new BigInteger(sessionId, 16));
+        return derivedECKeyPair.getPublicKey().toString(16);
+    }
+
+    public static String getPrivKey(String sessionId) {
+        ECKeyPair derivedECKeyPair = ECKeyPair.create(new BigInteger(sessionId, 16));
+        return derivedECKeyPair.getPrivateKey().toString(16);
+    }
+
+    public static BigInteger generatePrivate() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        return Keys.createEcKeyPair().getPrivateKey();
+    }
+
+    public static Polynomial generateRandomPolynomial(int degree, BigInteger secret, @Nullable List<Share> deterministicShares) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        BigInteger actualS = secret;
+        if (secret == null) {
+            actualS = generatePrivateExcludingIndexes(List.of(BigInteger.ZERO));
+        }
+        if (deterministicShares == null) {
+            List<BigInteger> poly = new ArrayList<>();
+            poly.add(actualS);
+            for (int i = 0; i < degree; i++) {
+                BigInteger share = generatePrivateExcludingIndexes(poly);
+                poly.add(share);
+            }
+            return new Polynomial(poly.toArray(new BigInteger[0]));
+        }
+
+        if (deterministicShares.size() > degree) {
+            throw new Error("deterministicShares in generateRandomPolynomial should be less or equal than degree to ensure an element of randomness");
+        }
+        Map<String, Point> points = new HashMap<>();
+        for (Share share : deterministicShares) {
+            points.put(share.getShareIndex().toString(), new Point(share.getShareIndex(), share.getShare()));
+        }
+        for (int i = 0; i < degree - deterministicShares.size(); i++) {
+            BigInteger shareIndex = generatePrivateExcludingIndexes(List.of(BigInteger.ZERO));
+            while (points.containsKey(shareIndex.toString(16))) {
+                shareIndex = generatePrivateExcludingIndexes(List.of(BigInteger.ZERO));
+            }
+            points.put(shareIndex.toString(16), new Point(shareIndex, generatePrivate()));
+        }
+        points.put("0", new Point(BigInteger.ZERO, actualS));
+        return lagrangeInterpolatePolynomial(new ArrayList<>(points.values()));
+    }
+
+    public static Polynomial lagrangeInterpolatePolynomial(List<Point> points) {
+        return lagrange(points);
+    }
+
+    private static Polynomial lagrange(List<Point> unsortedPoints) {
+        List<Point> sortedPoints = pointSort(unsortedPoints);
+        BigInteger[] polynomial = generateEmptyBNArray(sortedPoints.size());
+        for (int i = 0; i < sortedPoints.size(); i++) {
+            BigInteger[] coefficients = interpolationPoly(i, sortedPoints);
+            for (int k = 0; k < sortedPoints.size(); k++) {
+                BigInteger tmp = sortedPoints.get(i).getY();
+                tmp = tmp.multiply(coefficients[k]);
+                polynomial[k] = polynomial[k].add(tmp).mod(secp256k1N);
+            }
+        }
+        return new Polynomial(polynomial);
+    }
+
+    private static BigInteger[] interpolationPoly(int i, List<Point> innerPoints) {
+        BigInteger[] coefficients = generateEmptyBNArray(innerPoints.size());
+        BigInteger d = denominator(i, innerPoints);
+        if (d.compareTo(BigInteger.ZERO) == 0) {
+            throw new ArithmeticException("Denominator for interpolationPoly is 0");
+        }
+        coefficients[0] = d.modInverse(secp256k1N);
+        for (int k = 0; k < innerPoints.size(); k++) {
+            BigInteger[] newCoefficients = generateEmptyBNArray(innerPoints.size());
+            if (k != i) {
+                int j;
+                if (k < i) {
+                    j = k + 1;
+                } else {
+                    j = k;
+                }
+                j--;
+                for (; j >= 0; j--) {
+                    newCoefficients[j + 1] = newCoefficients[j + 1].add(coefficients[j]).mod(secp256k1N);
+                    BigInteger tmp = innerPoints.get(k).getX();
+                    tmp = tmp.multiply(coefficients[j]).mod(secp256k1N);
+                    newCoefficients[j] = newCoefficients[j].subtract(tmp).mod(secp256k1N);
+                }
+                coefficients = newCoefficients;
+            }
+        }
+        return coefficients;
+    }
+
+    private static BigInteger denominator(int i, List<Point> innerPoints) {
+        BigInteger result = BigInteger.ONE;
+        BigInteger xi = innerPoints.get(i).getX();
+        for (int j = innerPoints.size() - 1; j >= 0; j--) {
+            if (i != j) {
+                BigInteger tmp = xi.subtract(innerPoints.get(j).getX());
+                tmp = tmp.mod(secp256k1N);
+                result = result.multiply(tmp).mod(secp256k1N);
+            }
+        }
+        return result;
+    }
+
+    private static List<Point> pointSort(List<Point> innerPoints) {
+        List<Point> pointArrClone = new ArrayList<>(innerPoints);
+        pointArrClone.sort(Comparator.comparing(Point::getX));
+        return pointArrClone;
+    }
+
+    private static BigInteger[] generateEmptyBNArray(int length) {
+        BigInteger[] array = new BigInteger[length];
+        for (int i = 0; i < length; i++) {
+            array[i] = BigInteger.ZERO;
+        }
+        return array;
+    }
+
+    private static BigInteger generatePrivateExcludingIndexes(List<BigInteger> shareIndexes) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        BigInteger key = Keys.createEcKeyPair().getPrivateKey();
+        for (BigInteger el : shareIndexes) {
+            if (el.equals(key)) {
+                return generatePrivateExcludingIndexes(shareIndexes);
+            }
+        }
+        return key;
+    }
+
+    public static byte[] convertToByteArray(Object object) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(object);
+        oos.flush();
+        return bos.toByteArray();
     }
 }
