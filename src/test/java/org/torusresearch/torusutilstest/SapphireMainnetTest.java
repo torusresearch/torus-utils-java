@@ -69,7 +69,7 @@ public class SapphireMainnetTest {
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.SAPPHIRE_MAINNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork(TorusNetwork.SAPPHIRE_MAINNET.toString());
-        opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
+        opts.setClientId("BLuMSgycHD7DfSvbmN3ISZ5WkdpIjtByKi_cD9ASg_NS3jUYmrrH-dMuJU16z11cev5YocCWLAjWVfq95tFlOD8");
         opts.setEnableOneKey(true);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
@@ -81,7 +81,7 @@ public class SapphireMainnetTest {
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
         String verifier = "tkey-google-sapphire-mainnet";
-        VerifierArgs args = new VerifierArgs(verifier, TORUS_TEST_EMAIL, "");
+        VerifierArgs args = new VerifierArgs(verifier, TORUS_TEST_EMAIL, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0x327b2742768B436d09153429E762FADB54413Ded", torusPublicKey.getFinalPubKeyData().getEvmAddress());
