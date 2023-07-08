@@ -4,7 +4,6 @@ import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
 
 import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Polynomial {
     private BigInteger[] polynomial;
@@ -31,14 +30,14 @@ public class Polynomial {
         return sum;
     }
 
-    public Map<BigInteger, Share> generateShares(BigInteger[] shareIndexes) {
+    public HashMap<BigInteger, Share> generateShares(BigInteger[] shareIndexes) {
         BigInteger[] newShareIndexes = new BigInteger[shareIndexes.length];
         for (int i = 0; i < shareIndexes.length; i++) {
             BigInteger index = shareIndexes[i];
             newShareIndexes[i] = index;
         }
 
-        Map<BigInteger, Share> shares = new HashMap<>();
+        HashMap<BigInteger, Share> shares = new HashMap<>();
         for (BigInteger shareIndex : newShareIndexes) {
             shares.put(shareIndex, new Share(shareIndex, polyEval(shareIndex.toString(16))));
         }

@@ -433,7 +433,7 @@ public class Utils {
     public static Polynomial generateRandomPolynomial(int degree, BigInteger secret, @Nullable List<Share> deterministicShares) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         BigInteger actualS = secret;
         if (secret == null) {
-            actualS = generatePrivateExcludingIndexes(List.of(BigInteger.ZERO));
+            actualS = generatePrivateExcludingIndexes(getBigIntegerList());
         }
         if (deterministicShares == null) {
             List<BigInteger> poly = new ArrayList<>();
@@ -453,14 +453,23 @@ public class Utils {
             points.put(share.getShareIndex().toString(), new Point(share.getShareIndex(), share.getShare()));
         }
         for (int i = 0; i < degree - deterministicShares.size(); i++) {
-            BigInteger shareIndex = generatePrivateExcludingIndexes(List.of(BigInteger.ZERO));
+            BigInteger shareIndex = generatePrivateExcludingIndexes(getBigIntegerList());
             while (points.containsKey(shareIndex.toString(16))) {
-                shareIndex = generatePrivateExcludingIndexes(List.of(BigInteger.ZERO));
+                shareIndex = generatePrivateExcludingIndexes(getBigIntegerList());
             }
             points.put(shareIndex.toString(16), new Point(shareIndex, generatePrivate()));
         }
         points.put("0", new Point(BigInteger.ZERO, actualS));
         return lagrangeInterpolatePolynomial(new ArrayList<>(points.values()));
+    }
+
+    public static List<BigInteger> getBigIntegerList() {
+        List<BigInteger> bigIntegersList = new ArrayList<>();
+
+        for (int i = 0; i < 1; i++) {
+            bigIntegersList.add(BigInteger.ZERO);
+        }
+        return bigIntegersList;
     }
 
     public static Polynomial lagrangeInterpolatePolynomial(List<Point> points) {

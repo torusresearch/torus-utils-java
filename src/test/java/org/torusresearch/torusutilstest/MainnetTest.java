@@ -75,7 +75,7 @@ public class MainnetTest {
         VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, "extendedVerifierId");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", publicAddress.getFinalPubKeyData().getEvmAddress());
+        assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", publicAddress.getFinalKeyData().getEvmAddress());
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A",
                         "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
@@ -94,7 +94,7 @@ public class MainnetTest {
         VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", key.getFinalPubKeyData().getEvmAddress());
+        assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", key.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v1, key.getMetadata().getTypeOfUser());
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A",
@@ -111,7 +111,7 @@ public class MainnetTest {
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
         TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
-        /*assertEquals("0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526", key2.getFinalPubKeyData().getEvmAddress());
+        /*assertEquals("0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526", key2.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xA9c6829e4899b6D630130ebf59D046CA868D7f83",
@@ -129,7 +129,7 @@ public class MainnetTest {
         // v1 user
         String v2nTestEmail = "caspertorus@gmail.com";
         TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
-        assertEquals("0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53", key3.getFinalPubKeyData().getEvmAddress());
+        assertEquals("0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53", key3.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v1, key3.getMetadata().getTypeOfUser());
         assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53",
@@ -149,11 +149,11 @@ public class MainnetTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("google", email, "extendedVerifierId")).get();
-        System.out.println(email + " -> " + publicAddress.getFinalPubKeyData().getEvmAddress());
-        assertNotNull(publicAddress.getFinalPubKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getFinalPubKeyData().getEvmAddress(), "");
-        assertNotNull(publicAddress.getoAuthPubKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getoAuthPubKeyData().getEvmAddress(), "");
+        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getEvmAddress());
+        assertNotNull(publicAddress.getFinalKeyData().getEvmAddress());
+        assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
+        assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
+        assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
         assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v1);
         assertEquals(publicAddress.getMetadata().isUpgraded(), false);
     }

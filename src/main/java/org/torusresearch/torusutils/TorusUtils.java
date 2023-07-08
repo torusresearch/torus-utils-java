@@ -1165,7 +1165,7 @@ public class TorusUtils {
         String oAuthPubkeyX = oAuthPubKey.substring(0, oAuthPubKey.length() / 2);
         String oAuthPubkeyY = oAuthPubKey.substring(oAuthPubKey.length() / 2);
         Polynomial poly = Utils.generateRandomPolynomial(degree, oAuthKey, null);
-        Map<BigInteger, Share> shares = poly.generateShares(nodeIndexesBn.toArray(new BigInteger[0]));
+        HashMap<BigInteger, Share> shares = poly.generateShares(nodeIndexesBn.toArray(new BigInteger[0]));
         NonceMetadataParams nonceParams = this.generateNonceMetadataParams("getOrSetNonce", oAuthKey, randomNonce);
         String nonceData = Base64.encodeBytes(new Gson().toJson(nonceParams.getSet_data()).getBytes(StandardCharsets.UTF_8));
         Map<BigInteger, Share> shareJsons = new HashMap<>();
@@ -1181,9 +1181,9 @@ public class TorusUtils {
                 throw new Exception("Missing node pub key for node index: " + nodeIndexesBn.get(i).toString());
             }
             ECPoint nodePubKey = curve.getCurve().createPoint(new BigInteger(torusNodePubs[i].getX(), 16), new BigInteger(torusNodePubs[i].getY(), 16));
-            String ephemKey = "04" + Utils.getPubKey(nodePubKey.toString());
+            String ephemKey = "04" + Utils.getPubKey(nodePubKey.getXCoord().toString() + nodePubKey.getYCoord().toString());
             String ivKey = Utils.randomString(32);
-            AES256CBC aes256CBC = new AES256CBC(nodePubKey.toString(), ephemKey, ivKey);
+            AES256CBC aes256CBC = new AES256CBC(nodePubKey.getXCoord().toString() + nodePubKey.getYCoord().toString(), ephemKey, ivKey);
             String cipherText = aes256CBC.encrypt(Utils.convertToByteArray(shareJson));
             String mac = aes256CBC.getMacKey();
             ShareMetadata encShareMetadata = new ShareMetadata(ivKey, ephemKey, cipherText, mac);
@@ -1191,12 +1191,12 @@ public class TorusUtils {
         }
 
         for (int i = 0; i < nodeIndexesBn.size(); i++) {
-            Share share = shares.get(nodeIndexesBn.get(i).toString());
+            Share share = shares.get(shares.keySet().toArray()[i]);
             ShareMetadata encParams = encShares.get(i);
             ShareMetadata encParamsMetadata = encParamsBufToHex(encParams);
             ImportedShare shareData = new ImportedShare(oAuthPubkeyX,
                     oAuthPubkeyY, encParamsMetadata.getCiphertext(), encParamsMetadata,
-                    Integer.parseInt(shareJsons.get("shareIndex").toString()), "secp256k1", nonceData,
+                    Integer.parseInt(share.getShareIndex().toString()), "secp256k1", nonceData,
                     nonceParams.getSignature());
             sharesData.add(shareData);
         }
