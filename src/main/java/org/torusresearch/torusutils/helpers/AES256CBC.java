@@ -2,9 +2,6 @@ package org.torusresearch.torusutils.helpers;
 
 import org.torusresearch.torusutils.types.TorusException;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -12,6 +9,10 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECFieldFp;
 import java.security.spec.EllipticCurve;
 import java.util.Arrays;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class AES256CBC {
     private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
@@ -94,5 +95,9 @@ public class AES256CBC {
 
     private AlgorithmParameterSpec makeIv() {
         return new IvParameterSpec(ENCRYPTION_IV);
+    }
+
+    public String getMacKey() {
+        return Utils.bytesToHex(AES_ENCRYPTION_KEY);
     }
 }

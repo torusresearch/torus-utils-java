@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -369,7 +370,7 @@ public class Utils {
         for (byte b : bytes) {
             sb.append(String.format("%02X", b));
         }
-        return sb.toString();
+        return sb.toString().toLowerCase(Locale.ROOT);
     }
 
     public static boolean isSapphireNetwork(String network) {
