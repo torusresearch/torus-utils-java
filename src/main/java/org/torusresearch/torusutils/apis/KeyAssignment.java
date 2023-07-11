@@ -6,7 +6,7 @@ import org.torusresearch.torusutils.types.GetOrSetNonceResult;
 import java.util.HashMap;
 
 public class KeyAssignment {
-    private String index;
+    //new schema keys
     private PubKey public_key;
     private String threshold;
     private String node_index;
@@ -17,6 +17,7 @@ public class KeyAssignment {
     private ShareMetadata share_metadata;
     private GetOrSetNonceResult nonce_data;
 
+    //Old schema keys
     private PubKey PublicKey;
     private Integer Threshold;
     private HashMap<String, String[]> Verifiers;
@@ -24,10 +25,6 @@ public class KeyAssignment {
     private ShareMetadata Metadata;
 
     public KeyAssignment() {
-    }
-
-    public String getIndex() {
-        return index;
     }
 
     public PubKey getPublicKey(String network) {
