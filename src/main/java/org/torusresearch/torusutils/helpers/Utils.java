@@ -4,9 +4,6 @@ import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
 
 import com.google.gson.Gson;
 
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
@@ -214,7 +211,7 @@ public class Utils {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
                             VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
                             String pubNonceX = null;
-                            if (verifierLookupResponse.getKeys().get(0).getNonceData() != null) {
+                            if (verifierLookupResponse.getKeys().get(0).getNonceData() != null && !verifierLookupResponse.getKeys().get(0).getNonceData().equals("")) {
                                 pubNonceX = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce().getX();
                             }
                             if (pubNonceX != null) {
@@ -393,12 +390,10 @@ public class Utils {
         ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
         byte[] hashedData = Hash.sha3(data.getBytes(StandardCharsets.UTF_8));
         ECDSASignature signature = derivedECKeyPair.sign(hashedData);
-        ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(new ASN1Integer(signature.r));
-        v.add(new ASN1Integer(signature.s));
-        DERSequence der = new DERSequence(v);
-        byte[] sigBytes = der.getEncoded();
-        return bytesToHex(sigBytes);
+        String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
+        byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
+        String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
+        return finalSig;
     }
 
     public static String randomString(int len) {
@@ -582,5 +577,16 @@ public class Utils {
         byte[] decodedBytes = Base64.decode(base64String);
         String hexString = bytesToHex(decodedBytes);
         return hexString;
+    }
+
+    public static byte[] fromHexString(final String encoded) {
+        final byte result[] = new byte[encoded.length() / 2];
+        final char enc[] = encoded.toCharArray();
+        for (int i = 0; i < enc.length; i += 2) {
+            StringBuilder curr = new StringBuilder(2);
+            curr.append(enc[i]).append(enc[i + 1]);
+            result[i / 2] = (byte) Integer.parseInt(curr.toString(), 16);
+        }
+        return result;
     }
 }
