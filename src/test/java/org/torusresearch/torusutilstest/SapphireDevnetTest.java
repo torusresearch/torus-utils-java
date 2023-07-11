@@ -68,7 +68,7 @@ public class SapphireDevnetTest {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.SAPPHIRE_DEVNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
-        opts.setNetwork(TorusNetwork.SAPPHIRE_MAINNET.toString());
+        opts.setNetwork(TorusNetwork.SAPPHIRE_DEVNET.toString());
         opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         opts.setEnableOneKey(true);
         torusUtils = new TorusUtils(opts);
@@ -235,7 +235,7 @@ public class SapphireDevnetTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(HashEnabledVerifier, TORUS_TEST_EMAIL).get();
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
-        TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0xF79b5ffA48463eba839ee9C97D61c6063a96DA03", torusPublicKey.getFinalKeyData().getEvmAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219",
@@ -263,7 +263,7 @@ public class SapphireDevnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertNotNull(retrieveSharesResponse.getFinalKeyData().getEvmAddress());
-        assertNotEquals("", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assertNotEquals(retrieveSharesResponse.getFinalKeyData().getEvmAddress(), "");
     }
 
     // TODO Check below test case is failing

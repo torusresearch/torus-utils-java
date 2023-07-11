@@ -58,7 +58,6 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -824,28 +823,6 @@ public class TorusUtils {
         }
     }
 
-    public MetadataParams generateMetadataParams(String message, BigInteger privateKey) {
-        long timeMillis = System.currentTimeMillis() / 1000L;
-        BigInteger timestamp = this.options.getServerTimeOffset().add(new BigInteger(String.valueOf(timeMillis)));
-        MetadataParams.MetadataSetData setData = new MetadataParams.MetadataSetData(message, timestamp.toString(16));
-        ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
-        String derivedPubKeyString = Utils.padLeft(derivedECKeyPair.getPublicKey().toString(16), '0', 128);
-        String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
-        String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
-        if (!options.isLegacyNonce()) {
-            derivedPubKeyX = Utils.stripPaddingLeft(derivedPubKeyX, '0');
-            derivedPubKeyY = Utils.stripPaddingLeft(derivedPubKeyY, '0');
-        }
-        Gson gson = new Gson();
-        String setDataString = gson.toJson(setData);
-        byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
-        ECDSASignature signature = derivedECKeyPair.sign(hashedData);
-        String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
-        byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
-        String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
-        return new MetadataParams(derivedPubKeyX, derivedPubKeyY, setData, finalSig);
-    }
-
     public String generateAddressFromPrivKey(String privateKey) {
         BigInteger privKey = new BigInteger(privateKey, 16);
         return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.toByteArray())));
@@ -1135,7 +1112,7 @@ public class TorusUtils {
     public CompletableFuture<RetrieveSharesResponse> importPrivateKey(String[] endpoints, BigInteger[] nodeIndexes,
                                                                       TorusNodePub[] torusNodePubs, String verifier, HashMap<String, Object> verifierParams, String idToken,
                                                                       String newPrivateKey, HashMap<String, Object> extraParams) throws Exception {
-        if (isLegacyNetwork())
+        if (this.isLegacyNetwork())
             throw new Exception("This function is not supported on legacy networks");
         if (endpoints.length != nodeIndexes.length) {
             throw new Exception("Length of endpoints array must be the same as the length of nodeIndexes array");
@@ -1159,7 +1136,13 @@ public class TorusUtils {
         Polynomial poly = Utils.generateRandomPolynomial(degree, oAuthKey, null);
         HashMap<BigInteger, Share> shares = poly.generateShares(nodeIndexesBn.toArray(new BigInteger[0]));
         NonceMetadataParams nonceParams = this.generateNonceMetadataParams("getOrSetNonce", oAuthKey, randomNonce);
-        String nonceData = Base64.encodeBytes(new Gson().toJson(nonceParams.getSet_data()).getBytes(StandardCharsets.UTF_8));
+        String nonceJsonData = new Gson().toJson(nonceParams.getSet_data());
+        System.out.println("nonceJsonData: " + nonceJsonData);
+
+        String nonceData = new String(Base64.encodeBytesToBytes(nonceJsonData.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+        //String nonceData = Base64.encodeBytes(tempData.getBytes(StandardCharsets.UTF_8));
+        System.out.println("base64_encoded_nonceData: " + nonceData);
+
         Map<BigInteger, Share> shareJsons = new HashMap<>();
         shareJsons.putAll(shares);
 
@@ -1175,16 +1158,8 @@ public class TorusUtils {
             ECPoint nodePubKey = curve.getCurve().createPoint(new BigInteger(torusNodePubs[i].getX(), 16), new BigInteger(torusNodePubs[i].getY(), 16));
             String ephemKey = "04" + Utils.getPubKey(nodePubKey.getXCoord().toString() + nodePubKey.getYCoord().toString());
             String ivKey = Utils.bytesToHex(Utils.randomString(16).getBytes(StandardCharsets.UTF_8));
-            System.out.println(Utils.randomString(32));
-            System.out.println("ivKey:  " + ivKey + " ivKey Length: " + ivKey.length());
             AES256CBC aes256CBC = new AES256CBC(nodePubKey.getXCoord().toString() + nodePubKey.getYCoord().toString(), ephemKey, ivKey);
-            System.out.println("ShareinHex:  " + share.getShare().toString(16));
-            System.out.println("sharelength: " + share.getShare().toString(16).length());
             String cipherText = Utils.convertBase64ToHex(aes256CBC.encrypt(Utils.fromHexString(share.getShare().toString(16))));
-            System.out.println("EncryptRes: " + aes256CBC.encrypt(Utils.fromHexString(share.getShare().toString(16))));
-            System.out.println("EncryptResLength: " + aes256CBC.encrypt(Utils.fromHexString(share.getShare().toString(16))).length());
-            System.out.println("cipherTExt: " + cipherText);
-            System.out.println("cipherTextLength: " + cipherText.length());
             String mac = aes256CBC.getMacKey();
             ShareMetadata encShareMetadata = new ShareMetadata(ivKey, ephemKey, cipherText, mac, "AES256");
             encShares.add(encShareMetadata);
@@ -1192,8 +1167,7 @@ public class TorusUtils {
 
         for (int i = 0; i < nodeIndexesBn.size(); i++) {
             Share share = shares.get(shares.keySet().toArray()[i]);
-            ShareMetadata encParams = encShares.get(i);
-            ShareMetadata encParamsMetadata = encParams;
+            ShareMetadata encParamsMetadata = encShares.get(i);
             ImportedShare shareData = new ImportedShare(oAuthPubkeyX,
                     oAuthPubkeyY, encParamsMetadata.getCiphertext(), encParamsMetadata,
                     Integer.parseInt(share.getShareIndex().toString()), "secp256k1", nonceData,
@@ -1204,23 +1178,53 @@ public class TorusUtils {
         return retrieveShares(endpoints, nodeIndexes, verifier, verifierParams, idToken, extraParams, getMigratedNetworkInfo(legacyNetworkMigrationInfo), sharesData.toArray(new ImportedShare[0]));
     }
 
-    public NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce) throws IOException {
-        ECKeyPair key = ECKeyPair.create(privateKey);
-
-        BigInteger timestamp = BigInteger.valueOf(System.currentTimeMillis() / 1000L);
-
+    public NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce) {
+        long timeMillis = System.currentTimeMillis() / 1000L;
+        BigInteger timestamp = this.options.getServerTimeOffset().add(new BigInteger(String.valueOf(timeMillis)));
+        ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
+        String derivedPubKeyString = Utils.padLeft(derivedECKeyPair.getPublicKey().toString(16), '0', 128);
+        String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
+        String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
         SetNonceData setNonceData = new SetNonceData(operation, timestamp.toString(16));
-        if (nonce != null) {
-            setNonceData.setData(nonce.toString(16));
+        if (!options.isLegacyNonce()) {
+            derivedPubKeyX = Utils.stripPaddingLeft(derivedPubKeyX, '0');
+            derivedPubKeyY = Utils.stripPaddingLeft(derivedPubKeyY, '0');
         }
+        if (nonce != null) {
+            setNonceData.setData(Utils.padLeft(nonce.toString(16), '0', 64));
+        }
+        Gson gson = new Gson();
+        String setDataString = gson.toJson(setNonceData);
+        System.out.println("nonceData " + setDataString);
+        byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
+        ECDSASignature signature = derivedECKeyPair.sign(hashedData);
+        String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
+        byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
+        String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
+        System.out.println("signature: " + sig);
+        return new NonceMetadataParams(derivedPubKeyX, derivedPubKeyY, setNonceData, finalSig);
+    }
 
-        String sig = Utils.getECDSASignature(privateKey, setNonceData.toString());
-
-        String pubKeyString = Utils.padLeft(key.getPublicKey().toString(16), '0', 128);
-        String pubKeyX = pubKeyString.substring(0, pubKeyString.length() / 2);
-        String pubKeyY = pubKeyString.substring(pubKeyString.length() / 2);
-
-        return new NonceMetadataParams(pubKeyX, pubKeyY, setNonceData, sig);
+    public MetadataParams generateMetadataParams(String message, BigInteger privateKey) {
+        long timeMillis = System.currentTimeMillis() / 1000L;
+        BigInteger timestamp = this.options.getServerTimeOffset().add(new BigInteger(String.valueOf(timeMillis)));
+        MetadataParams.MetadataSetData setData = new MetadataParams.MetadataSetData(message, timestamp.toString(16));
+        ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
+        String derivedPubKeyString = Utils.padLeft(derivedECKeyPair.getPublicKey().toString(16), '0', 128);
+        String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
+        String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
+        if (!options.isLegacyNonce()) {
+            derivedPubKeyX = Utils.stripPaddingLeft(derivedPubKeyX, '0');
+            derivedPubKeyY = Utils.stripPaddingLeft(derivedPubKeyY, '0');
+        }
+        Gson gson = new Gson();
+        String setDataString = gson.toJson(setData);
+        byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
+        ECDSASignature signature = derivedECKeyPair.sign(hashedData);
+        String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
+        byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
+        String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
+        return new MetadataParams(derivedPubKeyX, derivedPubKeyY, setData, finalSig);
     }
 
     /*public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean doesKeyAssign) {
