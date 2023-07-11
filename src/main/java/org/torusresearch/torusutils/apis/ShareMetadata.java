@@ -8,11 +8,12 @@ public class ShareMetadata {
     private String mode;
     private String ciphertext;
 
-    public ShareMetadata(String iv, String ephemPublicKey, String ciphertext, String mac) {
+    public ShareMetadata(String iv, String ephemPublicKey, String ciphertext, String mac, String mode) {
         this.iv = iv;
         this.ephemPublicKey = ephemPublicKey;
         this.mac = mac;
         this.ciphertext = ciphertext;
+        this.mode = mode;
     }
 
     public String getIv() {

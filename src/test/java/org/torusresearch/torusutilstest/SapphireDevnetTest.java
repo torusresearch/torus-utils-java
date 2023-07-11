@@ -279,7 +279,7 @@ public class SapphireDevnetTest {
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), verifierArgs).get();
         assertEquals("0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30", torusPublicKey.getFinalKeyData().getEvmAddress());
         TorusPublicKey torusPublicKey1 = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), null, verifierArgs).get();
-        assertEquals(torusPublicKey1.getFinalKeyData().getEvmAddress(), torusPublicKey1.getFinalKeyData().getEvmAddress());
+        assertEquals(torusPublicKey1.getFinalKeyData().getEvmAddress(), torusPublicKey.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("should allow test tss verifier id to fetch shares")

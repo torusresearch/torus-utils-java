@@ -385,14 +385,9 @@ public class Utils {
         }
     }
 
-    public static ShareMetadata encParamsBufToHex(ShareMetadata encParams) {
-        return new ShareMetadata(
-                bytesToHex(encParams.getIv().getBytes(StandardCharsets.UTF_8)),
-                bytesToHex(encParams.getEphemPublicKey().getBytes(StandardCharsets.UTF_8)),
-                bytesToHex(encParams.getCiphertext().getBytes(StandardCharsets.UTF_8)),
-                bytesToHex(encParams.getMac().getBytes(StandardCharsets.UTF_8))
-        );
-    }
+    private static final char[] DIGITS
+            = {'0', '1', '2', '3', '4', '5', '6', '7',
+            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     public static String getECDSASignature(BigInteger privateKey, String data) throws IOException {
         ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
@@ -562,5 +557,30 @@ public class Utils {
         oos.writeObject(object);
         oos.flush();
         return bos.toByteArray();
+    }
+
+    public static ShareMetadata encParamsBufToHex(ShareMetadata encParams) {
+        return new ShareMetadata(
+                bytesToHex(encParams.getIv().getBytes(StandardCharsets.UTF_8)),
+                bytesToHex(encParams.getEphemPublicKey().getBytes(StandardCharsets.UTF_8)),
+                bytesToHex(encParams.getCiphertext().getBytes(StandardCharsets.UTF_8)),
+                bytesToHex(encParams.getMac().getBytes(StandardCharsets.UTF_8)),
+                "AES256"
+        );
+    }
+
+    public static String toHex(byte[] data) {
+        final StringBuffer sb = new StringBuffer(data.length * 2);
+        for (byte datum : data) {
+            sb.append(DIGITS[(datum >>> 4) & 0x0F]);
+            sb.append(DIGITS[datum & 0x0F]);
+        }
+        return sb.toString();
+    }
+
+    public static String convertBase64ToHex(String base64String) throws IOException {
+        byte[] decodedBytes = Base64.decode(base64String);
+        String hexString = bytesToHex(decodedBytes);
+        return hexString;
     }
 }

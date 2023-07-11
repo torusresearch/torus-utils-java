@@ -165,12 +165,12 @@ public class MainnetTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
+        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0xB4d9D085AA7f28dC60De88e343A32363079b4A59",
                         "31600521026132112170505875906080018823972474568844927151389160616822189112799",
                         "17273036880415366106658985805391994876983148722894059515138336751166359563553",
-                        "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
+                        "0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
                 new OAuthKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
                         "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
@@ -202,9 +202,9 @@ public class MainnetTest {
                         "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",
                         "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
                         "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
-                new SessionData(null, ""),
+                new SessionData(new ArrayList<>(), ""),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
-                new NodesData(null)
+                new NodesData(new ArrayList<>())
         ));
     }
 }

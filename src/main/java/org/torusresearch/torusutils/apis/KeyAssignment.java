@@ -8,8 +8,8 @@ import java.util.HashMap;
 public class KeyAssignment {
     private String index;
     private PubKey public_key;
-    private Long threshold;
-    private Long node_index;
+    private String threshold;
+    private String node_index;
     private HashMap<String, String[]> verifiers;
     private String share;
     private ShareMetadata metadata;
@@ -38,7 +38,7 @@ public class KeyAssignment {
         }
     }
 
-    public Long getThreshold() {
+    public String getThreshold() {
         return threshold;
     }
 
@@ -62,7 +62,7 @@ public class KeyAssignment {
         return nonceResult;
     }
 
-    public Long getNodeIndex() {
+    public String getNodeIndex() {
         return node_index;
     }
 
