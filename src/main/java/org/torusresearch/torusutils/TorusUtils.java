@@ -1,7 +1,5 @@
 package org.torusresearch.torusutils;
 
-import static org.torusresearch.torusutils.helpers.Utils.encParamsBufToHex;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -61,6 +59,7 @@ import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.Provider;
@@ -357,11 +356,6 @@ public class TorusUtils {
                         // for imported keys in legacy networks
                         metadataNonce = this.getMetadata(new MetadataPubKey(oAuthKeyX, oAuthKeyY)).get();
                         BigInteger privateKeyWithNonce = oAuthKey.add(metadataNonce).mod(secp256k1N);
-                        finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthKeyX, 16), new BigInteger(oAuthKeyX, 16));
-                        finalPubKey = finalPubKey.add(curve.getG().multiply(metadataNonce)).normalize();
-
-                        ECKeyPair finalKC = ECKeyPair.create(privateKeyWithNonce);
-
                         GetOrSetNonceResult nonceResult = this.getNonce(privateKeyWithNonce).get();
                         if (nonceResult.getPubNonce() != null)
                             finalPubKey = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
@@ -370,9 +364,7 @@ public class TorusUtils {
                     String oAuthKeyAddress = this.generateAddressFromPrivKey(oAuthKey.toString(16));
                     String finalEvmAddress = "";
                     if (finalPubKey != null) {
-                        String s = Utils.padLeft(finalPubKey.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(finalPubKey.getAffineYCoord().toString(), '0', 64);
-                        finalEvmAddress = Keys.toChecksumAddress(Hash.sha3(s).substring(64 - 38));
-                        //finalEvmAddress = generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger(), finalPubKey.normalize().getAffineYCoord().toBigInteger());
+                        finalEvmAddress = generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger(), finalPubKey.normalize().getAffineYCoord().toBigInteger());
                     }
 
                     String finalPrivKey = "";
@@ -389,13 +381,13 @@ public class TorusUtils {
                     }
 
                     return CompletableFuture.completedFuture(new RetrieveSharesResponse(new FinalKeyData(finalEvmAddress,
-                            finalPubKey != null ? finalPubKey.getXCoord().toString() : null,
-                            finalPubKey != null ? finalPubKey.getYCoord().toString() : null,
+                            finalPubKey != null ? finalPubKey.getXCoord().toString() : "",
+                            finalPubKey != null ? finalPubKey.getYCoord().toString() : "",
                             finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthKeyX, oAuthKeyY, oAuthKey.toString(16)),
-                            new SessionData(null, ""),
+                            new SessionData(new ArrayList<>(), ""),
                             new Metadata(pubKeyNonceResult, metadataNonce, typeOfUser, isUpgraded),
-                            new NodesData(null)));
+                            new NodesData(new ArrayList<>())));
                 } catch (Exception ex) {
                     CompletableFuture<RetrieveSharesResponse> cfRes = new CompletableFuture<>();
                     cfRes.completeExceptionally(new TorusException("Torus Internal Error", ex));
@@ -492,7 +484,7 @@ public class TorusUtils {
                             verifierParams.put("pub_key_x", importedShares[i].getPub_key_x());
                             verifierParams.put("pub_key_y", importedShares[i].getPub_key_y());
                             verifierParams.put("encrypted_share", importedShares[i].getEncrypted_share());
-                            verifierParams.put("encrypted_share_metadata", importedShares[i].getEncrypted_share());
+                            verifierParams.put("encrypted_share_metadata", importedShares[i].getEncrypted_share_metadata());
                             verifierParams.put("node_index", importedShares[i].getNode_index());
                             verifierParams.put("key_type", importedShares[i].getKey_type());
                             verifierParams.put("nonce_data", importedShares[i].getNonce_data());
@@ -612,7 +604,7 @@ public class TorusUtils {
                                                 if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
                                                     KeyAssignment firstKey = currentShareResponse.getKeys()[0];
                                                     if (firstKey.getNodeIndex() != null) {
-                                                        nodeIndexes.add(BigInteger.valueOf(firstKey.getNodeIndex()));
+                                                        nodeIndexes.add(new BigDecimal(firstKey.getNodeIndex()).toBigInteger());
                                                     }
                                                     if (firstKey.getMetadata(networkMigrated) != null) {
                                                         try {
@@ -1174,7 +1166,7 @@ public class TorusUtils {
         List<ImportedShare> sharesData = new ArrayList<>();
         List<ShareMetadata> encShares = new ArrayList<>();
         for (int i = 0; i < nodeIndexesBn.size(); i++) {
-            Share share = shares.get(nodeIndexesBn.get(i).toString());
+            Share share = shares.get(shares.keySet().toArray()[i]);
             Map<String, Share> shareJson = new HashMap<>();
             shareJson.put("share", share);
             if (torusNodePubs[i] == null) {
@@ -1182,18 +1174,26 @@ public class TorusUtils {
             }
             ECPoint nodePubKey = curve.getCurve().createPoint(new BigInteger(torusNodePubs[i].getX(), 16), new BigInteger(torusNodePubs[i].getY(), 16));
             String ephemKey = "04" + Utils.getPubKey(nodePubKey.getXCoord().toString() + nodePubKey.getYCoord().toString());
-            String ivKey = Utils.randomString(32);
+            String ivKey = Utils.bytesToHex(Utils.randomString(16).getBytes(StandardCharsets.UTF_8));
+            System.out.println(Utils.randomString(32));
+            System.out.println("ivKey:  " + ivKey + " ivKey Length: " + ivKey.length());
             AES256CBC aes256CBC = new AES256CBC(nodePubKey.getXCoord().toString() + nodePubKey.getYCoord().toString(), ephemKey, ivKey);
-            String cipherText = aes256CBC.encrypt(Utils.convertToByteArray(shareJson));
+            System.out.println("ShareinHex:  " + share.getShare().toString(16));
+            System.out.println("sharelength: " + share.getShare().toString(16).length());
+            String cipherText = Utils.convertBase64ToHex(aes256CBC.encrypt(Utils.fromHexString(share.getShare().toString(16))));
+            System.out.println("EncryptRes: " + aes256CBC.encrypt(Utils.fromHexString(share.getShare().toString(16))));
+            System.out.println("EncryptResLength: " + aes256CBC.encrypt(Utils.fromHexString(share.getShare().toString(16))).length());
+            System.out.println("cipherTExt: " + cipherText);
+            System.out.println("cipherTextLength: " + cipherText.length());
             String mac = aes256CBC.getMacKey();
-            ShareMetadata encShareMetadata = new ShareMetadata(ivKey, ephemKey, cipherText, mac);
+            ShareMetadata encShareMetadata = new ShareMetadata(ivKey, ephemKey, cipherText, mac, "AES256");
             encShares.add(encShareMetadata);
         }
 
         for (int i = 0; i < nodeIndexesBn.size(); i++) {
             Share share = shares.get(shares.keySet().toArray()[i]);
             ShareMetadata encParams = encShares.get(i);
-            ShareMetadata encParamsMetadata = encParamsBufToHex(encParams);
+            ShareMetadata encParamsMetadata = encParams;
             ImportedShare shareData = new ImportedShare(oAuthPubkeyX,
                     oAuthPubkeyY, encParamsMetadata.getCiphertext(), encParamsMetadata,
                     Integer.parseInt(share.getShareIndex().toString()), "secp256k1", nonceData,

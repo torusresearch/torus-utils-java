@@ -318,9 +318,9 @@ public class SapphireMainnetTest {
             put("verifier_id", email);
         }}, hashedIdToken).get();
         assertNotNull(result.finalKeyData.evmAddress);
-        assertNotEquals("", result.finalKeyData.evmAddress);
+        assertNotEquals(result.finalKeyData.evmAddress, "");
         assertNotNull(result.oAuthKeyData.evmAddress);
-        assertNotEquals("", result.oAuthKeyData.evmAddress);
+        assertNotEquals(result.oAuthKeyData.evmAddress, "");
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertNotNull(result.metadata.nonce);
         assertFalse(result.metadata.upgraded);
@@ -333,17 +333,17 @@ public class SapphireMainnetTest {
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xF79b5ffA48463eba839ee9C97D61c6063a96DA03", torusPublicKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB", torusPublicKey.getFinalKeyData().getEvmAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
-                new OAuthPubKeyData("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219",
-                        "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67",
-                        "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0"),
-                new FinalPubKeyData("0xF79b5ffA48463eba839ee9C97D61c6063a96DA03",
-                        "21cd0ae3168d60402edb8bd65c58ff4b3e0217127d5bb5214f03f84a76f24d8a",
-                        "575b7a4d0ef9921b3b1b84f30d412e87bc69b4eab83f6706e247cceb9e985a1e"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d",
-                        "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e"),
-                        new BigInteger("51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d", 16), TypeOfUser.v2, false),
+                new OAuthPubKeyData("0xeBe48BE7693a36Ff562D18c4494AC4496A45EaaC",
+                        "147d0a97d498ac17172dd92546617e06f2c32c405d414dfc06632b8fbcba93d8",
+                        "cc6e57662c3866c4316c05b0fe902db9aaf5541fbf5fda854c3b4634eceeb43c"),
+                new FinalPubKeyData("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB",
+                        "b943bfdc29c515195270d3a219da6a57bcaf6e58e57d03e2accb8c716e6949c8",
+                        "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90"),
+                new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
+                        "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
+                        new BigInteger("3c2b6ba5b54ca0ba4ae978eb48429a84c47b7b3e526b35e7d46dd716887f52bf", 16), TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
     }

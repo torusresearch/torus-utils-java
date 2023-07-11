@@ -6,7 +6,7 @@ import org.torusresearch.torusutils.types.GetOrSetNonceResult;
 import java.util.HashMap;
 
 public class KeyAssignment {
-    private String index;
+    private Index index;
     private PubKey public_key;
     private String threshold;
     private String node_index;
@@ -26,7 +26,7 @@ public class KeyAssignment {
     public KeyAssignment() {
     }
 
-    public String getIndex() {
+    public Index getIndex() {
         return index;
     }
 

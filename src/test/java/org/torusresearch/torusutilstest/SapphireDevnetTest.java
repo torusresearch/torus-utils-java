@@ -57,7 +57,7 @@ public class SapphireDevnetTest {
     static String TORUS_TEST_VERIFIER = "torus-test-health";
     static String TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate";
 
-    static String TORUS_IMPORT_EMAIL = "importeduser2@tor.us";
+    static String TORUS_IMPORT_EMAIL = "importeduser5@tor.us";
     static String TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com";
     static String HashEnabledVerifier = "torus-test-verifierid-hash";
 
@@ -344,6 +344,14 @@ public class SapphireDevnetTest {
                 }}, idToken, privHex, null).get();
         assertEquals(response.finalKeyData.privKey, privHex);
     }
+
+    @Test
+    public void generateIdToken() throws Exception {
+        String email = "cuspedrafael@hotmail.co.uk";
+        String idToken = JwtUtils.generateIdToken(email, algorithmRs);
+        System.out.println("idToken" + idToken);
+    }
+
 
     @DisplayName("hould be able to import a key for a existing user")
     @Test
