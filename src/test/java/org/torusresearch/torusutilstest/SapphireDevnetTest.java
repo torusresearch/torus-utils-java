@@ -353,7 +353,7 @@ public class SapphireDevnetTest {
     }
 
 
-    @DisplayName("hould be able to import a key for a existing user")
+    @DisplayName("should be able to import a key for a existing user")
     @Test
     public void shouldImportKeyForExistingUser() throws Exception {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_VERIFIER, algorithmRs);
