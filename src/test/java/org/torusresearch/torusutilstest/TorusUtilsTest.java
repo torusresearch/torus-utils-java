@@ -73,7 +73,7 @@ public class TorusUtilsTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
-        VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL, "extendedVerifierId");
+        VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0x9bcBAde70546c0796c00323CD1b97fa0a425A506", publicAddress.getFinalKeyData().getEvmAddress());
@@ -95,15 +95,15 @@ public class TorusUtilsTest {
         VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0x5b56E06009528Bffb1d6336575731ee3B63f6150", key.getFinalKeyData().getEvmAddress());
+        assertEquals("0x9bcBAde70546c0796c00323CD1b97fa0a425A506", key.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v1, key.getMetadata().typeOfUser);
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
-                new OAuthPubKeyData("0x5b56E06009528Bffb1d6336575731ee3B63f6150",
-                        "38a259ba42875243bba7254dd75eb3b448d83f03726ca1359fd0262faa8cede7",
-                        "3ad7aece972e471eed7002149e830c0f5b60be93ad91bb7313437bd0702b3d79"),
-                new FinalPubKeyData("0x5b56E06009528Bffb1d6336575731ee3B63f6150",
-                        "38a259ba42875243bba7254dd75eb3b448d83f03726ca1359fd0262faa8cede7",
-                        "3ad7aece972e471eed7002149e830c0f5b60be93ad91bb7313437bd0702b3d79"),
+                new OAuthPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
+                        "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
+                        "1cf2ea7ac63ee1a34da2330413692ba8538bf7cd6512327343d918e0102a1438"),
+                new FinalPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
+                        "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
+                        "1cf2ea7ac63ee1a34da2330413692ba8538bf7cd6512327343d918e0102a1438"),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
         ));

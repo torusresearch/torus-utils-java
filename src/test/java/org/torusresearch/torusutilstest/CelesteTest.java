@@ -204,9 +204,9 @@ public class CelesteTest {
                         "df6eb11d52e76b388a44896e9442eda17096c2b67b0be957a4ba0b68a70111ca",
                         "bfd29ab1e97b3f7c444bb3e7ad0acb39d72589371387436c7d623d1e83f3d6eb",
                         "356305761eca57f27b09700d76456ad627b084152725dbfdfcfa0abcd9d4f17e"),
-                new SessionData(null, ""),
+                new SessionData(new ArrayList<>(), ""),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
-                new NodesData(null)
+                new NodesData(new ArrayList<>())
         ));
     }
 }

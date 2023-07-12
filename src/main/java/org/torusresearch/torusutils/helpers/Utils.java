@@ -565,7 +565,7 @@ public class Utils {
     }
 
     public static String toHex(byte[] data) {
-        final StringBuffer sb = new StringBuffer(data.length * 2);
+        final StringBuilder sb = new StringBuilder(data.length * 2);
         for (byte datum : data) {
             sb.append(DIGITS[(datum >>> 4) & 0x0F]);
             sb.append(DIGITS[datum & 0x0F]);
@@ -575,13 +575,12 @@ public class Utils {
 
     public static String convertBase64ToHex(String base64String) throws IOException {
         byte[] decodedBytes = Base64.decode(base64String);
-        String hexString = bytesToHex(decodedBytes);
-        return hexString;
+        return bytesToHex(decodedBytes);
     }
 
     public static byte[] fromHexString(final String encoded) {
-        final byte result[] = new byte[encoded.length() / 2];
-        final char enc[] = encoded.toCharArray();
+        final byte[] result = new byte[encoded.length() / 2];
+        final char[] enc = encoded.toCharArray();
         for (int i = 0; i < enc.length; i += 2) {
             StringBuilder curr = new StringBuilder(2);
             curr.append(enc[i]).append(enc[i + 1]);

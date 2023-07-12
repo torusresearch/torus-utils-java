@@ -338,7 +338,7 @@ public class TorusUtils {
                     ECPoint finalPubKey = null;
                     TypeOfUser typeOfUser = TypeOfUser.v1;
                     GetOrSetNonceResult.PubNonce pubKeyNonceResult = null;
-
+                    String finalpubKey = "";
                     if (this.options.isEnableOneKey()) {
                         GetOrSetNonceResult result = this.getNonce(oAuthKey).get();
                         metadataNonce = new BigInteger(Utils.isEmpty(result.getNonce()) ? "0" : result.getNonce(), 16);
@@ -726,7 +726,7 @@ public class TorusUtils {
                         typeOfUser = TypeOfUser.v2;
                         // for tss key no need to add pub nonce
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
-                    } else if (FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
+                    } else if (FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
                         if (this.options.isEnableOneKey()) {
                             nonceResult = this.getNonce(oAuthKey).get();
                             pubNonce = nonceResult.getPubNonce();
@@ -768,7 +768,7 @@ public class TorusUtils {
 
                     Boolean isUpgraded = false;
                     if (typeOfUser.equals(TypeOfUser.v1)) {
-                        isUpgraded = null;
+                        isUpgraded = false;
                     } else if (typeOfUser.equals(TypeOfUser.v2)) {
                         isUpgraded = metadataNonce.equals(BigInteger.ZERO);
                     }
@@ -800,13 +800,13 @@ public class TorusUtils {
     public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, @Nullable ImportedShare[] importedShares) {
         if (isLegacyNetwork())
             return this.legacyRetrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null);
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(legacyNetworkMigrationInfo), importedShares);
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), importedShares);
     }
 
     public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
         if (isLegacyNetwork())
             return this.legacyRetrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null);
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(legacyNetworkMigrationInfo), new ImportedShare[]{});
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), new ImportedShare[]{});
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
@@ -893,7 +893,7 @@ public class TorusUtils {
         });
     }
 
-    public CompletableFuture<TorusPublicKey> _getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended, String networkMigrated) {
+    public CompletableFuture<TorusPublicKey> getNewPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended, String networkMigrated) {
         System.out.println("> torusUtils.java/getPublicAddress " + endpoints + " " + verifierArgs + " " + isExtended);
         AtomicBoolean isNewKey = new AtomicBoolean(false);
         Gson gson = new Gson();
@@ -940,7 +940,7 @@ public class TorusUtils {
                     ECPoint oAuthPubKey = null;
                     ECPoint finalPubKey = null;
 
-                    if (verifierArgs.getExtendedVerifierId() != null) {
+                    if (verifierArgs.getExtendedVerifierId() != null && !verifierArgs.getExtendedVerifierId().equals("")) {
                         finalPubKey = Utils.getPublicKeyFromHex(X, Y);
                         oAuthPubKey = finalPubKey;
                     } else if (FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
@@ -976,7 +976,7 @@ public class TorusUtils {
 
                     TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthX, oAuthY),
                             new FinalPubKeyData(finalAddress, finalX, finalY),
-                            new Metadata(pubNonce, nonce, typeOfUser, nonceResult != null && nonceResult.isUpgraded()),
+                            new Metadata(pubNonce, nonce, TypeOfUser.v2, nonceResult != null && nonceResult.isUpgraded()),
                             new NodesData(nodeIndexes));
                     keyCf.complete(key);
                     return keyCf;
@@ -1051,17 +1051,17 @@ public class TorusUtils {
     public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs, boolean isExtended) {
         if (isLegacyNetwork())
             return _getLegacyPublicAddress(endpoints, torusNodePubs, verifierArgs, isExtended);
-        return _getPublicAddress(endpoints, verifierArgs, isExtended, getMigratedNetworkInfo(legacyNetworkMigrationInfo));
+        return getNewPublicAddress(endpoints, verifierArgs, isExtended, getMigratedNetworkInfo());
     }
 
     public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs) {
         if (isLegacyNetwork())
             return _getLegacyPublicAddress(endpoints, torusNodePubs, verifierArgs, false);
-        return _getPublicAddress(endpoints, verifierArgs, false, getMigratedNetworkInfo(legacyNetworkMigrationInfo));
+        return getNewPublicAddress(endpoints, verifierArgs, false, getMigratedNetworkInfo());
     }
 
-    private String getMigratedNetworkInfo(LegacyNetworkMigrationInfo legacyNetworkMigrationInfo) {
-        return legacyNetworkMigrationInfo != null ? legacyNetworkMigrationInfo.getNetworkMigratedTo().toString() : this.options.getNetwork();
+    private String getMigratedNetworkInfo() {
+        return this.options.getNetwork();
     }
 
     private CompletableFuture<GetOrSetNonceResult> _getOrSetNonce(MetadataParams data) {
@@ -1106,7 +1106,7 @@ public class TorusUtils {
     public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs) {
         if (isLegacyNetwork())
             return _getLegacyPublicAddress(endpoints, torusNodePubs, verifierArgs, false);
-        return _getPublicAddress(endpoints, verifierArgs, false, getMigratedNetworkInfo(legacyNetworkMigrationInfo));
+        return getNewPublicAddress(endpoints, verifierArgs, false, getMigratedNetworkInfo());
     }
 
     public CompletableFuture<RetrieveSharesResponse> importPrivateKey(String[] endpoints, BigInteger[] nodeIndexes,
@@ -1121,7 +1121,7 @@ public class TorusUtils {
         int degree = threshold - 1;
         List<BigInteger> nodeIndexesBn = new ArrayList<>();
 
-        ECKeyPair key = ECKeyPair.create(new BigInteger(newPrivateKey, 16));
+        ECKeyPair key = ECKeyPair.create(new BigInteger(Utils.padLeft(newPrivateKey, '0', 64), 16));
         Collections.addAll(nodeIndexesBn, nodeIndexes);
 
         BigInteger privKeyBn = key.getPrivateKey();
@@ -1169,13 +1169,15 @@ public class TorusUtils {
             Share share = shares.get(shares.keySet().toArray()[i]);
             ShareMetadata encParamsMetadata = encShares.get(i);
             ImportedShare shareData = new ImportedShare(oAuthPubkeyX,
-                    oAuthPubkeyY, encParamsMetadata.getCiphertext(), encParamsMetadata,
-                    Integer.parseInt(share.getShareIndex().toString()), "secp256k1", nonceData,
+                    oAuthPubkeyY,
+                    encParamsMetadata.getCiphertext(), encParamsMetadata,
+                    Integer.parseInt(share.getShareIndex().toString(16)),
+                    "secp256k1", nonceData,
                     nonceParams.getSignature());
             sharesData.add(shareData);
         }
 
-        return retrieveShares(endpoints, nodeIndexes, verifier, verifierParams, idToken, extraParams, getMigratedNetworkInfo(legacyNetworkMigrationInfo), sharesData.toArray(new ImportedShare[0]));
+        return retrieveShares(endpoints, nodeIndexes, verifier, verifierParams, idToken, extraParams, getMigratedNetworkInfo(), sharesData.toArray(new ImportedShare[0]));
     }
 
     public NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce) {
