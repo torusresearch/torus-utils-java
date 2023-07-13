@@ -83,7 +83,7 @@ public class SapphireMainnetTest {
         String verifier = "tkey-google-sapphire-mainnet";
         VerifierArgs args = new VerifierArgs(verifier, TORUS_TEST_EMAIL, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0x327b2742768B436d09153429E762FADB54413Ded", torusPublicKey.getFinalKeyData().getEvmAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xb1a49C6E50a1fC961259a8c388EAf5953FA5152b",
