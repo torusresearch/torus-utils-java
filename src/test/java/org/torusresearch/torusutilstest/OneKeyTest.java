@@ -54,7 +54,7 @@ public class OneKeyTest {
     static String TORUS_TEST_VERIFIER = "torus-test-health";
     static String TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate";
 
-    static String TORUS_TEST_EMAIL = "hello@tor.us";
+    static String TORUS_TEST_EMAIL = "archit1@tor.us";
 
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {

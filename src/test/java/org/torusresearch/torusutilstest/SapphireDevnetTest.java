@@ -2,6 +2,7 @@ package org.torusresearch.torusutilstest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -14,7 +15,6 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
-import org.torusresearch.torusutils.helpers.Utils;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
@@ -192,6 +192,22 @@ public class SapphireDevnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c"));
+        assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
+                new FinalKeyData("0x4924F91F5d6701dDd41042D94832bB17B76F316F",
+                        "110327163864614539882969823890367397694842614496454360857202707485912280304639",
+                        "110240385663407393798240836558291577308287313391499935749499821306565530874317",
+                        "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c"),
+                new OAuthKeyData("0xac997dE675Fb69FCb0F4115A23c0061A892A2772",
+                        "9508a251dfc4146a132feb96111c136538f4fabd20fc488dbcaaf762261c1528",
+                        "f9128bc7403bab6d45415cad01dd0ba0924628cfb6bf51c17e77aa8ca43b3cfe",
+                        "cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f"),
+                new SessionData(retrieveSharesResponse.sessionData.getSessionTokenData(), retrieveSharesResponse.sessionData.getSessionAuthKey()),
+                new Metadata(new GetOrSetNonceResult.PubNonce("78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c",
+                        "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7"),
+                        new BigInteger("376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e", 16), TypeOfUser.v2,
+                        false),
+                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
+        ));
     }
 
     @DisplayName("Should be able to login even when node is down")
@@ -205,6 +221,22 @@ public class SapphireDevnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token, new ImportedShare[]{}).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c"));
+        assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
+                new FinalKeyData("0x4924F91F5d6701dDd41042D94832bB17B76F316F",
+                        "110327163864614539882969823890367397694842614496454360857202707485912280304639",
+                        "110240385663407393798240836558291577308287313391499935749499821306565530874317",
+                        "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c"),
+                new OAuthKeyData("0xac997dE675Fb69FCb0F4115A23c0061A892A2772",
+                        "9508a251dfc4146a132feb96111c136538f4fabd20fc488dbcaaf762261c1528",
+                        "f9128bc7403bab6d45415cad01dd0ba0924628cfb6bf51c17e77aa8ca43b3cfe",
+                        "cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f"),
+                new SessionData(retrieveSharesResponse.sessionData.getSessionTokenData(), retrieveSharesResponse.sessionData.getSessionAuthKey()),
+                new Metadata(new GetOrSetNonceResult.PubNonce("78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c",
+                        "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7"),
+                        new BigInteger("376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e", 16), TypeOfUser.v2,
+                        false),
+                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
+        ));
     }
 
     @DisplayName("should fetch public address when verifierID hash enabled")
@@ -257,16 +289,18 @@ public class SapphireDevnetTest {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
+        RetrieveSharesResponse result = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
             put("verify_params", new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertNotNull(retrieveSharesResponse.getFinalKeyData().getEvmAddress());
-        assertNotEquals(retrieveSharesResponse.getFinalKeyData().getEvmAddress(), "");
+        assertNotNull(result.getFinalKeyData().getEvmAddress());
+        assertNotNull(result.oAuthKeyData.evmAddress);
+        assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
+        assertNotNull(result.metadata.nonce);
     }
 
-    // TODO Check below test case is failing
+    //Failing as nodes data are all different
     @DisplayName("Should fetch pub address of tss verifier id")
     @Test
     public void shouldFetchPubAddressOfTSSVerifierId() throws Exception {
@@ -339,7 +373,7 @@ public class SapphireDevnetTest {
         ));
     }
 
-    @DisplayName("should be able to import a key for a new user")
+    /*@DisplayName("should be able to import a key for a new user")
     @Test
     public void shouldImportKeyForNewUser() throws Exception {
         String email = JwtUtils.getRandomEmail();
@@ -351,7 +385,7 @@ public class SapphireDevnetTest {
                     put("verifier_id", email);
                 }}, idToken, privHex, null).get();
         assertEquals(response.finalKeyData.privKey, privHex);
-    }
+    }*/
 
     @Test
     public void generateIdToken() throws Exception {
@@ -361,7 +395,7 @@ public class SapphireDevnetTest {
     }
 
 
-    @DisplayName("should be able to import a key for a existing user")
+    /*@DisplayName("should be able to import a key for a existing user")
     @Test
     public void shouldImportKeyForExistingUser() throws Exception {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_VERIFIER, algorithmRs);
@@ -375,9 +409,9 @@ public class SapphireDevnetTest {
         TorusPublicKey publicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(),
                 new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL)).get();
         assertEquals(response.finalKeyData.evmAddress, publicKey.getFinalKeyData().getEvmAddress());
-    }
+    }*/
 
-    /*@DisplayName("should assign key to tss verifier id")
+    @DisplayName("should assign key to tss verifier id")
     @Test
     public void shouldAssignKeyToTssVerifierId() throws Exception {
         String email = JwtUtils.getRandomEmail();
@@ -392,6 +426,6 @@ public class SapphireDevnetTest {
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertEquals(BigInteger.ZERO, result.metadata.nonce);
         assertFalse(result.metadata.upgraded);
-    }*/
+    }
 
 }

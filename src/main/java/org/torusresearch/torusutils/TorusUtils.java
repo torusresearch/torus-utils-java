@@ -355,6 +355,8 @@ public class TorusUtils {
                         // for imported keys in legacy networks
                         metadataNonce = this.getMetadata(new MetadataPubKey(oAuthKeyX, oAuthKeyY)).get();
                         BigInteger privateKeyWithNonce = oAuthKey.add(metadataNonce).mod(secp256k1N);
+                        ECKeyPair ecKeyPair = ECKeyPair.create(privateKeyWithNonce);
+
                         GetOrSetNonceResult nonceResult = this.getNonce(privateKeyWithNonce).get();
                         if (nonceResult.getPubNonce() != null)
                             finalPubKey = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
@@ -372,7 +374,7 @@ public class TorusUtils {
                         finalPrivKey = Utils.padLeft(privateKeyWithNonce.toString(16), '0', 64);
                     }
 
-                    Boolean isUpgraded = false;
+                    boolean isUpgraded = false;
                     if (typeOfUser.equals(TypeOfUser.v1)) {
                         isUpgraded = false;
                     } else if (typeOfUser.equals(TypeOfUser.v2)) {
@@ -742,7 +744,9 @@ public class TorusUtils {
                             metadataNonce = this.getMetadata(new MetadataPubKey(oAuthPubkeyX, oAuthPubkeyY)).get();
                             BigInteger privateKeyWithNonce = privateKey.add(metadataNonce).mod(secp256k1N);
                             nonceResult = this.getNonce(privateKeyWithNonce).get();
-                            finalPubKey = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
+                            if (nonceResult.getPubNonce() != null) {
+                                finalPubKey = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
+                            }
                         }
                     } else {
                         typeOfUser = TypeOfUser.v2;
@@ -774,8 +778,8 @@ public class TorusUtils {
                     }
 
                     return CompletableFuture.completedFuture(new RetrieveSharesResponse(new FinalKeyData(finalEvmAddress,
-                            finalPubKey != null ? finalPubKey.getXCoord().toString() : null,
-                            finalPubKey != null ? finalPubKey.getYCoord().toString() : null,
+                            finalPubKey != null ? finalPubKey.normalize().getAffineXCoord().toBigInteger().toString() : null,
+                            finalPubKey != null ? finalPubKey.normalize().getAffineYCoord().toBigInteger().toString() : null,
                             finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthPubkeyX, oAuthPubkeyY, oAuthKey.toString(16)),
                             new SessionData(sessionTokenData, sessionAuthKey.getPrivateKey().toString(16)),

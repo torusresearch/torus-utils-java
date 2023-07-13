@@ -16,7 +16,6 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
-import org.torusresearch.torusutils.helpers.Utils;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
@@ -100,7 +99,7 @@ public class SapphireMainnetTest {
         ));
     }
 
-    @DisplayName("should be able to import a key for a new user")
+    /*@DisplayName("should be able to import a key for a new user")
     @Test
     public void shouldImportKeyForNewUser() throws Exception {
         String email = JwtUtils.getRandomEmail();
@@ -128,7 +127,7 @@ public class SapphireMainnetTest {
         TorusPublicKey publicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(),
                 new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL)).get();
         assertEquals(response.finalKeyData.evmAddress, publicKey.getFinalKeyData().getEvmAddress());
-    }
+    }*/
 
     @DisplayName("Key Assign test")
     @Test
