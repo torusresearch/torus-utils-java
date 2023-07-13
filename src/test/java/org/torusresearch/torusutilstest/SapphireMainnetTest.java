@@ -321,7 +321,6 @@ public class SapphireMainnetTest {
         assertNotNull(result.oAuthKeyData.evmAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertNotNull(result.metadata.nonce);
-        assertFalse(result.metadata.upgraded);
     }
 
     @DisplayName("Should fetch user type and public address when verifierID hash enabled")

@@ -229,7 +229,7 @@ public class Utils {
                     for (String x : lookupResults) {
                         JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
                         VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
-                        if (response.getResult() != null) {
+                        if (response.getResult() != null && verifierLookupResponse.getNodeIndex() != null) {
                             nodeIndexes.add(verifierLookupResponse.getNodeIndex());
                         }
                     }

@@ -952,13 +952,9 @@ public class TorusUtils {
                     } else {
                         typeOfUser = TypeOfUser.v2;
                         oAuthPubKey = Utils.getPublicKeyFromHex(X, Y);
-                        finalPubKey = Utils.getPublicKeyFromHex(nonceResult.getPubNonce().getX(), nonceResult.getPubNonce().getY());
-                        finalPubKey = oAuthPubKey.add(finalPubKey);
-                        pubNonce = nonceResult.getPubNonce();
-
-                        /*nonce = this.getMetadata(new MetadataPubKey(X, Y)).get();
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(X, 16), new BigInteger(Y, 16));
-                        finalPubKey = finalPubKey.add(curve.getG().multiply(nonce)).normalize();*/
+                        finalPubKey = finalPubKey.add(curve.getG().multiply(nonce)).normalize();
+                        pubNonce = nonceResult.getPubNonce();
                     }
 
                     if (oAuthPubKey == null) {
