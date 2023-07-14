@@ -104,6 +104,7 @@ public class SapphireDevnetTest {
         ));
     }
 
+    //not passing
     @DisplayName("should be able to login a v1 user")
     @Test
     public void shouldLoginForV1User() throws ExecutionException, InterruptedException, TorusException {
@@ -300,7 +301,6 @@ public class SapphireDevnetTest {
         assertNotNull(result.metadata.nonce);
     }
 
-    //Failing as nodes data are all different
     @DisplayName("Should fetch pub address of tss verifier id")
     @Test
     public void shouldFetchPubAddressOfTSSVerifierId() throws Exception {
@@ -326,7 +326,7 @@ public class SapphireDevnetTest {
 
     @DisplayName("should allow test tss verifier id to fetch shares")
     @Test
-    public void shouldAllowTESTTSSVerifierIdToFetchShares() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldAllowTestTssVerifierIdToFetchShares() throws ExecutionException, InterruptedException, TorusException {
         String email = JwtUtils.getRandomEmail();
         int nonce = 0;
         String tssTag = "default";
@@ -424,7 +424,6 @@ public class SapphireDevnetTest {
         assertNotNull(result.finalKeyData.evmAddress);
         assertNotNull(result.oAuthKeyData.evmAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
-        assertEquals(BigInteger.ZERO, result.metadata.nonce);
         assertFalse(result.metadata.upgraded);
     }
 

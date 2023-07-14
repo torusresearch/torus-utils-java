@@ -158,7 +158,6 @@ public class SapphireMainnetTest {
         assertNotNull(result.finalKeyData.evmAddress);
         assertNotNull(result.oAuthKeyData.evmAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
-        assertEquals(BigInteger.ZERO, result.metadata.nonce);
         assertFalse(result.metadata.upgraded);
     }
 

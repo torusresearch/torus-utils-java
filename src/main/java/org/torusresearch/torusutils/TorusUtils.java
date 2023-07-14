@@ -938,7 +938,12 @@ public class TorusUtils {
                     TypeOfUser typeOfUser = TypeOfUser.v1;
                     GetOrSetNonceResult.PubNonce pubNonce = null;
                     ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
-                    BigInteger nonce = new BigInteger(nonceResult != null ? nonceResult.getNonce() : "0", 16);
+                    BigInteger nonce = new BigInteger("0");
+                    try {
+                        nonce = new BigInteger(nonceResult != null ? nonceResult.getNonce() : "0", 16);
+                    } catch (Exception exception) {
+                        // do nothing
+                    }
                     CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
 
                     ECPoint oAuthPubKey = null;

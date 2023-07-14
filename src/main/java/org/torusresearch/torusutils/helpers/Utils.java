@@ -8,6 +8,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
@@ -189,7 +190,11 @@ public class Utils {
                     if (x != null && !x.equals("")) {
                         try {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
-                            keyResults.add(Utils.convertToJsonObject(response.getResult()));
+                            JSONObject jsonObject = new JSONObject(Utils.convertToJsonObject(response.getResult()));
+                            if (jsonObject.has("node_index")) {
+                                jsonObject.remove("node_index");
+                            }
+                            keyResults.add(jsonObject.toString());
                         } catch (Exception e) {
                             keyResults.add("");
                         }
