@@ -97,17 +97,17 @@ public class CelesteTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", key.getFinalKeyData().getEvmAddress());
-        assertEquals(TypeOfUser.v1, key.getMetadata().getTypeOfUser());
-        /*assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
+        assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", key.getoAuthKeyData().getEvmAddress());
+        assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242",
                         "d1a99fbec9326f04687daea4261b15b68cc45671554d43e94529d62857bf236c",
-                        "085bc72609f474b7b80081ecdc92d0dca241327195c7655c7a35b601c1f93e8e"),
+                        "85bc72609f474b7b80081ecdc92d0dca241327195c7655c7a35b601c1f93e8e"),
                 new FinalPubKeyData("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242",
                         "d1a99fbec9326f04687daea4261b15b68cc45671554d43e94529d62857bf236c",
-                        "085bc72609f474b7b80081ecdc92d0dca241327195c7655c7a35b601c1f93e8e"),
+                        "85bc72609f474b7b80081ecdc92d0dca241327195c7655c7a35b601c1f93e8e"),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
-        ));*/
+        ));
 
         String v2Verifier = "tkey-google-celeste";
         // 1/1 user
