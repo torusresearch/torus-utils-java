@@ -167,7 +167,6 @@ public class CelesteTest {
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getFinalKeyData().getPrivKey());
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("0ae056aa938080c9e8bf6641261619e09fd510c91bb5aad14b0de9742085a914"));
-        assertEquals("0x58420FB83971C4490D8c9B091f8bfC890D716617", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x1e784B325633D10E0C83540621f769179d2e3b30",
                         "11437151187570330525859293326584557417113863683174119328941497694140550466272",
@@ -181,6 +180,7 @@ public class CelesteTest {
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
         ));
+        assertEquals("0x58420FB83971C4490D8c9B091f8bfC890D716617", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("Aggregate Login test")

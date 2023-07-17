@@ -8,6 +8,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
@@ -193,6 +194,18 @@ public class Utils {
                             JSONObject jsonObject = new JSONObject(Utils.convertToJsonObject(response.getResult()));
                             if (jsonObject.has("node_index")) {
                                 jsonObject.remove("node_index");
+                            }
+                            if (jsonObject.has("keys")) {
+                                JSONArray keysArray = (JSONArray) jsonObject.get("keys");
+                                for (int i = 0; i < keysArray.length(); i++) {
+                                    JSONObject keyObject = (JSONObject) keysArray.get(i);
+                                    if (keyObject.has("key_index")) {
+                                        keyObject.remove("key_index");
+                                    }
+                                    if (keyObject.has("created_at")) {
+                                        keyObject.remove("created_at");
+                                    }
+                                }
                             }
                             keyResults.add(jsonObject.toString());
                         } catch (Exception e) {
