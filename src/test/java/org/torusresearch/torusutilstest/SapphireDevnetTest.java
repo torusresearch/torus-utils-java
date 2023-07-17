@@ -387,13 +387,6 @@ public class SapphireDevnetTest {
         assertEquals(response.finalKeyData.privKey, privHex);
     }*/
 
-    @Test
-    public void generateIdToken() throws Exception {
-        String email = "cuspedrafael@hotmail.co.uk";
-        String idToken = JwtUtils.generateIdToken(email, algorithmRs);
-        System.out.println("idToken" + idToken);
-    }
-
 
     /*@DisplayName("should be able to import a key for a existing user")
     @Test
