@@ -378,8 +378,8 @@ public class TorusUtils {
                     }
 
                     return CompletableFuture.completedFuture(new RetrieveSharesResponse(new FinalKeyData(finalEvmAddress,
-                            finalPubKey != null ? finalPubKey.normalize().getAffineXCoord().toBigInteger().toString() : "",
-                            finalPubKey != null ? finalPubKey.normalize().getAffineYCoord().toBigInteger().toString() : "",
+                            finalPubKey != null ? finalPubKey.normalize().getAffineXCoord().toString() : "",
+                            finalPubKey != null ? finalPubKey.normalize().getAffineYCoord().toString() : "",
                             finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthKeyX, oAuthKeyY, oAuthKey.toString(16)),
                             new SessionData(new ArrayList<>(), ""),

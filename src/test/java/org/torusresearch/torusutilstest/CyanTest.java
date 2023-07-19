@@ -174,8 +174,8 @@ public class CyanTest {
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA",
-                        "24176790489884826382597443084778731905190954980854116197897472583732715112777",
-                        "61720546423576779476850196647877684557407811820484862585243296913271235101378",
+                        "35739417e3be1b1e56cdf8c509d8dee5412712514b18df1bc961ac6465a0c949",
+                        "887497602e62ced686eb99eaa0020b0c0d705cad96eafeec2dd1bbfb6a9d42c2",
                         "1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8"),
                 new OAuthKeyData("0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA",
                         "35739417e3be1b1e56cdf8c509d8dee5412712514b18df1bc961ac6465a0c949",
@@ -201,8 +201,8 @@ public class CyanTest {
         assertEquals("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04",
-                        "79524344903673708192558685913097030026293457628994053140604166547608797381155",
-                        "103734503239097196460811354676761877437823713142200001033653857024216411899357",
+                        "afd12f2476006ef6aa8778190b29676a70039df8688f9dee69c779bdc8ff0223",
+                        "e557a5ee879632727f5979d6b9cea69d87e3dab54a8c1b6685d86dfbfcd785dd",
                         "45a5b62c4ff5490baa75d33bf4f03ba6c5b0095678b0f4055312eef7b780b7bf"),
                 new OAuthKeyData("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04",
                         "afd12f2476006ef6aa8778190b29676a70039df8688f9dee69c779bdc8ff0223",
