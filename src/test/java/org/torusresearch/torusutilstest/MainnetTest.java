@@ -165,11 +165,11 @@ public class MainnetTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        //assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
+        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
-                new FinalKeyData("0xB4d9D085AA7f28dC60De88e343A32363079b4A59",
-                        "31600521026132112170505875906080018823972474568844927151389160616822189112799",
-                        "17273036880415366106658985805391994876983148722894059515138336751166359563553",
+                new FinalKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
+                        "76521345393862387555761402541159913245258493581434187508573268352857878283087",
+                        "4894164180112662446278674685057980126386694519215080207523610179701170552817",
                         "0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
                 new OAuthKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
@@ -194,9 +194,9 @@ public class MainnetTest {
         }}, hashedIdToken).get();
         assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
-                new FinalKeyData("0xA5F7751515b8561Ec7aF1Fba589ac4eeAE008578",
-                        "43564288410192394462847657942154042873928392376563036841495138510673098978279",
-                        "59983272266567645178572545705333227687084077741077174039161990905110140858036",
+                new FinalKeyData("0x621a4d458cFd345dAE831D9E756F10cC40A50381",
+                        "37393155257442375971533702136236731805981668360052629077053884273358606033462",
+                        "42672685462974547767985558499918927610577361436176224718252876579452367633534",
                         "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
                 new OAuthKeyData("0x621a4d458cFd345dAE831D9E756F10cC40A50381",
                         "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",

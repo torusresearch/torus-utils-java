@@ -8,6 +8,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.LegacyNetworkMigrationInfo;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
@@ -1071,7 +1072,11 @@ public class TorusUtils {
                 return;
             }
             try {
-                GetOrSetNonceResult result = gson.fromJson(res, GetOrSetNonceResult.class);
+                JSONObject jsonObject = new JSONObject(res);
+                if (jsonObject.has("ipfs")) {
+                    jsonObject.remove("ipfs");
+                }
+                GetOrSetNonceResult result = gson.fromJson(jsonObject.toString(), GetOrSetNonceResult.class);
                 cf.complete(result);
             } catch (Exception ex2) {
                 cf.completeExceptionally(ex2);

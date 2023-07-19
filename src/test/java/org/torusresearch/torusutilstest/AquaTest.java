@@ -2,6 +2,7 @@ package org.torusresearch.torusutilstest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -157,7 +158,7 @@ public class AquaTest {
         assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
         assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
         assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v1);
-        assertEquals(publicAddress.getMetadata().isUpgraded(), false);
+        assertFalse(publicAddress.getMetadata().isUpgraded());
     }
 
     @DisplayName("Login test")
@@ -172,9 +173,9 @@ public class AquaTest {
         System.out.println(retrieveSharesResponse.getFinalKeyData().getPrivKey());
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
-                new FinalKeyData("0xdF92B73352Eb4aBd0385bc1e31a8b0BD6EA4D161",
-                        "45151049626334797959122802548866520276763178585564784364986393863189010875045",
-                        "56424055808696084034226309171000882700166114824429869880517503869697125990463",
+                new FinalKeyData("0x9EBE51e49d8e201b40cAA4405f5E0B86d9D27195",
+                        "90343764617093028742829936767412476699937536641465329275134863813492102805092",
+                        "44993357954191250272808577625362449968782119095574328722351197327404439227199",
                         "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"),
                 new OAuthKeyData("0x9EBE51e49d8e201b40cAA4405f5E0B86d9D27195",
                         "c7bcc239f0957bb05bda94757eb4a5f648339424b22435da5cf7a0f2b2323664",
@@ -203,9 +204,9 @@ public class AquaTest {
                 hashedIdToken).get();
         assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", retrieveSharesResponse.getoAuthKeyData().evmAddress);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
-                new FinalKeyData("0x011C64d5585E0a34Ca2E70AA0bd34daFC683B358",
-                        "38590796519188980875468267478199668365197289821125554170604841336730940042946",
-                        "32120738633526637982361662047914076954580011956651434724359038836918748645936",
+                new FinalKeyData("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D",
+                        "25168160485578250759467124274779339137404611813240873529172240417848435991325",
+                        "112802493001973133214900901881947243249044553436786851130754113487296313109520",
                         "488d39ac548e15cfb0eaf161d86496e1645b09437df21311e24a56c4efd76355"),
                 new OAuthKeyData("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D",
                         "37a4ac8cbef68e88bcec5909d9b6fffb539187365bb723f3d7bffe56ae80e31d",

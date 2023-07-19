@@ -112,7 +112,6 @@ public class OneKeyTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        assertEquals("296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4", retrieveSharesResponse.getFinalKeyData().getPrivKey());
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x53010055542cCc0f2b6715a5c53838eC4aC96EF7",
                         "28791725684617741539794713367138009203742373976762713376477976695969223421073",
@@ -129,6 +128,7 @@ public class OneKeyTest {
                 ), new BigInteger("22d160abe5320fe2be52a57c7aca8fe5d7e5eff104ff4d2b32767e3344e040bf", 16), TypeOfUser.v2, false),
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
+        assertEquals("296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4", retrieveSharesResponse.getFinalKeyData().getPrivKey());
     }
 
     @DisplayName("Login test v2")
