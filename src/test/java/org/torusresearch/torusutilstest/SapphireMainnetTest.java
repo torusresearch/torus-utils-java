@@ -161,29 +161,6 @@ public class SapphireMainnetTest {
         assertFalse(result.metadata.upgraded);
     }
 
-    /*@DisplayName("should fetch pub address of tss verifier id")
-    @Test
-    public void shouldFetchPubAddressOfTssVerifierId() throws Exception {
-        String email = TORUS_EXTENDED_VERIFIER_EMAIL;
-        int nonce = 0;
-        String tssTag = "default";
-        String tssVerifierId = email + "\u0015" + tssTag + "\u0016" + nonce;
-        VerifierArgs verifierArgs = new VerifierArgs(TORUS_TEST_VERIFIER, email, tssVerifierId);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), verifierArgs).get();
-        assertEquals("0x98EC5b049c5C0Dc818C69e95CF43534AEB80261A", publicAddress.getFinalKeyData().getEvmAddress());
-        assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
-                new OAuthPubKeyData("0x98EC5b049c5C0Dc818C69e95CF43534AEB80261A",
-                        "a772c71ca6c650506f26a180456a6bdf462996781a10f1740f4e65314f360f29",
-                        "776c2178ff4620c67197b2f26b1222503919ff26a7cbd0fdbc91a2c9764e56cb"),
-                new FinalPubKeyData("0x98EC5b049c5C0Dc818C69e95CF43534AEB80261A",
-                        "a772c71ca6c650506f26a180456a6bdf462996781a10f1740f4e65314f360f29",
-                        "776c2178ff4620c67197b2f26b1222503919ff26a7cbd0fdbc91a2c9764e56cb"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
-        ));
-    }*/
-
     @DisplayName("should allow test tss verifier id to fetch shares")
     @Test
     public void shouldAllowTestTssVerifierIdToFetchShares() throws ExecutionException, InterruptedException, TorusException {
@@ -260,8 +237,8 @@ public class SapphireMainnetTest {
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("13941ecd812b08d8a33a20bc975f0cd1c3f82de25b20c0c863ba5f21580b65f6"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB",
-                        "83797579910383816332478033108286397664014875395129414497372974471604777601480",
-                        "72819903200820905577114752293027935621125376331713494587883836525941496934032",
+                        "b943bfdc29c515195270d3a219da6a57bcaf6e58e57d03e2accb8c716e6949c8",
+                        "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90",
                         "13941ecd812b08d8a33a20bc975f0cd1c3f82de25b20c0c863ba5f21580b65f6"),
                 new OAuthKeyData("0xeBe48BE7693a36Ff562D18c4494AC4496A45EaaC",
                         "147d0a97d498ac17172dd92546617e06f2c32c405d414dfc06632b8fbcba93d8",
@@ -287,8 +264,8 @@ public class SapphireMainnetTest {
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("dfb39b84e0c64b8c44605151bf8670ae6eda232056265434729b6a8a50fa3419"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x70520A7F04868ACad901683699Fa32765C9F6871",
-                        "78700735110750790464703051876138517394784593715781635316632139327803124941403",
-                        "14936946893656703768147925200123514489210489737800365548922298528185448371412",
+                        "adff099b5d3b1e238b43fba1643cfa486e8d9e8de22c1e6731d06a5303f9025b",
+                        "21060328e7889afd303acb63201b6493e3061057d1d81279931ab4a6cabf94d4",
                         "dfb39b84e0c64b8c44605151bf8670ae6eda232056265434729b6a8a50fa3419"),
                 new OAuthKeyData("0x925c97404F1aBdf4A8085B93edC7B9F0CEB3C673",
                         "5cd8625fc01c7f7863a58c914a8c43b2833b3d0d5059350bab4acf6f4766a33d",
