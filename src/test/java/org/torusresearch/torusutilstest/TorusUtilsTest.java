@@ -2,6 +2,7 @@ package org.torusresearch.torusutilstest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -112,8 +113,6 @@ public class TorusUtilsTest {
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
         TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
-        assertEquals("0xE91200d82029603d73d6E307DbCbd9A7D0129d8D", key2.getFinalKeyData().getEvmAddress());
-        assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x376597141d8d219553378313d18590F373B09795",
                         "86cd2db15b7a9937fa8ab7d0bf8e7f4113b64d1f4b2397aad35d6d4749d2fb6c",
@@ -126,6 +125,8 @@ public class TorusUtilsTest {
                         BigInteger.ZERO, TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
+        assertEquals("0xE91200d82029603d73d6E307DbCbd9A7D0129d8D", key2.getFinalKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
 
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
@@ -158,7 +159,7 @@ public class TorusUtilsTest {
         assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
         assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
         assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v1);
-        assertEquals(publicAddress.getMetadata().isUpgraded(), false);
+        assertFalse(publicAddress.getMetadata().isUpgraded());
     }
 
     @DisplayName("Login test")
@@ -169,11 +170,10 @@ public class TorusUtilsTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3"));
-        //assertEquals("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0xF8d2d3cFC30949C1cb1499C9aAC8F9300535a8d6",
-                        "49702976712193399986731725034276818613785907981142175961484729425380356961789",
-                        "96786966479458068943089798058579864926773560415468505198145869253238919342057",
+                        "6de2e34d488dd6a6b596524075b032a5d5eb945bcc33923ab5b88fd4fd04b5fd",
+                        "d5fb7b51b846e05362461357ec6e8ca075ea62507e2d5d7253b72b0b960927e9",
                         "9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3"),
                 new OAuthKeyData("0xF8d2d3cFC30949C1cb1499C9aAC8F9300535a8d6",
                         "6de2e34d488dd6a6b596524075b032a5d5eb945bcc33923ab5b88fd4fd04b5fd",
@@ -199,8 +199,8 @@ public class TorusUtilsTest {
         assertEquals("0x938a40E155d118BD31E439A9d92D67bd55317965", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x938a40E155d118BD31E439A9d92D67bd55317965",
-                        "12807676350687366924593653094908024592577690811576928555587654570837121768341",
-                        "20253891874430456348096856713892060163029602605314794242419547596498838729190",
+                        "1c50e34ef5b7afcf5b0c6501a6ae00ec3a09a321dd885c5073dd122e2a251b95",
+                        "2cc74beb28f2c4a7c4034f80836d51b2781b36fefbeafb4eb1cd055bdf73b1e6",
                         "3cbfa57d702327ec1af505adc88ad577804a1a7780bc013ed9e714c547fb5cb1"),
                 new OAuthKeyData("0x938a40E155d118BD31E439A9d92D67bd55317965",
                         "1c50e34ef5b7afcf5b0c6501a6ae00ec3a09a321dd885c5073dd122e2a251b95",
