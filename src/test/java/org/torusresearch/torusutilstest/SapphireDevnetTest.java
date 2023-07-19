@@ -301,7 +301,6 @@ public class SapphireDevnetTest {
         assertNotNull(result.metadata.nonce);
     }
 
-    //not passing
     @DisplayName("Should fetch pub address of tss verifier id")
     @Test
     public void shouldFetchPubAddressOfTSSVerifierId() throws Exception {
@@ -312,15 +311,15 @@ public class SapphireDevnetTest {
         VerifierArgs verifierArgs = new VerifierArgs(TORUS_TEST_VERIFIER, email, tssVerifierId);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), verifierArgs).get();
-        //assertEquals(torusPublicKey.getFinalKeyData().getEvmAddress(), "0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30");
+        assertEquals(torusPublicKey.getFinalKeyData().getEvmAddress(), "0xff46925E578AEfC505c3F084Fea10b370d69378B");
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
-                new OAuthPubKeyData("0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30",
-                        "d45d4ad45ec643f9eccd9090c0a2c753b1c991e361388e769c0dfa90c210348c",
-                        "fdc151b136aa7df94e97cc7d7007e2b45873c4b0656147ec70aad46e178bce1e"),
-                new FinalPubKeyData("0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30",
-                        "d45d4ad45ec643f9eccd9090c0a2c753b1c991e361388e769c0dfa90c210348c",
-                        "fdc151b136aa7df94e97cc7d7007e2b45873c4b0656147ec70aad46e178bce1e"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new OAuthPubKeyData("0xff46925E578AEfC505c3F084Fea10b370d69378B",
+                        "8eedc5d541759bb1a0bff6605735179da8b69e7771302f7a7faad0f4987c089a",
+                        "771f69069a62513590be1230fcf04c578e06133062d236563ef59fe5dcc65dda"),
+                new FinalPubKeyData("0xff46925E578AEfC505c3F084Fea10b370d69378B",
+                        "8eedc5d541759bb1a0bff6605735179da8b69e7771302f7a7faad0f4987c089a",
+                        "771f69069a62513590be1230fcf04c578e06133062d236563ef59fe5dcc65dda"),
+                new Metadata(null, new BigInteger("8332247225241652835009259212266667289511442930807823033798904030824804756825"), TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
     }
