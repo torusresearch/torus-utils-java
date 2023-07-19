@@ -720,7 +720,7 @@ public class TorusUtils {
                     ECPoint finalPubKey = null;
                     GetOrSetNonceResult.PubNonce pubNonce = new GetOrSetNonceResult.PubNonce(null, null);
                     TypeOfUser typeOfUser;
-                    if (verifierParams.get("extended_verifier_id") != null) {
+                    if (verifierParams.get("extended_verifier_id") != null && !verifierParams.get("extended_verifier_id").equals("")) {
                         typeOfUser = TypeOfUser.v2;
                         // for tss key no need to add pub nonce
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
@@ -771,8 +771,8 @@ public class TorusUtils {
                     }
 
                     return CompletableFuture.completedFuture(new RetrieveSharesResponse(new FinalKeyData(finalEvmAddress,
-                            finalPubKey != null ? finalPubKey.normalize().getAffineXCoord().toBigInteger().toString() : null,
-                            finalPubKey != null ? finalPubKey.normalize().getAffineYCoord().toBigInteger().toString() : null,
+                            finalPubKey != null ? finalPubKey.normalize().getAffineXCoord().toString() : null,
+                            finalPubKey != null ? finalPubKey.normalize().getAffineYCoord().toString() : null,
                             finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthPubkeyX, oAuthPubkeyY, oAuthKey.toString(16)),
                             new SessionData(sessionTokenData, sessionAuthKey.getPrivateKey().toString(16)),
