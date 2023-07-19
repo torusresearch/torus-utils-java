@@ -718,7 +718,7 @@ public class TorusUtils {
                     }
                     ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
                     ECPoint finalPubKey = null;
-                    GetOrSetNonceResult.PubNonce pubNonce = new GetOrSetNonceResult.PubNonce(null, null);
+                    GetOrSetNonceResult.PubNonce pubNonce = null;
                     TypeOfUser typeOfUser;
                     if (verifierParams.get("extended_verifier_id") != null && !verifierParams.get("extended_verifier_id").equals("")) {
                         typeOfUser = TypeOfUser.v2;
