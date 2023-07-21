@@ -157,7 +157,6 @@ public class AquaTest {
         assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
         assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
         assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
-        assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v1);
         assertFalse(publicAddress.getMetadata().isUpgraded());
     }
 

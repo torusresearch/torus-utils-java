@@ -77,7 +77,6 @@ public class TorusUtilsTest {
         VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0x9bcBAde70546c0796c00323CD1b97fa0a425A506", publicAddress.getFinalKeyData().getEvmAddress());
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
                         "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
@@ -88,6 +87,7 @@ public class TorusUtilsTest {
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
         ));
+        assertEquals("0x9bcBAde70546c0796c00323CD1b97fa0a425A506", publicAddress.getFinalKeyData().getEvmAddress());
     }
 
     @DisplayName("Fetch User Type and Public Address")
@@ -96,18 +96,20 @@ public class TorusUtilsTest {
         VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0x9bcBAde70546c0796c00323CD1b97fa0a425A506", key.getFinalKeyData().getEvmAddress());
-        assertEquals(TypeOfUser.v1, key.getMetadata().typeOfUser);
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
                         "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
                         "1cf2ea7ac63ee1a34da2330413692ba8538bf7cd6512327343d918e0102a1438"),
-                new FinalPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
-                        "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
-                        "1cf2ea7ac63ee1a34da2330413692ba8538bf7cd6512327343d918e0102a1438"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new FinalPubKeyData("0xf5804f608C233b9cdA5952E46EB86C9037fd6842",
+                        "ed737569a557b50722a8b5c0e4e5ca30cef1ede2f5674a0616b78246bb93dfd0",
+                        "d9e8e6c54c12c4da38c2f0d1047fcf6089036127738f4ef72a83431339586ca9"),
+                new Metadata(new GetOrSetNonceResult.PubNonce("f3f7caefd6540d923c9993113f34226371bd6714a5be6882dedc95a6a929a8",
+                        "f28620603601ce54fa0d70fd691fb72ff52f5bf164bf1a91617922eaad8cc7a5"),
+                        BigInteger.ZERO, TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
+        assertEquals("0xf5804f608C233b9cdA5952E46EB86C9037fd6842", key.getFinalKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v2, key.getMetadata().typeOfUser);
 
         String v2Verifier = "tkey-google-lrc";
         // 1/1 user
@@ -131,20 +133,20 @@ public class TorusUtilsTest {
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
         TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
-        assertEquals("0x1016DA7c47A04C76036637Ea02AcF1d29c64a456", key3.getFinalKeyData().getEvmAddress());
-        assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
         assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
-                new OAuthPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
-                        "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
-                        "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c"),
+                new OAuthPubKeyData("0xd45383fbF04BccFa0450d7d8ee453ca86b7C6544",
+                        "d25cc473fbb448d20b5551f3c9aa121e1924b3d197353347187c47ad13ecd5d8",
+                        "3394000f43160a925e6c3017dde1354ecb2b61739571c6584f58edd6b923b0f5"),
                 new FinalPubKeyData("0x1016DA7c47A04C76036637Ea02AcF1d29c64a456",
                         "d3e222f6b23f0436b7c86e9cc4164eb5ea8448e4c0e7539c8b4f7fd00e8ec5c7",
                         "1c47f5faccec6cf57c36919f6f0941fe3d8d65033cf2cc78f209304386044222"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("4f86b0e69992d1551f1b16ceb0909453dbe17b9422b030ee6c5471c2e16b65d0",
                         "640384f3d39debb04c4e9fe5a5ec6a1b494b0ad66d00ac9be6f166f21d116ca4"),
-                        BigInteger.ZERO, TypeOfUser.v2, false),
+                        BigInteger.ZERO, TypeOfUser.v2, true),
                 new NodesData(new ArrayList<>())
         ));
+        assertEquals("0x1016DA7c47A04C76036637Ea02AcF1d29c64a456", key3.getFinalKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
     }
 
     @DisplayName("Key Assign test")
@@ -158,7 +160,7 @@ public class TorusUtilsTest {
         assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
         assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
         assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
-        assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v1);
+        assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v2);
         assertFalse(publicAddress.getMetadata().isUpgraded());
     }
 

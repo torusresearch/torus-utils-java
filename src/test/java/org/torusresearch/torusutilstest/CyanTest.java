@@ -2,6 +2,7 @@ package org.torusresearch.torusutilstest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -96,7 +97,7 @@ public class CyanTest {
     public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        /*TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0xA3767911A84bE6907f26C572bc89426dDdDB2825", key.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v1, key.getMetadata().getTypeOfUser());
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
@@ -108,7 +109,7 @@ public class CyanTest {
                         "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1"),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
-        ));*/
+        ));
 
         String v2Verifier = "tkey-google-cyan";
         // 1/1 user
@@ -159,8 +160,7 @@ public class CyanTest {
         assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
         assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
         assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
-        assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v1);
-        assertEquals(publicAddress.getMetadata().isUpgraded(), false);
+        assertFalse(publicAddress.getMetadata().isUpgraded());
     }
 
     @DisplayName("Login test")

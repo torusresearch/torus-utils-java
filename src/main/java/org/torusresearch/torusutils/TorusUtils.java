@@ -882,7 +882,7 @@ public class TorusUtils {
         }).thenComposeAsync(verifierLookupItem -> {
             CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
             try {
-                return this.formatLegacyPublicKeyData(verifierLookupItem, this.options.isEnableOneKey(), isNewKey);
+                return this.formatLegacyPublicKeyData(verifierLookupItem, true, isNewKey);
             } catch (Exception ex) {
                 keyCf.completeExceptionally(ex);
                 return keyCf;
@@ -947,7 +947,7 @@ public class TorusUtils {
                         oAuthPubKey = finalPubKey;
                     } else if (FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
                         try {
-                            return formatLegacyPublicKeyData(verifierLookupItem, this.options.isEnableOneKey(), isNewKey);
+                            return formatLegacyPublicKeyData(verifierLookupItem, true, isNewKey);
                         } catch (GetOrSetNonceError | ExecutionException | InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -1008,12 +1008,10 @@ public class TorusUtils {
             if (nonceResult.getTypeOfUser() == TypeOfUser.v1) {
                 finalPubKey = finalPubKey.add(curve.getG().multiply(nonce)).normalize();
             } else if (nonceResult.getTypeOfUser() == TypeOfUser.v2) {
-                if (!nonceResult.isUpgraded()) {
-                    assert nonceResult.getPubNonce() != null;
-                    ECPoint oneKeyMetadataPoint = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
-                    finalPubKey = finalPubKey.add(oneKeyMetadataPoint).normalize();
-                    pubNonce = nonceResult.getPubNonce();
-                }
+                assert nonceResult.getPubNonce() != null;
+                ECPoint oneKeyMetadataPoint = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
+                finalPubKey = finalPubKey.add(oneKeyMetadataPoint).normalize();
+                pubNonce = nonceResult.getPubNonce();
             } else {
                 keyCf.completeExceptionally(new Exception("getOrSetNonce should always return typeOfUser."));
                 return keyCf;
