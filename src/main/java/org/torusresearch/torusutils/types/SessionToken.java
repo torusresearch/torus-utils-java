@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types;
 
+import java.util.Objects;
+
 public class SessionToken {
 
     private final String token;
@@ -28,5 +30,17 @@ public class SessionToken {
 
     public String getNode_puby() {
         return node_puby;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(signature);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        SessionToken newObj = (SessionToken)obj;
+        return this.signature != newObj.signature;
     }
 }

@@ -67,8 +67,10 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -406,7 +408,7 @@ public class TorusUtils {
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", networkMigrated),
                     new Header("network", this.options.getClientId())}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
-            List<SessionToken> sessionTokenData = new ArrayList<>();
+            Set<SessionToken> sessionTokenData = new HashSet<>();
             List<BigInteger> nodeIndexes = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair sessionAuthKey = Keys.createEcKeyPair();
@@ -770,12 +772,15 @@ public class TorusUtils {
                         isUpgraded = metadataNonce.equals(BigInteger.ZERO);
                     }
 
+                    List<SessionToken> sessionTokens = new ArrayList<>();
+                    sessionTokens.addAll(sessionTokenData);
+
                     return CompletableFuture.completedFuture(new RetrieveSharesResponse(new FinalKeyData(finalEvmAddress,
                             finalPubKey != null ? finalPubKey.normalize().getAffineXCoord().toString() : null,
                             finalPubKey != null ? finalPubKey.normalize().getAffineYCoord().toString() : null,
                             finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthPubkeyX, oAuthPubkeyY, oAuthKey.toString(16)),
-                            new SessionData(sessionTokenData, sessionAuthKey.getPrivateKey().toString(16)),
+                            new SessionData(sessionTokens, sessionAuthKey.getPrivateKey().toString(16)),
                             new Metadata(pubNonce, metadataNonce, typeOfUser, isUpgraded),
                             new NodesData(nodeIndexes)
                     ));
