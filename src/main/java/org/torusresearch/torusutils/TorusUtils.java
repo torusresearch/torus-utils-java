@@ -409,7 +409,7 @@ public class TorusUtils {
                     new Header("network", this.options.getClientId())}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             Set<SessionToken> sessionTokenData = new HashSet<>();
-            List<BigInteger> nodeIndexes = new ArrayList<>();
+            Set<BigInteger> nodeIndexs = new HashSet<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair sessionAuthKey = Keys.createEcKeyPair();
             String pubKey = Utils.padLeft(sessionAuthKey.getPublicKey().toString(16), '0', 128);
@@ -603,7 +603,7 @@ public class TorusUtils {
                                                 if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
                                                     KeyAssignment firstKey = currentShareResponse.getKeys()[0];
                                                     if (firstKey.getNodeIndex() != null) {
-                                                        nodeIndexes.add(new BigDecimal(firstKey.getNodeIndex()).toBigInteger());
+                                                        nodeIndexs.add(new BigDecimal(firstKey.getNodeIndex()).toBigInteger());
                                                     }
                                                     if (firstKey.getMetadata(networkMigrated) != null) {
                                                         try {
@@ -618,7 +618,7 @@ public class TorusUtils {
                                                             e.printStackTrace();
                                                         }
                                                     } else {
-                                                        nodeIndexes.add(null);
+                                                        nodeIndexs.add(null);
                                                         sharePromises.add(null);
                                                     }
                                                 }
@@ -718,6 +718,8 @@ public class TorusUtils {
                         nonceResult = this.getNonce(privateKey).get();
                         metadataNonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
                     }
+                    List<BigInteger> nodeIndexes = new ArrayList<>();
+                    nodeIndexes.addAll(nodeIndexs);
                     ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
                     ECPoint finalPubKey = null;
                     GetOrSetNonceResult.PubNonce pubNonce = null;
