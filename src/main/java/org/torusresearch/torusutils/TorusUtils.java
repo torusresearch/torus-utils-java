@@ -765,15 +765,14 @@ public class TorusUtils {
                         finalPrivKey = Utils.padLeft(privateKeyWithNonce.toString(16), '0', 64);
                     }
 
+                    List<SessionToken> sessionTokens = new ArrayList<>();
+                    sessionTokens.addAll(sessionTokenData);
                     Boolean isUpgraded = false;
                     if (typeOfUser.equals(TypeOfUser.v1)) {
                         isUpgraded = false;
                     } else if (typeOfUser.equals(TypeOfUser.v2)) {
                         isUpgraded = metadataNonce.equals(BigInteger.ZERO);
                     }
-
-                    List<SessionToken> sessionTokens = new ArrayList<>();
-                    sessionTokens.addAll(sessionTokenData);
 
                     return CompletableFuture.completedFuture(new RetrieveSharesResponse(new FinalKeyData(finalEvmAddress,
                             finalPubKey != null ? finalPubKey.normalize().getAffineXCoord().toString() : null,
