@@ -579,7 +579,7 @@ public class TorusUtils {
                                                     sessionTokenSigPromises.add(CompletableFuture.completedFuture(null));
                                                 }
 
-                                                if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
+                                                if (currentShareResponse.getSessionTokens() != null && currentShareResponse.getSessionTokens().length > 0) {
                                                     // Decrypt sessionToken if enc metadata is sent
                                                     ShareMetadata[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
                                                     if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
@@ -638,7 +638,7 @@ public class TorusUtils {
                                                     if (sessionSigsResolved == null || sessionSigsResolved.get(index) == null) {
                                                         sessionTokenData.add(null);
                                                     } else {
-                                                        sessionTokenData.add(new SessionToken(java.util.Base64.getEncoder().encodeToString(sessionSigsResolved.get(index).get()),
+                                                        sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
                                                                 Utils.bytesToHex(sessionSigsResolved.get(index).get()),
                                                                 currentShareResponse.getNodePubx(),
                                                                 currentShareResponse.getNodePuby()));
