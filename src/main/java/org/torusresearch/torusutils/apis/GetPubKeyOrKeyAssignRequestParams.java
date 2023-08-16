@@ -3,16 +3,16 @@ package org.torusresearch.torusutils.apis;
 public class GetPubKeyOrKeyAssignRequestParams {
     private final String verifier;
     private final String verifier_id;
-    private final String extendedVerifierId;
+    private final String extended_verifier_id;
     private final boolean one_key_flow;
 
     private final boolean fetch_node_index;
 
-    public GetPubKeyOrKeyAssignRequestParams(String _verifier, String _verifier_id, String _extendedVerifierId, boolean _one_key_flow,
+    public GetPubKeyOrKeyAssignRequestParams(String _verifier, String _verifier_id, String _extended_verifier_id, boolean _one_key_flow,
                                              boolean _fetch_node_index) {
         verifier = _verifier;
         verifier_id = _verifier_id;
-        this.extendedVerifierId = _extendedVerifierId;
+        this.extended_verifier_id = _extended_verifier_id;
         this.one_key_flow = _one_key_flow;
         this.fetch_node_index = _fetch_node_index;
     }
@@ -26,7 +26,7 @@ public class GetPubKeyOrKeyAssignRequestParams {
     }
 
     public String getExtendedVerifierId() {
-        return extendedVerifierId;
+        return extended_verifier_id;
     }
 
     public boolean isOne_key_flow() {
