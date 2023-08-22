@@ -192,6 +192,7 @@ public class SapphireDevnetTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token).get();
+        System.out.println(retrieveSharesResponse.sessionData.getSessionTokenData().size());
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x4924F91F5d6701dDd41042D94832bB17B76F316F",
@@ -372,37 +373,6 @@ public class SapphireDevnetTest {
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }
-
-    /*@DisplayName("should be able to import a key for a new user")
-    @Test
-    public void shouldImportKeyForNewUser() throws Exception {
-        String email = JwtUtils.getRandomEmail();
-        String idToken = JwtUtils.generateIdToken(email, algorithmRs);
-        String privHex = Utils.generatePrivate().toString(16);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        RetrieveSharesResponse response = torusUtils.importPrivateKey(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(),
-                nodeDetails.getTorusNodePub(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
-                    put("verifier_id", email);
-                }}, idToken, privHex, null).get();
-        assertEquals(response.finalKeyData.privKey, privHex);
-    }*/
-
-
-    /*@DisplayName("should be able to import a key for a existing user")
-    @Test
-    public void shouldImportKeyForExistingUser() throws Exception {
-        String idToken = JwtUtils.generateIdToken(TORUS_TEST_VERIFIER, algorithmRs);
-        String privHex = Utils.generatePrivate().toString(16);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_IMPORT_EMAIL).get();
-        RetrieveSharesResponse response = torusUtils.importPrivateKey(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(),
-                nodeDetails.getTorusNodePub(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
-                    put("verifier_id", TORUS_IMPORT_EMAIL);
-                }}, idToken, privHex, null).get();
-        assertEquals(response.finalKeyData.privKey, privHex);
-        TorusPublicKey publicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(),
-                new VerifierArgs(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL)).get();
-        assertEquals(response.finalKeyData.evmAddress, publicKey.getFinalKeyData().getEvmAddress());
-    }*/
 
     @DisplayName("should assign key to tss verifier id")
     @Test
