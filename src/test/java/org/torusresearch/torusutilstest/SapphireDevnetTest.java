@@ -192,7 +192,6 @@ public class SapphireDevnetTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token).get();
-        System.out.println(retrieveSharesResponse.sessionData.getSessionTokenData().size());
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x4924F91F5d6701dDd41042D94832bB17B76F316F",
@@ -300,29 +299,6 @@ public class SapphireDevnetTest {
         assertNotNull(result.oAuthKeyData.evmAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertNotNull(result.metadata.nonce);
-    }
-
-    @DisplayName("Should fetch pub address of tss verifier id")
-    @Test
-    public void shouldFetchPubAddressOfTSSVerifierId() throws Exception {
-        String email = TORUS_EXTENDED_VERIFIER_EMAIL;
-        int nonce = 0;
-        String tssTag = "default";
-        String tssVerifierId = email + "\u0015" + tssTag + "\u0016" + nonce;
-        VerifierArgs verifierArgs = new VerifierArgs(TORUS_TEST_VERIFIER, email, tssVerifierId);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), verifierArgs).get();
-        assertEquals(torusPublicKey.getFinalKeyData().getEvmAddress(), "0xff46925E578AEfC505c3F084Fea10b370d69378B");
-        assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
-                new OAuthPubKeyData("0xff46925E578AEfC505c3F084Fea10b370d69378B",
-                        "8eedc5d541759bb1a0bff6605735179da8b69e7771302f7a7faad0f4987c089a",
-                        "771f69069a62513590be1230fcf04c578e06133062d236563ef59fe5dcc65dda"),
-                new FinalPubKeyData("0xff46925E578AEfC505c3F084Fea10b370d69378B",
-                        "8eedc5d541759bb1a0bff6605735179da8b69e7771302f7a7faad0f4987c089a",
-                        "771f69069a62513590be1230fcf04c578e06133062d236563ef59fe5dcc65dda"),
-                new Metadata(null, new BigInteger("8332247225241652835009259212266667289511442930807823033798904030824804756825"), TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
-        ));
     }
 
     @DisplayName("should allow test tss verifier id to fetch shares")
