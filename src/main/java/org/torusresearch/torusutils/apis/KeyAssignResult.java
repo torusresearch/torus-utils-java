@@ -8,6 +8,7 @@ public class KeyAssignResult {
     private ShareMetadata[] session_token_sig_metadata;
     private String node_pubx;
     private String node_puby;
+    private String is_new_key;
 
     public KeyAssignment[] getKeys() {
         return keys;
@@ -35,5 +36,9 @@ public class KeyAssignResult {
 
     public String getNodePuby() {
         return node_puby;
+    }
+
+    public String getIsNewKey() {
+        return is_new_key;
     }
 }

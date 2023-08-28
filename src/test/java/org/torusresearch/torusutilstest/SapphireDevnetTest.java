@@ -211,6 +211,19 @@ public class SapphireDevnetTest {
         ));
     }
 
+    @DisplayName("New User Login test")
+    @Test
+    public void shouldNewUserLogin() throws ExecutionException, InterruptedException {
+        String email = JwtUtils.getRandomEmail();
+        String token = JwtUtils.generateIdToken(email, algorithmRs);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
+        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
+            put("verifier_id", email);
+        }}, token).get();
+        assert (retrieveSharesResponse.getMetadata().getTypeOfUser().equals(TypeOfUser.v2));
+        assertEquals(retrieveSharesResponse.getMetadata().isUpgraded(), false);
+    }
+
     @DisplayName("Should be able to login even when node is down")
     @Test
     public void shouldLoginWhenNodeIsDown() throws Exception {
