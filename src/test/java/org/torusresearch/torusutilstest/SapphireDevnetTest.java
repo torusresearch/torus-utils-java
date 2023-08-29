@@ -222,6 +222,19 @@ public class SapphireDevnetTest {
         }}, token).get();
         assert (retrieveSharesResponse.getMetadata().getTypeOfUser().equals(TypeOfUser.v2));
         assertEquals(retrieveSharesResponse.getMetadata().isUpgraded(), false);
+        assertNotEquals("", retrieveSharesResponse.finalKeyData.getEvmAddress());
+        assertNotEquals("", retrieveSharesResponse.finalKeyData.getX());
+        assertNotEquals("", retrieveSharesResponse.finalKeyData.getY());
+        assertNotEquals("", retrieveSharesResponse.finalKeyData.getPrivKey());
+        assertNotEquals("", retrieveSharesResponse.oAuthKeyData.getEvmAddress());
+        assertNotEquals("", retrieveSharesResponse.oAuthKeyData.getX());
+        assertNotEquals("", retrieveSharesResponse.oAuthKeyData.getY());
+        assertNotEquals("", retrieveSharesResponse.oAuthKeyData.getPrivKey());
+        assertNotEquals(0, retrieveSharesResponse.sessionData.getSessionTokenData().size());
+        assertNotEquals("", retrieveSharesResponse.sessionData.getSessionAuthKey());
+        assertNotEquals("", retrieveSharesResponse.metadata.getPubNonce().getX());
+        assertNotEquals("", retrieveSharesResponse.metadata.getPubNonce().getY());
+        assertNotEquals(0, retrieveSharesResponse.nodesData.getNodeIndexes().size());
     }
 
     @DisplayName("Should be able to login even when node is down")
