@@ -599,7 +599,7 @@ public class TorusUtils {
 
                                                 if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
                                                     KeyAssignment firstKey = currentShareResponse.getKeys()[0];
-                                                    if (firstKey.getNodeIndex() != null) {
+                                                    if (firstKey.getNodeIndex() != null && nodeIndexs.size() < 3) {
                                                         nodeIndexs.add(new BigDecimal(firstKey.getNodeIndex()).toBigInteger());
                                                     }
                                                     if (firstKey.getMetadata(networkMigrated) != null) {
