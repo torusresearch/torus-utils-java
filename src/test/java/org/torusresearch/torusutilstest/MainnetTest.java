@@ -58,7 +58,7 @@ public class MainnetTest {
     @BeforeAll
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.MAINNET, FetchNodeDetails.PROXY_ADDRESS_MAINNET);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.MAINNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom");
         opts.setNetwork(TorusNetwork.MAINNET.toString());
         opts.setAllowHost("https://signer.tor.us/api/allow");
