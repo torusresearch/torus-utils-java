@@ -208,7 +208,7 @@ public class CyanTest {
                         "afd12f2476006ef6aa8778190b29676a70039df8688f9dee69c779bdc8ff0223",
                         "e557a5ee879632727f5979d6b9cea69d87e3dab54a8c1b6685d86dfbfcd785dd",
                         "45a5b62c4ff5490baa75d33bf4f03ba6c5b0095678b0f4055312eef7b780b7bf"),
-                new SessionData(new ArrayList<>(), ""),
+                new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
         ));

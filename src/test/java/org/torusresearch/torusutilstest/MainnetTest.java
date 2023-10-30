@@ -174,7 +174,7 @@ public class MainnetTest {
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
                         "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
                         "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
-                new SessionData(new ArrayList<>(), ""),
+                new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
         ));
@@ -201,7 +201,7 @@ public class MainnetTest {
                         "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",
                         "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
                         "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
-                new SessionData(new ArrayList<>(), ""),
+                new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
         ));

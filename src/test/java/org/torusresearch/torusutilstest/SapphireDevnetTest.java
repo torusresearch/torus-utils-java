@@ -221,19 +221,19 @@ public class SapphireDevnetTest {
             put("verifier_id", email);
         }}, token).get();
         assert (retrieveSharesResponse.getMetadata().getTypeOfUser().equals(TypeOfUser.v2));
-        assertEquals(retrieveSharesResponse.getMetadata().isUpgraded(), false);
-        assertNotEquals("", retrieveSharesResponse.finalKeyData.getEvmAddress());
-        assertNotEquals("", retrieveSharesResponse.finalKeyData.getX());
-        assertNotEquals("", retrieveSharesResponse.finalKeyData.getY());
-        assertNotEquals("", retrieveSharesResponse.finalKeyData.getPrivKey());
+        assertEquals(retrieveSharesResponse.getMetadata().isUpgraded(), true);
+        assertEquals("", retrieveSharesResponse.finalKeyData.getEvmAddress());
+        assertEquals(null, retrieveSharesResponse.finalKeyData.getX());
+        assertEquals(null, retrieveSharesResponse.finalKeyData.getY());
+        assertEquals("", retrieveSharesResponse.finalKeyData.getPrivKey());
         assertNotEquals("", retrieveSharesResponse.oAuthKeyData.getEvmAddress());
         assertNotEquals("", retrieveSharesResponse.oAuthKeyData.getX());
         assertNotEquals("", retrieveSharesResponse.oAuthKeyData.getY());
         assertNotEquals("", retrieveSharesResponse.oAuthKeyData.getPrivKey());
         assertNotEquals(0, retrieveSharesResponse.sessionData.getSessionTokenData().size());
         assertNotEquals("", retrieveSharesResponse.sessionData.getSessionAuthKey());
-        assertNotEquals("", retrieveSharesResponse.metadata.getPubNonce().getX());
-        assertNotEquals("", retrieveSharesResponse.metadata.getPubNonce().getY());
+        assertEquals("", retrieveSharesResponse.metadata.getPubNonce().getX());
+        assertEquals("", retrieveSharesResponse.metadata.getPubNonce().getY());
         assertNotEquals(0, retrieveSharesResponse.nodesData.getNodeIndexes().size());
     }
 
