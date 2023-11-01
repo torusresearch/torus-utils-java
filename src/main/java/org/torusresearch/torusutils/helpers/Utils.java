@@ -10,7 +10,6 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.GetPubKeyOrKeyAssignRequestParams;
@@ -242,7 +241,7 @@ public class Utils {
                 }
                 String errorResult = thresholdSame(errorResults, k);
                 String keyResult = thresholdSame(keyResults, k);
-                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null || FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)))
+                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null || org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)))
                         || errorResult != null) {
                     for (String x : lookupResults) {
                         JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);

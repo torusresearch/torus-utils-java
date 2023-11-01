@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils;
 
+import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -9,7 +11,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.json.JSONObject;
-import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.LegacyNetworkMigrationInfo;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
@@ -140,7 +141,7 @@ public class TorusUtils {
     }
 
     private boolean isLegacyNetwork() {
-        legacyNetworkMigrationInfo = FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.getOrDefault(this.options.getNetwork(), null);
+        legacyNetworkMigrationInfo = LEGACY_NETWORKS_ROUTE_MAP.getOrDefault(this.options.getNetwork(), null);
         return legacyNetworkMigrationInfo != null && !legacyNetworkMigrationInfo.getMigrationCompleted();
     }
 
@@ -401,8 +402,12 @@ public class TorusUtils {
                                                                     String idToken, HashMap<String, Object> extraParams, String networkMigrated,
                                                                     @Nullable ImportedShare[] importedShares) {
         try {
+            CompletableFuture<List<String>> _completableFuture = new CompletableFuture<>();
+            if (this.options.getClientId() == null && this.options.getOrigin() == null) {
+                _completableFuture.completeExceptionally(new Exception("ClientId and origin is mandatory"));
+            }
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", networkMigrated),
-                    new Header("network", this.options.getClientId())}, true).get();
+                    new Header("clientId", this.options.getClientId()), new Header("enableGating", "true")}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             Set<SessionToken> sessionTokenData = new HashSet<>();
             Set<BigInteger> nodeIndexs = new HashSet<>();
@@ -532,7 +537,7 @@ public class TorusUtils {
                             // If both thresholdNonceData and extended_verifier_id are not available,
                             // then we need to throw an error; otherwise, the address would be incorrect.
                             if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") == null &&
-                                    !FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
+                                    !LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
                                 throw new RuntimeException(String.format(
                                         "Invalid metadata result from nodes, nonce metadata is empty for verifier: %s and verifierId: %s",
                                         verifier, verifierParams.get("verifier_id"))
@@ -543,7 +548,7 @@ public class TorusUtils {
                                 thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
                             }
                             if (completedResponses.size() >= k && thresholdPubKey != null && (thresholdNonceData != null ||
-                                    FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated))) {
+                                    LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated))) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sessionTokenSigPromises = new ArrayList<>();
@@ -732,7 +737,7 @@ public class TorusUtils {
                         typeOfUser = TypeOfUser.v2;
                         // for tss key no need to add pub nonce
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
-                    } else if (FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
+                    } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
                         if (this.options.isEnableOneKey()) {
                             nonceResult = this.getNonce(oAuthKey).get();
                             pubNonce = nonceResult.getPubNonce();
@@ -932,7 +937,7 @@ public class TorusUtils {
                     }
 
                     if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null &&
-                            !FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
+                            !LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
                         try {
                             throw new GetOrSetNonceError(new Exception("metadata nonce is missing in share response"));
                         } catch (GetOrSetNonceError e) {
@@ -961,7 +966,7 @@ public class TorusUtils {
                     if (verifierArgs.getExtendedVerifierId() != null && !verifierArgs.getExtendedVerifierId().equals("")) {
                         finalPubKey = Utils.getPublicKeyFromHex(X, Y);
                         oAuthPubKey = finalPubKey;
-                    } else if (FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
+                    } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
                         try {
                             return formatLegacyPublicKeyData(verifierLookupItem, true, isNewKey);
                         } catch (GetOrSetNonceError | ExecutionException | InterruptedException e) {
