@@ -79,15 +79,15 @@ public class CyanTest {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xA3767911A84bE6907f26C572bc89426dDdDB2825", publicAddress.getFinalKeyData().getEvmAddress());
+        assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", publicAddress.getFinalKeyData().getEvmAddress());
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xA3767911A84bE6907f26C572bc89426dDdDB2825",
                         "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a",
                         "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1"),
-                new FinalPubKeyData("0xA3767911A84bE6907f26C572bc89426dDdDB2825",
-                        "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a",
-                        "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new FinalPubKeyData("0x3507F0d192a44E436B8a6C32a37d57D022861b1a",
+                        "8aaadab9530cb157d0b0dfb7b27d1a3aaca45274563c22c92c77ee2191779051",
+                        "d57b89d9f62bb6609d8542c3057943805c8c72f6f27d39781b820f27d7210f12"),
+                new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
     }
@@ -98,16 +98,16 @@ public class CyanTest {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xA3767911A84bE6907f26C572bc89426dDdDB2825", key.getFinalKeyData().getEvmAddress());
-        assertEquals(TypeOfUser.v1, key.getMetadata().getTypeOfUser());
+        assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", key.getFinalKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v2, key.getMetadata().getTypeOfUser());
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xA3767911A84bE6907f26C572bc89426dDdDB2825",
                         "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a",
                         "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1"),
-                new FinalPubKeyData("0xA3767911A84bE6907f26C572bc89426dDdDB2825",
-                        "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a",
-                        "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new FinalPubKeyData("0x3507F0d192a44E436B8a6C32a37d57D022861b1a",
+                        "8aaadab9530cb157d0b0dfb7b27d1a3aaca45274563c22c92c77ee2191779051",
+                        "d57b89d9f62bb6609d8542c3057943805c8c72f6f27d39781b820f27d7210f12"),
+                new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
 
@@ -171,17 +171,17 @@ public class CyanTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getFinalKeyData().getPrivKey());
-        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8"));
+        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
-                new FinalKeyData("0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA",
-                        "35739417e3be1b1e56cdf8c509d8dee5412712514b18df1bc961ac6465a0c949",
-                        "887497602e62ced686eb99eaa0020b0c0d705cad96eafeec2dd1bbfb6a9d42c2",
-                        "1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8"),
-                new OAuthKeyData("0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA",
-                        "35739417e3be1b1e56cdf8c509d8dee5412712514b18df1bc961ac6465a0c949",
-                        "887497602e62ced686eb99eaa0020b0c0d705cad96eafeec2dd1bbfb6a9d42c2",
-                        "1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8"),
-                new SessionData(new ArrayList<>(), ""),
+                new FinalKeyData("0xC615aA03Dd8C9b2dc6F7c43cBDfF2c34bBa47Ec9",
+                        "e2ed6033951af2851d1bea98799e62fb1ff24b952c1faea17922684678ba42d1",
+                        "beef0efad88e81385952c0068ca48e8b9c2121be87cb0ddf18a68806db202359",
+                        "5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"),
+                new OAuthKeyData("0xC615aA03Dd8C9b2dc6F7c43cBDfF2c34bBa47Ec9",
+                        "e2ed6033951af2851d1bea98799e62fb1ff24b952c1faea17922684678ba42d1",
+                        "beef0efad88e81385952c0068ca48e8b9c2121be87cb0ddf18a68806db202359",
+                        "5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"),
+                new SessionData(new ArrayList<>(), retrieveSharesResponse.getSessionData().getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
                 new NodesData(new ArrayList<>())
         ));

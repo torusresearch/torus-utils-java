@@ -79,15 +79,15 @@ public class AquaTest {
         VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xDfA967285AC699A70DA340F60d00DB19A272639d", publicAddress.getFinalKeyData().getEvmAddress());
+        assertEquals("0x79F06350eF34Aeed4BE68e26954D405D573f1438", publicAddress.getFinalKeyData().getEvmAddress());
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
                         "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
                         "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c"),
-                new FinalPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
-                        "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
-                        "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new FinalPubKeyData("0x79F06350eF34Aeed4BE68e26954D405D573f1438",
+                        "99df45abc8e6ee03d2f94df33be79e939eadfbed20c6b88492782fdc3ef1dfd3",
+                        "12bf3e54599a177fdb88f8b22419df7ddf1622e1d2344301edbe090890a72b16"),
+                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
     }
@@ -98,16 +98,16 @@ public class AquaTest {
         VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xDfA967285AC699A70DA340F60d00DB19A272639d", key.getFinalKeyData().getEvmAddress());
-        assertEquals(TypeOfUser.v1, key.getMetadata().getTypeOfUser());
+        assertEquals("0x79F06350eF34Aeed4BE68e26954D405D573f1438", key.getFinalKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v2, key.getMetadata().getTypeOfUser());
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
                         "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
                         "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c"),
-                new FinalPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
-                        "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
-                        "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new FinalPubKeyData("0x79F06350eF34Aeed4BE68e26954D405D573f1438",
+                        "99df45abc8e6ee03d2f94df33be79e939eadfbed20c6b88492782fdc3ef1dfd3",
+                        "12bf3e54599a177fdb88f8b22419df7ddf1622e1d2344301edbe090890a72b16"),
+                new Metadata(key.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
 
@@ -115,32 +115,32 @@ public class AquaTest {
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
         TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
-        assertEquals("0x5735dDC8d5125B23d77C3531aab3895A533584a3", key2.getFinalKeyData().getEvmAddress());
-        assertEquals(TypeOfUser.v1, key2.getMetadata().getTypeOfUser());
+        assertEquals("0xBc32f315515AdE7010cabC5Fd68c966657A570BD", key2.getFinalKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
-                new OAuthPubKeyData("0x5735dDC8d5125B23d77C3531aab3895A533584a3",
-                        "e1b419bc52b82e14b148c307f10479cfa464d20c947555fb4758c586eab12873",
-                        "75f47d7d5a271c0fcf51a790c1683a1cb3394b1d37d20e29c346ac249e3bfca2"),
-                new FinalPubKeyData("0x5735dDC8d5125B23d77C3531aab3895A533584a3",
-                        "e1b419bc52b82e14b148c307f10479cfa464d20c947555fb4758c586eab12873",
-                        "75f47d7d5a271c0fcf51a790c1683a1cb3394b1d37d20e29c346ac249e3bfca2"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new OAuthPubKeyData("0x4ea5260fF85678A2a326D08DF9C44d1f559a5828",
+                        "e6febe33a9d4eeb680cc6b63ff6237ad1971f27adcd7f104a3b1de18eda9337",
+                        "a5a915561f3543688e71281a850b9ee10b9690f305d9e79028dfc8359192b82d"),
+                new FinalPubKeyData("0xBc32f315515AdE7010cabC5Fd68c966657A570BD",
+                        "4897f120584ee18a72b9a6bb92c3ef6e45fc5fdff70beae7dc9325bd01332022",
+                        "2066dbef2fcdded4573e3c04d1c04edd5d44662168e636ed9d0b0cbe2e67c968"),
+                new Metadata(key2.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
 
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
         TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
-        assertEquals("0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD", key3.getFinalKeyData().getEvmAddress());
-        assertEquals(TypeOfUser.v1, key3.getMetadata().getTypeOfUser());
+        assertEquals("0x5469C5aCB0F30929226AfF4622918DA8E1424a8D", key3.getFinalKeyData().getEvmAddress());
+        assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
         assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD",
                         "e76d2f7fa2c0df324b4ab74629c3af47aa4609c35f1d2b6b90b77a47ab9a1281",
                         "b33b35148d72d357070f66372e07fec436001bdb15c098276b120b9ed64c1e5f"),
-                new FinalPubKeyData("0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD",
-                        "e76d2f7fa2c0df324b4ab74629c3af47aa4609c35f1d2b6b90b77a47ab9a1281",
-                        "b33b35148d72d357070f66372e07fec436001bdb15c098276b120b9ed64c1e5f"),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new FinalPubKeyData("0x5469C5aCB0F30929226AfF4622918DA8E1424a8D",
+                        "c20fac685bb67169e92f1d5d8894d4eea18753c0ef3b7b1b2224233b2dfa3539",
+                        "c4f080b5c8d5c55c8eaba4bec70f668f36db4126f358b491d631fefea7c19d21"),
+                new Metadata(key3.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false),
                 new NodesData(new ArrayList<>())
         ));
     }
