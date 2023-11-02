@@ -15,8 +15,9 @@ public class TorusCtorOptions {
 
     private boolean legacyNonce = false;
 
-    public TorusCtorOptions(String origin) {
+    public TorusCtorOptions(String origin, String clientId) {
         this.origin = origin;
+        this.clientId = clientId;
     }
 
     public String getNetwork() {

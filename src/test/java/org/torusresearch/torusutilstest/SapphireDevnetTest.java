@@ -68,9 +68,8 @@ public class SapphireDevnetTest {
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.SAPPHIRE_DEVNET);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom");
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         opts.setNetwork(TorusNetwork.SAPPHIRE_DEVNET.toString());
-        opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         opts.setEnableOneKey(true);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
@@ -83,10 +82,9 @@ public class SapphireDevnetTest {
     public void testFetchPublicAddressOfLegacyV1User() throws ExecutionException, InterruptedException {
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET);
         VerifierArgs verifierDetails = new VerifierArgs("google-lrc", "himanshu@tor.us", ""); // Replace with the actual verifier ID
-        TorusCtorOptions opts = new TorusCtorOptions("Custom");
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         opts.setNetwork(TorusNetwork.TESTNET.toString());
         opts.setAllowHost("https://signer.tor.us/api/allow");
-        opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         opts.setEnableOneKey(true);
         torusUtils = new TorusUtils(opts);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", "himanshu@tor.us").get();
@@ -111,10 +109,9 @@ public class SapphireDevnetTest {
         String verifier = "google-lrc";
         String email = "himanshu@tor.us";
         String token = JwtUtils.generateIdToken(email, algorithmRs);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom");
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         opts.setNetwork(TorusNetwork.TESTNET.toString());
         opts.setAllowHost("https://signer.tor.us/api/allow");
-        opts.setClientId("BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4");
         torusUtils = new TorusUtils(opts);
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, email).get();

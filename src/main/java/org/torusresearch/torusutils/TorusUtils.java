@@ -402,10 +402,6 @@ public class TorusUtils {
                                                                     String idToken, HashMap<String, Object> extraParams, String networkMigrated,
                                                                     @Nullable ImportedShare[] importedShares) {
         try {
-            CompletableFuture<List<String>> _completableFuture = new CompletableFuture<>();
-            if (this.options.getClientId() == null && this.options.getOrigin() == null) {
-                _completableFuture.completeExceptionally(new Exception("ClientId and origin is mandatory"));
-            }
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", networkMigrated),
                     new Header("clientId", this.options.getClientId()), new Header("enableGating", "true")}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
