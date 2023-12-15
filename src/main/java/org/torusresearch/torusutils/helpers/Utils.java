@@ -241,7 +241,7 @@ public class Utils {
                 }
                 String errorResult = thresholdSame(errorResults, k);
                 String keyResult = thresholdSame(keyResults, k);
-                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null || org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)))
+                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null || org.torusresearch.fetchnodedetails.FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)))
                         || errorResult != null) {
                     for (String x : lookupResults) {
                         JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
