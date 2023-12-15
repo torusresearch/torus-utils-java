@@ -1,6 +1,6 @@
 package org.torusresearch.torusutils;
 
-import static org.torusresearch.fetchnodedetails.FetchNodeDetails.LEGACY_NETWORKS_ROUTE_MAP;
+import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
