@@ -5,12 +5,14 @@ public class NodeSignature {
     private final String data;
     private final String nodepubx;
     private final String nodepuby;
+    private final String nodeindex;
 
-    public NodeSignature(String _signature, String _data, String _nodepubx, String _nodepuby) {
+    public NodeSignature(String _signature, String _data, String _nodepubx, String _nodepuby, String _nodeindex) {
         signature = _signature;
         data = _data;
         nodepubx = _nodepubx;
         nodepuby = _nodepuby;
+        nodeindex = _nodeindex;
     }
 
     public String getSignature() {
@@ -27,5 +29,9 @@ public class NodeSignature {
 
     public String getNodepuby() {
         return nodepuby;
+    }
+
+    public String getNodeindex() {
+        return nodeindex;
     }
 }

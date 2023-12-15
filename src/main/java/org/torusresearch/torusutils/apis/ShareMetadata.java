@@ -1,10 +1,20 @@
 package org.torusresearch.torusutils.apis;
 
 public class ShareMetadata {
+
     private String iv;
     private String ephemPublicKey;
     private String mac;
     private String mode;
+    private String ciphertext;
+
+    public ShareMetadata(String iv, String ephemPublicKey, String ciphertext, String mac, String mode) {
+        this.iv = iv;
+        this.ephemPublicKey = ephemPublicKey;
+        this.mac = mac;
+        this.ciphertext = ciphertext;
+        this.mode = mode;
+    }
 
     public String getIv() {
         return iv;
@@ -20,5 +30,9 @@ public class ShareMetadata {
 
     public String getMode() {
         return mode;
+    }
+
+    public String getCiphertext() {
+        return ciphertext;
     }
 }
