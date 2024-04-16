@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
 
@@ -42,7 +43,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -84,9 +84,10 @@ public class TorusUtilsTest {
                         "ed737569a557b50722a8b5c0e4e5ca30cef1ede2f5674a0616b78246bb93dfd0",
                         "d9e8e6c54c12c4da38c2f0d1047fcf6089036127738f4ef72a83431339586ca9"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("f3f7caefd6540d923c9993113f34226371bd6714a5be6882dedc95a6a929a8",
-                        "f28620603601ce54fa0d70fd691fb72ff52f5bf164bf1a91617922eaad8cc7a5"), BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                        "f28620603601ce54fa0d70fd691fb72ff52f5bf164bf1a91617922eaad8cc7a5"), BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new NodesData(publicAddress.getNodesData().getNodeIndexes())
         ));
+        assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
     }
 
     @DisplayName("Fetch User Type and Public Address")
@@ -104,8 +105,8 @@ public class TorusUtilsTest {
                         "d9e8e6c54c12c4da38c2f0d1047fcf6089036127738f4ef72a83431339586ca9"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("f3f7caefd6540d923c9993113f34226371bd6714a5be6882dedc95a6a929a8",
                         "f28620603601ce54fa0d70fd691fb72ff52f5bf164bf1a91617922eaad8cc7a5"),
-                        BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                        BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().getServerTimeOffset()),
+                new NodesData(key.getNodesData().getNodeIndexes())
         ));
         assertEquals("0xf5804f608C233b9cdA5952E46EB86C9037fd6842", key.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v2, key.getMetadata().typeOfUser);
@@ -123,8 +124,8 @@ public class TorusUtilsTest {
                         "a605e52b65d3635f89654519dfa7e31f7b45f206ef4189866ad0c2240d40f97f"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("ad121b67fa550da814bbbd54ec7070705d058c941e04c03e07967b07b2f90345",
                         "bfe2395b177a72ebb836aaf24cedff2f14cd9ed49047990f5cdb99e4981b5753"),
-                        BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                        BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().serverTimeOffset),
+                new NodesData(key2.getNodesData().nodeIndexes)
         ));
         assertEquals("0xE91200d82029603d73d6E307DbCbd9A7D0129d8D", key2.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
@@ -141,8 +142,8 @@ public class TorusUtilsTest {
                         "1c47f5faccec6cf57c36919f6f0941fe3d8d65033cf2cc78f209304386044222"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("4f86b0e69992d1551f1b16ceb0909453dbe17b9422b030ee6c5471c2e16b65d0",
                         "640384f3d39debb04c4e9fe5a5ec6a1b494b0ad66d00ac9be6f166f21d116ca4"),
-                        BigInteger.ZERO, TypeOfUser.v2, true),
-                new NodesData(new ArrayList<>())
+                        BigInteger.ZERO, TypeOfUser.v2, true, key3.getMetadata().serverTimeOffset),
+                new NodesData(key3.getNodesData().nodeIndexes)
         ));
         assertEquals("0x1016DA7c47A04C76036637Ea02AcF1d29c64a456", key3.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
@@ -171,6 +172,7 @@ public class TorusUtilsTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3"));
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0xF8d2d3cFC30949C1cb1499C9aAC8F9300535a8d6",
                         "6de2e34d488dd6a6b596524075b032a5d5eb945bcc33923ab5b88fd4fd04b5fd",
@@ -181,7 +183,7 @@ public class TorusUtilsTest {
                         "d5fb7b51b846e05362461357ec6e8ca075ea62507e2d5d7253b72b0b960927e9",
                         "9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3"),
                 new SessionData(retrieveSharesResponse.sessionData.getSessionTokenData(), retrieveSharesResponse.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().getServerTimeOffset()),
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }
@@ -198,6 +200,7 @@ public class TorusUtilsTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertEquals("0x938a40E155d118BD31E439A9d92D67bd55317965", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x938a40E155d118BD31E439A9d92D67bd55317965",
                         "1c50e34ef5b7afcf5b0c6501a6ae00ec3a09a321dd885c5073dd122e2a251b95",
@@ -208,7 +211,7 @@ public class TorusUtilsTest {
                         "2cc74beb28f2c4a7c4034f80836d51b2781b36fefbeafb4eb1cd055bdf73b1e6",
                         "3cbfa57d702327ec1af505adc88ad577804a1a7780bc013ed9e714c547fb5cb1"),
                 new SessionData(retrieveSharesResponse.sessionData.getSessionTokenData(), retrieveSharesResponse.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().getServerTimeOffset()),
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }

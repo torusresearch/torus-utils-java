@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
 
@@ -75,6 +76,7 @@ public class MainnetTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E", publicAddress.getFinalKeyData().getEvmAddress());
+        assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A",
                         "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
@@ -82,8 +84,8 @@ public class MainnetTest {
                 new FinalPubKeyData("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E",
                         "72beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
                         "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5"),
-                new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
     }
 
@@ -102,8 +104,8 @@ public class MainnetTest {
                 new FinalPubKeyData("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E",
                         "72beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
                         "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5"),
-                new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().serverTimeOffset),
+                new NodesData(key.nodesData.nodeIndexes)
         ));
 
         String v2Verifier = "tkey-google";
@@ -120,8 +122,8 @@ public class MainnetTest {
                         "bbfd26b1e61572c4e991a21b64f12b313cb6fce6b443be92d4d5fd8f311e8f33",
                         "df2c905356ec94faaa111a886be56ed6fa215b7facc1d1598486558355123c25"),
                 new Metadata(key2.getMetadata().getPubNonce(),
-                        BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                        BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().getServerTimeOffset()),
+                new NodesData(key2.getNodesData().nodeIndexes)
         ));
 
         // v1 user
@@ -136,8 +138,8 @@ public class MainnetTest {
                 new FinalPubKeyData("0x40A4A04fDa1f29a3667152C8830112FBd6A77BDD",
                         "6779af3031d9e9eec6b4133b0ae13e367c83a614f92d2008e10c7f3b8e6723bc",
                         "80edc4502abdfb220dd6e2fcfa2dbb058125dc95873e4bfa6877f9c26da7fdff"),
-                new Metadata(key3.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(key3.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().serverTimeOffset),
+                new NodesData(key3.getNodesData().nodeIndexes)
         ));
     }
 
@@ -163,6 +165,7 @@ public class MainnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
@@ -173,8 +176,8 @@ public class MainnetTest {
                         "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
                         "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
                 new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().serverTimeOffset),
+                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }
 
@@ -190,6 +193,7 @@ public class MainnetTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x621a4d458cFd345dAE831D9E756F10cC40A50381",
                         "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",
@@ -200,8 +204,8 @@ public class MainnetTest {
                         "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
                         "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
                 new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().serverTimeOffset),
+                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }
 }

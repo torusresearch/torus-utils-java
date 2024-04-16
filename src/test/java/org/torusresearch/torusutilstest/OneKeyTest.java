@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
 
@@ -82,10 +83,11 @@ public class OneKeyTest {
                 new FinalPubKeyData("0x930abEDDCa6F9807EaE77A3aCc5c78f20B168Fd1",
                         "12f6b90d66bda29807cf9ff14b2e537c25080154fc4fafed446306e8356ff425",
                         "e7c92e164b83e1b53e41e5d87d478bb07d7b19d105143e426e1ef08f7b37f224"),
-                new Metadata(null, new BigInteger("186a20d9b00315855ff5622a083aca6b2d34ef66ef6e0a4de670f5b2fde37e0d", 16), TypeOfUser.v1, false),
+                new Metadata(null, new BigInteger("186a20d9b00315855ff5622a083aca6b2d34ef66ef6e0a4de670f5b2fde37e0d", 16), TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
         assertEquals("0x930abEDDCa6F9807EaE77A3aCc5c78f20B168Fd1", publicAddress.getFinalKeyData().getEvmAddress());
+        assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
     }
 
     @DisplayName("Key Assign test")
@@ -123,10 +125,11 @@ public class OneKeyTest {
                 new Metadata(new GetOrSetNonceResult.PubNonce(
                         "8e8c399d8ba00ff88e6c42eb40c10661f822868ba2ad8fe12a8830e996b1e25d",
                         "554b12253694bf9eb98485441bba7ba220b78cb78ee21664e96f934d10b1494d"
-                ), new BigInteger("22d160abe5320fe2be52a57c7aca8fe5d7e5eff104ff4d2b32767e3344e040bf", 16), TypeOfUser.v2, false),
+                ), new BigInteger("22d160abe5320fe2be52a57c7aca8fe5d7e5eff104ff4d2b32767e3344e040bf", 16), TypeOfUser.v2, false, retrieveSharesResponse.getMetadata().getServerTimeOffset()),
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
         assertEquals("296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4", retrieveSharesResponse.getFinalKeyData().getPrivKey());
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
     }
 
     @DisplayName("Login test v2")
@@ -139,6 +142,7 @@ public class OneKeyTest {
         }}, JwtUtils.generateIdToken(email, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getFinalKeyData().getPrivKey() + " priv key " + retrieveSharesResponse.getFinalKeyData().getEvmAddress() + " nonce " + retrieveSharesResponse.getMetadata().getNonce());
         assertEquals(retrieveSharesResponse.getFinalKeyData().getPrivKey(), "9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075");
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x2876820fd9536BD5dd874189A85d71eE8bDf64c2",
                         "ad4c223520aac9bc3ec72399869601fd59f29363471131914e2ed2bc4ba46e54",
@@ -152,7 +156,7 @@ public class OneKeyTest {
                 new Metadata(new GetOrSetNonceResult.PubNonce(
                         "f494a5bf06a2f0550aafb6aabeb495bd6ea3ef92eaa736819b5b0ad6bfbf1aab",
                         "35df3d3a14f88cbba0cfd092a1e5a0e4e725ba52a8d45719614555542d701f18"
-                ), new BigInteger("aa0dcf552fb5be7a5c52b783c1b61c1aca7113872e172a5818994715c8a5497c", 16), TypeOfUser.v2, false),
+                ), new BigInteger("aa0dcf552fb5be7a5c52b783c1b61c1aca7113872e172a5818994715c8a5497c", 16), TypeOfUser.v2, false, retrieveSharesResponse.getMetadata().serverTimeOffset),
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }
@@ -169,6 +173,7 @@ public class OneKeyTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertEquals("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B", retrieveSharesResponse.getFinalKeyData().getEvmAddress());
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B",
                         "78658b2671f1bd6a488baf2afb8ce6f8d8b9a1a70842130b3c8756a9d51d9723",
@@ -182,7 +187,7 @@ public class OneKeyTest {
                 new Metadata(new GetOrSetNonceResult.PubNonce(
                         "376c0ac5e15686633061cf5833dd040365f91377686d7ab5338c5202bd963a2f",
                         "794d7edb6a5ec0307dd40789274b377f37f293b0410a6cbd303db309536099b7"
-                ), new BigInteger("d3d455dcab49dc700319244e9e187f443596f2acbce238cff1c215d8809fa1f9", 16), TypeOfUser.v2, false),
+                ), new BigInteger("d3d455dcab49dc700319244e9e187f443596f2acbce238cff1c215d8809fa1f9", 16), TypeOfUser.v2, false, retrieveSharesResponse.getMetadata().getServerTimeOffset()),
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }

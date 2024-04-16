@@ -2,8 +2,10 @@ package org.torusresearch.torusutilstest.utils;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+
 import net.andreinc.mockneat.MockNeat;
 
+import java.math.BigInteger;
 import java.util.Date;
 
 public class JwtUtils {
@@ -25,5 +27,13 @@ public class JwtUtils {
     public static String getRandomEmail() {
         MockNeat mock = MockNeat.threadLocal();
         return mock.emails().val();
+    }
+
+    public static int getTimeDiff(BigInteger timestampInSeconds) {
+        BigInteger timestampInMillis = timestampInSeconds.multiply(BigInteger.valueOf(1000));
+        BigInteger systemTimestampMillis = BigInteger.valueOf(System.currentTimeMillis());
+        BigInteger timeDifferenceMillis = systemTimestampMillis.subtract(timestampInMillis);
+        BigInteger timeDifferenceSeconds = timeDifferenceMillis.divide(BigInteger.valueOf(1000));
+        return timeDifferenceSeconds.intValue();
     }
 }

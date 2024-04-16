@@ -10,6 +10,8 @@ public class KeyAssignResult {
     private String node_puby;
     private String is_new_key;
 
+    private String server_time_offset;
+
     public KeyAssignment[] getKeys() {
         return keys;
     }
@@ -40,5 +42,9 @@ public class KeyAssignResult {
 
     public String getIsNewKey() {
         return is_new_key;
+    }
+
+    public String getServerTimeOffset() {
+        return server_time_offset;
     }
 }

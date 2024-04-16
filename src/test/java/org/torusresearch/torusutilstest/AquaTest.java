@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
 
@@ -79,6 +80,7 @@ public class AquaTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertEquals("0x79F06350eF34Aeed4BE68e26954D405D573f1438", publicAddress.getFinalKeyData().getEvmAddress());
+        assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
                         "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
@@ -86,8 +88,8 @@ public class AquaTest {
                 new FinalPubKeyData("0x79F06350eF34Aeed4BE68e26954D405D573f1438",
                         "99df45abc8e6ee03d2f94df33be79e939eadfbed20c6b88492782fdc3ef1dfd3",
                         "12bf3e54599a177fdb88f8b22419df7ddf1622e1d2344301edbe090890a72b16"),
-                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().serverTimeOffset),
+                new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
     }
 
@@ -106,8 +108,8 @@ public class AquaTest {
                 new FinalPubKeyData("0x79F06350eF34Aeed4BE68e26954D405D573f1438",
                         "99df45abc8e6ee03d2f94df33be79e939eadfbed20c6b88492782fdc3ef1dfd3",
                         "12bf3e54599a177fdb88f8b22419df7ddf1622e1d2344301edbe090890a72b16"),
-                new Metadata(key.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(key.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().serverTimeOffset),
+                new NodesData(key.nodesData.nodeIndexes)
         ));
 
         String v2Verifier = "tkey-google-aqua";
@@ -123,8 +125,8 @@ public class AquaTest {
                 new FinalPubKeyData("0xBc32f315515AdE7010cabC5Fd68c966657A570BD",
                         "4897f120584ee18a72b9a6bb92c3ef6e45fc5fdff70beae7dc9325bd01332022",
                         "2066dbef2fcdded4573e3c04d1c04edd5d44662168e636ed9d0b0cbe2e67c968"),
-                new Metadata(key2.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(key2.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().serverTimeOffset),
+                new NodesData(key2.nodesData.nodeIndexes)
         ));
 
         // 2/n user
@@ -139,8 +141,8 @@ public class AquaTest {
                 new FinalPubKeyData("0x5469C5aCB0F30929226AfF4622918DA8E1424a8D",
                         "c20fac685bb67169e92f1d5d8894d4eea18753c0ef3b7b1b2224233b2dfa3539",
                         "c4f080b5c8d5c55c8eaba4bec70f668f36db4126f358b491d631fefea7c19d21"),
-                new Metadata(key3.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(key3.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().serverTimeOffset),
+                new NodesData(key3.nodesData.nodeIndexes)
         ));
     }
 
@@ -170,6 +172,7 @@ public class AquaTest {
                 JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getFinalKeyData().getPrivKey());
         assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"));
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x9EBE51e49d8e201b40cAA4405f5E0B86d9D27195",
                         "c7bcc239f0957bb05bda94757eb4a5f648339424b22435da5cf7a0f2b2323664",
@@ -180,8 +183,8 @@ public class AquaTest {
                         "63795690a33e575ee12d832935d563c2b5f2e1b1ffac63c32a4674152f68cb3f",
                         "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"),
                 new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().getServerTimeOffset()),
+                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }
 
@@ -201,6 +204,7 @@ public class AquaTest {
                 }},
                 hashedIdToken).get();
         assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", retrieveSharesResponse.getoAuthKeyData().evmAddress);
+        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
                 new FinalKeyData("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D",
                         "37a4ac8cbef68e88bcec5909d9b6fffb539187365bb723f3d7bffe56ae80e31d",
@@ -211,8 +215,8 @@ public class AquaTest {
                         "f963f2d08ed4dd0da9b8a8d74c6fdaeef7bdcde31f84fcce19fa2173d40b2c10",
                         "488d39ac548e15cfb0eaf161d86496e1645b09437df21311e24a56c4efd76355"),
                 new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
-                new NodesData(new ArrayList<>())
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().getServerTimeOffset()),
+                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }
 }

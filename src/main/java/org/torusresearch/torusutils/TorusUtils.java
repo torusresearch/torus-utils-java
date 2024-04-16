@@ -44,6 +44,7 @@ import org.torusresearch.torusutils.types.NonceMetadataParams;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.PrivateKeyWithNonceResult;
+import org.torusresearch.torusutils.types.PrivateKeyWithServerTime;
 import org.torusresearch.torusutils.types.RetrieveSharesResponse;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.SessionToken;
@@ -78,6 +79,7 @@ import okhttp3.internal.http2.Header;
 public class TorusUtils {
 
     public final TorusCtorOptions options;
+    private static int sessionTime = 86400;
     LegacyNetworkMigrationInfo legacyNetworkMigrationInfo;
     public static final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
     ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
@@ -96,6 +98,10 @@ public class TorusUtils {
 
     public static boolean isGetOrSetNonceError(Exception err) {
         return err instanceof GetOrSetNonceError;
+    }
+
+    public void setSessionTime(int sessionTime) {
+        this.sessionTime = sessionTime;
     }
 
     BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
@@ -147,7 +153,8 @@ public class TorusUtils {
 
     public CompletableFuture<RetrieveSharesResponse> legacyRetrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, HashMap<String, Object> extraParams) {
         try {
-            APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork())}, true).get();
+            APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifierid", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork()),
+                    new Header("clientid", this.options.getClientId()), new Header("enablegating", "true")}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();
@@ -203,6 +210,7 @@ public class TorusUtils {
                     verifierParams.put("idtoken", idToken);
                     verifierParams.put("nodesignatures", nodeSignatures);
                     verifierParams.put("verifieridentifier", verifier);
+                    verifierParams.put("client_time", Long.toString(System.currentTimeMillis() / 1000));
                     if (extraParams != null) {
                         verifierParams.putAll(extraParams);
                     }
@@ -247,12 +255,14 @@ public class TorusUtils {
                             }
                             if (completedResponses.size() >= k && thresholdPubKey != null) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
+                                List<BigInteger> serverTimeOffsets = new ArrayList<>();
                                 for (int i = 0; i < shareResponses.length; i++) {
                                     if (shareResponses[i] != null && !shareResponses[i].equals("")) {
                                         try {
                                             JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
                                             if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
                                                 KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
+                                                serverTimeOffsets.add(currentShareResponse.getServerTimeOffset() != null ? new BigInteger(currentShareResponse.getServerTimeOffset()) : BigInteger.ZERO);
                                                 if (currentShareResponse != null && currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
                                                     KeyAssignment firstKey = currentShareResponse.getKeys()[0];
                                                     if (firstKey.getMetadata(this.options.getNetwork()) != null) {
@@ -298,30 +308,36 @@ public class TorusUtils {
                                         break;
                                     }
                                 }
-                                CompletableFuture<BigInteger> response = new CompletableFuture<>();
+
+                                BigInteger serverTimeOffset = this.options.getServerTimeOffset().shortValueExact() != 0 ?
+                                        this.options.getServerTimeOffset() : Utils.calculateMedian(serverTimeOffsets);
+
+                                CompletableFuture<PrivateKeyWithServerTime> response = new CompletableFuture<>();
                                 if (privateKey == null) {
                                     response.completeExceptionally(new PredicateFailedException("could not derive private key"));
                                 } else {
-                                    response.complete(privateKey);
+                                    response.complete(new PrivateKeyWithServerTime(privateKey, serverTimeOffset));
                                 }
                                 return response;
                             } else {
-                                CompletableFuture<BigInteger> response = new CompletableFuture<>();
+                                CompletableFuture<PrivateKeyWithServerTime> response = new CompletableFuture<>();
                                 response.completeExceptionally(new PredicateFailedException("could not get enough shares"));
                                 return response;
                             }
                         } catch (Exception ex) {
-                            CompletableFuture<BigInteger> cfRes = new CompletableFuture<>();
+                            CompletableFuture<PrivateKeyWithServerTime> cfRes = new CompletableFuture<>();
                             cfRes.completeExceptionally(new TorusException("Torus Internal Error", ex));
                             return cfRes;
                         }
                     }).getCompletableFuture();
                 } catch (Exception ex) {
-                    CompletableFuture<BigInteger> cfRes = new CompletableFuture<>();
+                    CompletableFuture<PrivateKeyWithServerTime> cfRes = new CompletableFuture<>();
                     cfRes.completeExceptionally(new TorusException("Torus Internal Error", ex));
                     return cfRes;
                 }
-            }).thenComposeAsync((privateKey) -> {
+            }).thenComposeAsync((privateKeyWithServerTime) -> {
+                BigInteger privateKey = privateKeyWithServerTime.getPrivateKey();
+                BigInteger serverTimeOffset = privateKeyWithServerTime.getServerTimeOffset();
                 CompletableFuture<RetrieveSharesResponse> cf = new CompletableFuture<>();
                 if (privateKey == null) {
                     cf.completeExceptionally(new TorusException("could not get private key"));
@@ -339,7 +355,7 @@ public class TorusUtils {
                     TypeOfUser typeOfUser = TypeOfUser.v1;
                     GetOrSetNonceResult.PubNonce pubKeyNonceResult = null;
                     if (this.options.isEnableOneKey()) {
-                        GetOrSetNonceResult result = this.getNonce(oAuthKey).get();
+                        GetOrSetNonceResult result = this.getNonce(oAuthKey, serverTimeOffset).get();
                         metadataNonce = new BigInteger(Utils.isEmpty(result.getNonce()) ? "0" : result.getNonce(), 16);
                         typeOfUser = result.getTypeOfUser();
                         if (typeOfUser.equals(TypeOfUser.v2)) {
@@ -382,7 +398,7 @@ public class TorusUtils {
                             finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthKeyX, oAuthKeyY, oAuthKey.toString(16)),
                             new SessionData(new ArrayList<>(), ""),
-                            new Metadata(pubKeyNonceResult, metadataNonce, typeOfUser, isUpgraded),
+                            new Metadata(pubKeyNonceResult, metadataNonce, typeOfUser, isUpgraded, serverTimeOffset),
                             new NodesData(new ArrayList<>())));
                 } catch (Exception ex) {
                     CompletableFuture<RetrieveSharesResponse> cfRes = new CompletableFuture<>();
@@ -471,6 +487,7 @@ public class TorusUtils {
                     verifierParams.put("nodesignatures", nodeSignatures);
                     verifierParams.put("verifieridentifier", verifier);
                     if (extraParams != null) {
+                        extraParams.put("session_token_exp_second", sessionTime);
                         verifierParams.putAll(extraParams);
                     }
                     for (int i = 0; i < endpoints.length; i++) {
@@ -549,6 +566,7 @@ public class TorusUtils {
                                 List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sessionTokenSigPromises = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sessionTokenPromises = new ArrayList<>();
+                                List<BigInteger> serverTimeOffsetResponses = new ArrayList<>();
 
                                 for (int i = 0; i < shareResponses.length; i++) {
                                     if (shareResponses[i] != null && !shareResponses[i].equals("")) {
@@ -557,6 +575,7 @@ public class TorusUtils {
                                             if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
                                                 KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
                                                 isNewKeyArr.add(currentShareResponse.getIsNewKey());
+                                                serverTimeOffsetResponses.add(currentShareResponse.getServerTimeOffset() != null ? new BigInteger(currentShareResponse.getServerTimeOffset()) : BigInteger.ZERO);
                                                 if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
                                                     // Decrypt sessionSig if enc metadata is sent
                                                     ShareMetadata[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
@@ -567,7 +586,7 @@ public class TorusUtils {
                                                             byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokenSigs()[0], 16));
                                                             sessionTokenSigPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
                                                         } catch (Exception ex) {
-                                                            System.out.println("session sig decryption" + ex);
+                                                            System.out.println("session token sig decryption" + ex);
                                                             return null;
                                                         }
                                                     } else {
@@ -588,7 +607,7 @@ public class TorusUtils {
                                                             byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokens()[0], 16));
                                                             sessionTokenPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
                                                         } catch (Exception ex) {
-                                                            System.out.println("session token decryption" + ex);
+                                                            System.out.println("shre decryption" + ex);
                                                             return null;
                                                         }
                                                     } else {
@@ -655,6 +674,11 @@ public class TorusUtils {
                                     throw new RuntimeException("Threshold Error");
                                 }
 
+                                List<BigInteger> serverOffsetTimes = serverTimeOffsetResponses;
+
+                                BigInteger serverTimeOffsetResponse = this.options.getServerTimeOffset().shortValueExact() != 0 ?
+                                        this.options.getServerTimeOffset() : Utils.calculateMedian(serverOffsetTimes);
+
                                 if (predicateResolved.get()) return null;
                                 List<List<Integer>> allCombis = Utils.kCombinations(decryptedShares.size(), k);
                                 for (List<Integer> currentCombi : allCombis) {
@@ -682,7 +706,7 @@ public class TorusUtils {
                                 if (privateKey == null) {
                                     response.completeExceptionally(new PredicateFailedException("could not derive private key"));
                                 } else {
-                                    response.complete(new PrivateKeyWithNonceResult(privateKey, thresholdNonceData));
+                                    response.complete(new PrivateKeyWithNonceResult(privateKey, thresholdNonceData, serverTimeOffsetResponse));
                                 }
                                 return response;
                             } else {
@@ -704,9 +728,10 @@ public class TorusUtils {
             }).thenComposeAsync((privateKeyWithNonceResult) -> {
                 BigInteger privateKey = privateKeyWithNonceResult.getPrivateKey();
                 GetOrSetNonceResult thresholdNonceData = privateKeyWithNonceResult.getNonceResult();
+                BigInteger serverTimeOffsetResponse = privateKeyWithNonceResult.getServerTimeOffsetResponse();
                 CompletableFuture<RetrieveSharesResponse> cf = new CompletableFuture<>();
                 if (privateKey == null) {
-                    cf.completeExceptionally(new TorusException("could not get private key"));
+                    cf.completeExceptionally(new TorusException("could not derive private key"));
                     return cf;
                 }
                 try {
@@ -720,7 +745,7 @@ public class TorusUtils {
                     if (thresholdNonceData != null) {
                         metadataNonce = new BigInteger(Utils.isEmpty(thresholdNonceData.getNonce()) ? "0" : thresholdNonceData.getNonce(), 16);
                     } else {
-                        nonceResult = this.getNonce(privateKey).get();
+                        nonceResult = this.getNonce(privateKey, serverTimeOffsetResponse).get();
                         metadataNonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
                     }
                     List<BigInteger> nodeIndexes = new ArrayList<>();
@@ -735,7 +760,7 @@ public class TorusUtils {
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
                     } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
                         if (this.options.isEnableOneKey()) {
-                            nonceResult = this.getNonce(oAuthKey).get();
+                            nonceResult = this.getNonce(oAuthKey, serverTimeOffsetResponse).get();
                             pubNonce = nonceResult.getPubNonce();
                             metadataNonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
                             typeOfUser = nonceResult.getTypeOfUser();
@@ -793,7 +818,7 @@ public class TorusUtils {
                             finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthPubkeyX, oAuthPubkeyY, oAuthKey.toString(16)),
                             new SessionData(sessionTokens, sessionAuthKey.getPrivateKey().toString(16)),
-                            new Metadata(pubNonce, metadataNonce, typeOfUser, isUpgraded),
+                            new Metadata(pubNonce, metadataNonce, typeOfUser, isUpgraded, serverTimeOffsetResponse),
                             new NodesData(nodeIndexes)
                     ));
 
@@ -899,7 +924,7 @@ public class TorusUtils {
         }).thenComposeAsync(verifierLookupItem -> {
             CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
             try {
-                return this.formatLegacyPublicKeyData(verifierLookupItem, true, isNewKey);
+                return this.formatLegacyPublicKeyData(verifierLookupItem, true, isNewKey, BigInteger.ZERO);
             } catch (Exception ex) {
                 keyCf.completeExceptionally(ex);
                 return keyCf;
@@ -917,6 +942,7 @@ public class TorusUtils {
                     String keyResult = keyAssignResult.getKeyResult();
                     List<BigInteger> nodeIndexes = keyAssignResult.getNodeIndexes();
                     GetOrSetNonceResult nonceResult = keyAssignResult.getNonceResult();
+                    BigInteger finalServerTimeOffset = (keyAssignResult.getServerTimeOffset() != null) ? keyAssignResult.getServerTimeOffset() : this.options.getServerTimeOffset();
 
                     if (errorResult != null && errorResult.toLowerCase().contains("verifier not supported")) {
                         throw new RuntimeException("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
@@ -964,7 +990,7 @@ public class TorusUtils {
                         oAuthPubKey = finalPubKey;
                     } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
                         try {
-                            return formatLegacyPublicKeyData(verifierLookupItem, true, isNewKey);
+                            return formatLegacyPublicKeyData(verifierLookupItem, true, isNewKey, finalServerTimeOffset);
                         } catch (GetOrSetNonceError | ExecutionException | InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -991,14 +1017,15 @@ public class TorusUtils {
 
                     TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthX, oAuthY),
                             new FinalPubKeyData(finalAddress, finalX, finalY),
-                            new Metadata(pubNonce, nonce, TypeOfUser.v2, nonceResult != null && nonceResult.isUpgraded()),
+                            new Metadata(pubNonce, nonce, TypeOfUser.v2, nonceResult != null && nonceResult.isUpgraded(), finalServerTimeOffset),
                             new NodesData(nodeIndexes));
                     keyCf.complete(key);
                     return keyCf;
                 });
     }
 
-    private CompletableFuture<TorusPublicKey> formatLegacyPublicKeyData(VerifierLookupItem finalKeyResult, boolean enableOneKey, AtomicBoolean isNewKey) throws GetOrSetNonceError, ExecutionException, InterruptedException {
+    private CompletableFuture<TorusPublicKey> formatLegacyPublicKeyData(VerifierLookupItem finalKeyResult, boolean enableOneKey, AtomicBoolean isNewKey,
+                                                                        BigInteger serverTimeOffset) throws GetOrSetNonceError, ExecutionException, InterruptedException {
         String X = finalKeyResult.getPub_key_X();
         String Y = finalKeyResult.getPub_key_Y();
 
@@ -1055,7 +1082,7 @@ public class TorusUtils {
 
         TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthX, oAuthY),
                 new FinalPubKeyData(finalAddress, finalX, finalY),
-                new Metadata(pubNonce, nonce, typeOfUser, nonceResult != null && nonceResult.isUpgraded()),
+                new Metadata(pubNonce, nonce, typeOfUser, nonceResult != null && nonceResult.isUpgraded(), serverTimeOffset),
                 new NodesData(new ArrayList<>()));
         keyCf.complete(key);
         return keyCf;
@@ -1092,6 +1119,7 @@ public class TorusUtils {
                     jsonObject.remove("ipfs");
                 }
                 GetOrSetNonceResult result = gson.fromJson(jsonObject.toString(), GetOrSetNonceResult.class);
+                System.out.println("_getOrSetNonce successful!");
                 cf.complete(result);
             } catch (Exception ex2) {
                 cf.completeExceptionally(ex2);
@@ -1106,18 +1134,18 @@ public class TorusUtils {
         return this._getOrSetNonce(data);
     }
 
-    public CompletableFuture<GetOrSetNonceResult> getOrSetNonce(BigInteger privKey, boolean getOnly) {
+    public CompletableFuture<GetOrSetNonceResult> getOrSetNonce(BigInteger privKey, BigInteger serverTimeOffset, boolean getOnly) {
         String msg = getOnly ? "getNonce" : "getOrSetNonce";
-        MetadataParams data = this.generateMetadataParams(msg, privKey);
+        MetadataParams data = this.generateMetadataParams(msg, privKey, serverTimeOffset);
         return this._getOrSetNonce(data);
     }
 
-    public CompletableFuture<GetOrSetNonceResult> getNonce(String X, String Y) {
+    public CompletableFuture<GetOrSetNonceResult> getNonce(String X, String Y, BigInteger serverTimeOffset) {
         return this.getOrSetNonce(X, Y, true);
     }
 
-    public CompletableFuture<GetOrSetNonceResult> getNonce(BigInteger privKey) {
-        return this.getOrSetNonce(privKey, true);
+    public CompletableFuture<GetOrSetNonceResult> getNonce(BigInteger privKey, BigInteger serverTimeOffset) {
+        return this.getOrSetNonce(privKey, serverTimeOffset, true);
     }
 
     public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, TorusNodePub[] torusNodePubs, VerifierArgs verifierArgs) {
@@ -1153,9 +1181,9 @@ public class TorusUtils {
         return new NonceMetadataParams(derivedPubKeyX, derivedPubKeyY, setNonceData, finalSig);
     }
 
-    public MetadataParams generateMetadataParams(String message, BigInteger privateKey) {
+    public MetadataParams generateMetadataParams(String message, BigInteger privateKey, BigInteger serverTimeOffset) {
         long timeMillis = System.currentTimeMillis() / 1000L;
-        BigInteger timestamp = this.options.getServerTimeOffset().add(new BigInteger(String.valueOf(timeMillis)));
+        BigInteger timestamp = (serverTimeOffset.equals(BigInteger.ZERO)) ? this.options.getServerTimeOffset().add(new BigInteger(String.valueOf(timeMillis))) : serverTimeOffset;
         MetadataParams.MetadataSetData setData = new MetadataParams.MetadataSetData(message, timestamp.toString(16));
         ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
         // this pubkey is not being padded in backend as well on web, so do not pad here.

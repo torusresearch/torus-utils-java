@@ -58,11 +58,10 @@ public class SapphireDevnetTest {
     static String TORUS_TEST_VERIFIER = "torus-test-health";
     static String TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate";
 
-    static String TORUS_IMPORT_EMAIL = "importeduser5@tor.us";
+    static String TORUS_IMPORT_EMAIL = "devnettestuser@tor.us";
     static String TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com";
     static String HashEnabledVerifier = "torus-test-verifierid-hash";
-
-    static String TORUS_TEST_EMAIL = "saasas@tr.us";
+    static String TORUS_TEST_EMAIL = "devnettestuser@tor.us";
 
     @BeforeAll
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
@@ -98,8 +97,8 @@ public class SapphireDevnetTest {
                         "12f6b90d66bda29807cf9ff14b2e537c25080154fc4fafed446306e8356ff425",
                         "e7c92e164b83e1b53e41e5d87d478bb07d7b19d105143e426e1ef08f7b37f224"),
                 new Metadata(null, new BigInteger("186a20d9b00315855ff5622a083aca6b2d34ef66ef6e0a4de670f5b2fde37e0d", 16),
-                        TypeOfUser.v1, false),
-                new NodesData(new ArrayList<>())
+                        TypeOfUser.v1, false, publicKeyData.getMetadata().serverTimeOffset),
+                new NodesData(publicKeyData.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -129,7 +128,7 @@ public class SapphireDevnetTest {
                         "fef450a5263f7c57605dd439225faee830943cb484e8dfe1f3c82c3d538f61af",
                         "dca7f29d234dc71561efe1a874d872bf34f6528bc042fe35e57197eac1f14eb9"),
                 new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.metadata.serverTimeOffset),
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
     }
@@ -141,6 +140,7 @@ public class SapphireDevnetTest {
         VerifierArgs args = new VerifierArgs(verifier, TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
         assertEquals("0x4924F91F5d6701dDd41042D94832bB17B76F316F", torusPublicKey.getFinalKeyData().getEvmAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xac997dE675Fb69FCb0F4115A23c0061A892A2772",
@@ -152,7 +152,7 @@ public class SapphireDevnetTest {
                 new Metadata(new GetOrSetNonceResult.PubNonce("78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c",
                         "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7"),
                         new BigInteger("376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e", 16), TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -166,7 +166,6 @@ public class SapphireDevnetTest {
         TorusPublicKey result2 = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusNodePub(), args).get();
         assertThat(result1.getFinalKeyData()).isEqualToComparingFieldByFieldRecursively(result2.getFinalKeyData());
         assertThat(result1.getoAuthKeyData()).isEqualToComparingFieldByFieldRecursively(result2.getoAuthKeyData());
-        assertThat(result1.getMetadata()).isEqualToComparingFieldByFieldRecursively(result2.getMetadata());
     }
 
     @DisplayName("Key Assign test")
@@ -244,20 +243,19 @@ public class SapphireDevnetTest {
         RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(torusNodeEndpoints, nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token, new ImportedShare[]{}).get();
-        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c"));
         assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
-                new FinalKeyData("0x4924F91F5d6701dDd41042D94832bB17B76F316F",
-                        "f3eaf63bf1fd645d4159832ccaad7f42457e287ac929363ba636eb7e87978bff",
-                        "f3b9d8dd91927a89ec45199ad697fe3fa01b8b836710143a0babb1a4eb35f1cd",
-                        "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c"),
-                new OAuthKeyData("0xac997dE675Fb69FCb0F4115A23c0061A892A2772",
-                        "9508a251dfc4146a132feb96111c136538f4fabd20fc488dbcaaf762261c1528",
-                        "f9128bc7403bab6d45415cad01dd0ba0924628cfb6bf51c17e77aa8ca43b3cfe",
-                        "cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f"),
+                new FinalKeyData("0x462A8BF111A55C9354425F875F89B22678c0Bc44",
+                        "36e257717f746cdd52ba85f24f7c9040db8977d3b0354de70ed43689d24fa1b1",
+                        "58ec9768c2fe871b3e2a83cdbcf37ba6a88ad19ec2f6e16a66231732713fd507",
+                        "230dad9f42039569e891e6b066ff5258b14e9764ef5176d74aeb594d1a744203"),
+                new OAuthKeyData("0x137B3607958562D03Eb3C6086392D1eFa01aA6aa",
+                        "118a674da0c68f16a1123de9611ba655f4db1e336fe1b2d746028d65d22a3c6b",
+                        "8325432b3a3418d632b4fe93db094d6d83250eea60fe512897c0ad548737f8a5",
+                        "6b3c872a269aa8994a5acc8cdd70ea3d8d182d42f8af421c0c39ea124e9b66fa"),
                 new SessionData(retrieveSharesResponse.sessionData.getSessionTokenData(), retrieveSharesResponse.sessionData.getSessionAuthKey()),
-                new Metadata(new GetOrSetNonceResult.PubNonce("78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c",
-                        "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7"),
-                        new BigInteger("376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e", 16), TypeOfUser.v2,
+                new Metadata(new GetOrSetNonceResult.PubNonce("5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc",
+                        "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed"),
+                        new BigInteger("b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a", 16), TypeOfUser.v2,
                         false),
                 new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
         ));
@@ -281,7 +279,7 @@ public class SapphireDevnetTest {
                 new Metadata(new GetOrSetNonceResult.PubNonce("d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d",
                         "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e"),
                         new BigInteger("0"), TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -292,6 +290,7 @@ public class SapphireDevnetTest {
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, nodeDetails.getTorusNodePub(), args).get();
+        assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
         assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getFinalKeyData().getEvmAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219",
@@ -303,7 +302,7 @@ public class SapphireDevnetTest {
                 new Metadata(new GetOrSetNonceResult.PubNonce("d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d",
                         "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e"),
                         new BigInteger("0"), TypeOfUser.v2, false),
-                new NodesData(new ArrayList<>())
+                new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
     }
 

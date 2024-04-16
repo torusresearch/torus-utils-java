@@ -9,6 +9,16 @@ public class Metadata {
     public boolean upgraded;
     public TypeOfUser typeOfUser;
 
+    public BigInteger serverTimeOffset;
+
+    public Metadata(GetOrSetNonceResult.PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded, BigInteger serverTimeOffset) {
+        this.pubNonce = pubNonce;
+        this.nonce = nonce;
+        this.typeOfUser = typeOfUser;
+        this.upgraded = upgraded;
+        this.serverTimeOffset = serverTimeOffset;
+    }
+
     public Metadata(GetOrSetNonceResult.PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded) {
         this.pubNonce = pubNonce;
         this.nonce = nonce;
@@ -30,5 +40,9 @@ public class Metadata {
 
     public TypeOfUser getTypeOfUser() {
         return typeOfUser;
+    }
+
+    public BigInteger getServerTimeOffset() {
+        return serverTimeOffset;
     }
 }
