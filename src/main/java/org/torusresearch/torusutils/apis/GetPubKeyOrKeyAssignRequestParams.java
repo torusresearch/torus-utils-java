@@ -8,9 +8,6 @@ public class GetPubKeyOrKeyAssignRequestParams {
     private final boolean fetch_node_index;
     private final boolean distributed_metadata;
 
-    //private double client_time;
-
-
     public GetPubKeyOrKeyAssignRequestParams(String _verifier, String _verifier_id, String _extended_verifier_id, boolean _one_key_flow,
                                              boolean _fetch_node_index, boolean distributed_metadata) {
         verifier = _verifier;
@@ -19,7 +16,6 @@ public class GetPubKeyOrKeyAssignRequestParams {
         this.one_key_flow = _one_key_flow;
         this.fetch_node_index = _fetch_node_index;
         this.distributed_metadata = distributed_metadata;
-        //this.client_time = client_time;
     }
 
     public String getVerifier() {
@@ -45,8 +41,4 @@ public class GetPubKeyOrKeyAssignRequestParams {
     public boolean isDistributed_metadata() {
         return distributed_metadata;
     }
-
-    /*public double getClient_time() {
-        return client_time;
-    }*/
 }
