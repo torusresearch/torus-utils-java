@@ -45,12 +45,12 @@ import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.PrivateKeyWithNonceResult;
 import org.torusresearch.torusutils.types.PrivateKeyWithServerTime;
-import org.torusresearch.torusutils.types.TorusKey;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.SessionToken;
 import org.torusresearch.torusutils.types.SetNonceData;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusKey;
 import org.torusresearch.torusutils.types.TorusPublicKey;
 import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
@@ -865,7 +865,7 @@ public class TorusUtils {
         try {
             Gson gson = new Gson();
             String metadata = gson.toJson(data, MetadataPubKey.class);
-            String metadataApiResponse = APIUtils.post(this.options.getMetadataHost() + "/get", metadata, true).get();
+            String metadataApiResponse = APIUtils.post(this.options.getLegacyMetadataHost() + "/get", metadata, true).get();
             MetadataResponse response = gson.fromJson(metadataApiResponse, MetadataResponse.class);
             BigInteger finalResponse = new BigInteger(Utils.isEmpty(response.getMessage()) ? "0" : response.getMessage(), 16);
             return CompletableFuture.supplyAsync(() -> finalResponse);
@@ -896,7 +896,7 @@ public class TorusUtils {
                 lookupCf.completeExceptionally(new Exception("Verifier not supported. Check if you: \\n\n" + "      1. Are on the right network (Torus testnet/mainnet) \\n\n" + "      2. Have setup a verifier on dashboard.web3auth.io?"));
                 return lookupCf;
             } else if (keyLookupResult.getErrResult() != null && keyLookupResult.getErrResult().contains("Verifier + VerifierID has not yet been assigned")) {
-                return Utils.keyAssign(endpoints, torusNodePubs, null, null, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.options.getSignerHost(), this.options.getNetwork()).thenComposeAsync(k -> Utils.waitKeyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), 1000)).thenComposeAsync(res -> {
+                return Utils.keyAssign(endpoints, torusNodePubs, null, null, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.options.getSignerHost(), this.options.getNetwork().toString()).thenComposeAsync(k -> Utils.waitKeyLookup(endpoints, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), 1000)).thenComposeAsync(res -> {
                     CompletableFuture<VerifierLookupItem> lookupCf = new CompletableFuture<>();
                     try {
                         if (res == null || res.getKeyResult() == null) {
@@ -1114,14 +1114,14 @@ public class TorusUtils {
     }
 
     private String getMigratedNetworkInfo() {
-        return this.options.getNetwork();
+        return this.options.getNetwork().toString();
     }
 
     private CompletableFuture<GetOrSetNonceResult> _getOrSetNonce(MetadataParams data) {
         Gson gson = new GsonBuilder().disableHtmlEscaping().create();
         String finalData = gson.toJson(data);
         CompletableFuture<GetOrSetNonceResult> cf = new CompletableFuture<>();
-        APIUtils.post(this.options.getMetadataHost() + "/get_or_set_nonce", finalData, true).whenCompleteAsync((res, ex) -> {
+        APIUtils.post(this.options.getLegacyMetadataHost() + "/get_or_set_nonce", finalData, true).whenCompleteAsync((res, ex) -> {
             if (ex != null) {
                 cf.completeExceptionally(ex);
                 return;
@@ -1175,10 +1175,6 @@ public class TorusUtils {
         String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
         String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
         SetNonceData setNonceData = new SetNonceData(operation, timestamp.toString(16));
-        if (!options.isLegacyNonce()) {
-            derivedPubKeyX = Utils.stripPaddingLeft(derivedPubKeyX, '0');
-            derivedPubKeyY = Utils.stripPaddingLeft(derivedPubKeyY, '0');
-        }
         if (nonce != null) {
             setNonceData.setData(Utils.padLeft(nonce.toString(16), '0', 64));
         }
@@ -1203,10 +1199,12 @@ public class TorusUtils {
         String derivedPubKeyString = derivedECKeyPair.getPublicKey().toString(16);
         String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
         String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
-        if (!options.isLegacyNonce()) {
+
+        // Needs to check if this is necessary or not
+        /*if (!options.isLegacyNonce()) {
             derivedPubKeyX = Utils.stripPaddingLeft(derivedPubKeyX, '0');
             derivedPubKeyY = Utils.stripPaddingLeft(derivedPubKeyY, '0');
-        }
+        }*/
         Gson gson = new Gson();
         String setDataString = gson.toJson(setData);
         byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
