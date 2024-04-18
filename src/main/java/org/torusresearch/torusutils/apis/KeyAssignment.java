@@ -65,7 +65,7 @@ public class KeyAssignment {
 
     public ShareMetadata getMetadata(String network) {
         if (Utils.isSapphireNetwork(network)) {
-            return metadata;
+            return share_metadata;
         } else {
             return Metadata;
         }

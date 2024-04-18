@@ -64,12 +64,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.Security;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -467,10 +462,20 @@ public class TorusUtils {
                     }
                 }
                 CompletableFuture<List<String>> completableFuture = new CompletableFuture<>();
-                if (importedShares.length > 0 && completedRequests.size() == endpoints.length) {
+                if (importedShares != null &&  importedShares.length > 0 && completedRequests.size() == endpoints.length) {
                     completableFuture.complete(Arrays.asList(resultArr));
-                } else if (importedShares.length == 0 && completedRequests.size() >= k + t) {
-                    completableFuture.complete(completedRequests);
+                } else if (importedShares != null &&  importedShares.length == 0 && completedRequests.size() >= k + t) {
+                    Gson gson = new Gson();
+                    // we don't consider commitment to succeed unless node 1 responds
+                    boolean requiredNodeResultFound = completedRequests.stream().anyMatch(x -> {
+                        if (x == null || x.isEmpty()) return false;
+                        JsonRPCResponse nodeSigResponse = gson.fromJson(x, JsonRPCResponse.class);
+                        if (nodeSigResponse == null || nodeSigResponse.getResult() == null) return false;
+                        NodeSignature nodeSignature = gson.fromJson(Utils.convertToJsonObject(nodeSigResponse.getResult()), NodeSignature.class);
+                        return nodeSignature != null && nodeSignature.getNodeindex().equals("1");
+                    });
+                    if (requiredNodeResultFound) completableFuture.complete(completedRequests);
+                    else completableFuture.completeExceptionally(new PredicateFailedException("commitment from node 1 not found"));
                 } else {
                     completableFuture.completeExceptionally(new PredicateFailedException("insufficient responses for commitments"));
                 }
@@ -552,7 +557,10 @@ public class TorusUtils {
                                 }
                                 KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
                                 completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey(networkMigrated)));
-                                thresholdNonceData = keyAssignResult.getKeys()[0].getNonceData();
+                                GetOrSetNonceResult.PubNonce pubNonce = keyAssignResultFirstKey.getNonceData().getPubNonce();
+                                if (pubNonce != null && pubNonce.getX() != null && Objects.equals(keyAssignResultFirstKey.getPublicKey().getX(), pubNonce.getX())) {
+                                    thresholdNonceData = keyAssignResult.getKeys()[0].getNonceData();
+                                }
                             }
                             String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
                             PubKey thresholdPubKey = null;
@@ -571,10 +579,10 @@ public class TorusUtils {
                                 );
                             }
 
-                            if (thresholdPublicKeyString != null && !thresholdPublicKeyString.equals("")) {
+                            if (!thresholdPublicKeyString.isEmpty()) {
                                 thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
                             }
-                            if (completedResponses.size() >= k && thresholdPubKey != null && (thresholdNonceData != null ||
+                            if (completedResponses.size() >= k && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.get("extended_verifier_id") != null ||
                                     LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated))) {
                                 List<DecryptedShare> decryptedShares = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
@@ -583,7 +591,7 @@ public class TorusUtils {
                                 List<BigInteger> serverTimeOffsetResponses = new ArrayList<>();
 
                                 for (int i = 0; i < shareResponses.length; i++) {
-                                    if (shareResponses[i] != null && !shareResponses[i].equals("")) {
+                                    if (shareResponses[i] != null && !shareResponses[i].isEmpty()) {
                                         try {
                                             JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
                                             if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
@@ -621,7 +629,7 @@ public class TorusUtils {
                                                             byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokens()[0], 16));
                                                             sessionTokenPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
                                                         } catch (Exception ex) {
-                                                            System.out.println("shre decryption" + ex);
+                                                            System.out.println("share decryption" + ex);
                                                             return null;
                                                         }
                                                     } else {
@@ -633,8 +641,8 @@ public class TorusUtils {
 
                                                 if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
                                                     KeyAssignment firstKey = currentShareResponse.getKeys()[0];
-                                                    if (firstKey.getNodeIndex() != null && nodeIndexs.size() < 3) {
-                                                        nodeIndexs.add(new BigDecimal(firstKey.getNodeIndex()).toBigInteger());
+                                                    if (firstKey.getNodeIndex() != null) {
+                                                        nodeIndexs.add(new BigInteger(firstKey.getNodeIndex()));
                                                     }
                                                     if (firstKey.getMetadata(networkMigrated) != null) {
                                                         try {
@@ -650,35 +658,35 @@ public class TorusUtils {
                                                         }
                                                     } else {
                                                         nodeIndexs.add(null);
-                                                        sharePromises.add(null);
-                                                    }
-                                                }
-
-                                                List<CompletableFuture<byte[]>> allPromises = new ArrayList<>();
-                                                allPromises.addAll(sharePromises);
-                                                allPromises.addAll(sessionTokenSigPromises);
-                                                allPromises.addAll(sessionTokenPromises);
-
-                                                CompletableFuture.allOf(allPromises.toArray(new CompletableFuture[0])).join();
-
-                                                List<CompletableFuture<byte[]>> sharesResolved = allPromises.subList(0, sharePromises.size());
-                                                List<CompletableFuture<byte[]>> sessionSigsResolved = allPromises.subList(sharePromises.size(), sharePromises.size() + sessionTokenSigPromises.size());
-                                                List<CompletableFuture<byte[]>> sessionTokensResolved = allPromises.subList(sharePromises.size() + sessionTokenSigPromises.size(), allPromises.size());
-
-                                                for (int index = 0; index < sessionTokensResolved.size(); index++) {
-                                                    if (sessionSigsResolved == null || sessionSigsResolved.get(index) == null) {
-                                                        sessionTokenData.add(null);
-                                                    } else {
-                                                        sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
-                                                                Utils.bytesToHex(sessionSigsResolved.get(index).get()),
-                                                                currentShareResponse.getNodePubx(),
-                                                                currentShareResponse.getNodePuby()));
+                                                        sharePromises.add(CompletableFuture.completedFuture(null));
                                                     }
                                                 }
                                             }
                                         } catch (JsonSyntaxException e) {
                                             continue;
                                         }
+                                    }
+                                }
+
+                                List<CompletableFuture<byte[]>> allPromises = new ArrayList<>();
+                                allPromises.addAll(sharePromises);
+                                allPromises.addAll(sessionTokenSigPromises);
+                                allPromises.addAll(sessionTokenPromises);
+
+                                CompletableFuture.allOf(allPromises.toArray(new CompletableFuture[0])).join();
+
+                                List<CompletableFuture<byte[]>> sharesResolved = allPromises.subList(0, sharePromises.size());
+                                List<CompletableFuture<byte[]>> sessionSigsResolved = allPromises.subList(sharePromises.size(), sharePromises.size() + sessionTokenSigPromises.size());
+                                List<CompletableFuture<byte[]>> sessionTokensResolved = allPromises.subList(sharePromises.size() + sessionTokenSigPromises.size(), allPromises.size());
+
+                                for (int index = 0; index < sessionTokensResolved.size(); index++) {
+                                    if (sessionSigsResolved.get(index) == null) {
+                                        sessionTokenData.add(null);
+                                    } else {
+                                        sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
+                                                Utils.bytesToHex(sessionSigsResolved.get(index).get()),
+                                                currentShareResponse.getNodePubx(),
+                                                currentShareResponse.getNodePuby()));
                                     }
                                 }
 
