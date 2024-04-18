@@ -65,6 +65,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -466,7 +467,9 @@ public class TorusUtils {
                     }
                 }
                 CompletableFuture<List<String>> completableFuture = new CompletableFuture<>();
-                if (completedRequests.size() >= k + t) {
+                if (importedShares.length > 0 && completedRequests.size() == endpoints.length) {
+                    completableFuture.complete(Arrays.asList(resultArr));
+                } else if (completedRequests.size() >= k + t) {
                     completableFuture.complete(completedRequests);
                 } else {
                     completableFuture.completeExceptionally(new PredicateFailedException("insufficient responses for commitments"));

@@ -93,7 +93,7 @@ public class SapphireMainnetTest {
                         "123c0560757ffe6498bf2344165d0f295ea74eb8884683675e5f17ae7bb41cdb"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("56e803db7710adbfe0ecca35bc6a3ad27e966df142e157e76e492773c88e8433",
                         "f4168594c1126ca731756dd480f992ee73b0834ba4b787dd892a9211165f50a3"),
-                        new BigInteger("f3ba568eeeaca5c285b25878a067fd85b1720b94f9099591d4274dc0a8cada9b", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
+                        new BigInteger("0", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
     }
@@ -168,7 +168,7 @@ public class SapphireMainnetTest {
                         "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
-                        new BigInteger("3c2b6ba5b54ca0ba4ae978eb48429a84c47b7b3e526b35e7d46dd716887f52bf", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
+                        new BigInteger("0", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
     }
@@ -289,7 +289,7 @@ public class SapphireMainnetTest {
                         "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
-                        new BigInteger("3c2b6ba5b54ca0ba4ae978eb48429a84c47b7b3e526b35e7d46dd716887f52bf", 16), TypeOfUser.v2, false),
+                        new BigInteger("0", 16), TypeOfUser.v2, false),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
     }
