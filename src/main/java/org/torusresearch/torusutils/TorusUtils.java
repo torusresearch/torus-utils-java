@@ -469,7 +469,7 @@ public class TorusUtils {
                 CompletableFuture<List<String>> completableFuture = new CompletableFuture<>();
                 if (importedShares.length > 0 && completedRequests.size() == endpoints.length) {
                     completableFuture.complete(Arrays.asList(resultArr));
-                } else if (completedRequests.size() >= k + t) {
+                } else if (importedShares.length == 0 && completedRequests.size() >= k + t) {
                     completableFuture.complete(completedRequests);
                 } else {
                     completableFuture.completeExceptionally(new PredicateFailedException("insufficient responses for commitments"));
