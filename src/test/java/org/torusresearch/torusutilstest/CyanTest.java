@@ -23,7 +23,7 @@ import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
-import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusKey;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
@@ -168,13 +168,13 @@ public class CyanTest {
     @Test
     public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
+        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        System.out.println(retrieveSharesResponse.getFinalKeyData().getPrivKey());
-        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"));
-        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
-        assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
+        System.out.println(torusKey.getFinalKeyData().getPrivKey());
+        assert (torusKey.getFinalKeyData().getPrivKey().equals("5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"));
+        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0xC615aA03Dd8C9b2dc6F7c43cBDfF2c34bBa47Ec9",
                         "e2ed6033951af2851d1bea98799e62fb1ff24b952c1faea17922684678ba42d1",
                         "beef0efad88e81385952c0068ca48e8b9c2121be87cb0ddf18a68806db202359",
@@ -183,9 +183,9 @@ public class CyanTest {
                         "e2ed6033951af2851d1bea98799e62fb1ff24b952c1faea17922684678ba42d1",
                         "beef0efad88e81385952c0068ca48e8b9c2121be87cb0ddf18a68806db202359",
                         "5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"),
-                new SessionData(new ArrayList<>(), retrieveSharesResponse.getSessionData().getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().getServerTimeOffset()),
-                new NodesData(retrieveSharesResponse.getNodesData().getNodeIndexes())
+                new SessionData(new ArrayList<>(), torusKey.getSessionData().getSessionAuthKey()),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -195,14 +195,14 @@ public class CyanTest {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
+        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
             put("verify_params", new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
-        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
-        assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
+        assertEquals("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04", torusKey.getoAuthKeyData().getEvmAddress());
+        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04",
                         "afd12f2476006ef6aa8778190b29676a70039df8688f9dee69c779bdc8ff0223",
                         "e557a5ee879632727f5979d6b9cea69d87e3dab54a8c1b6685d86dfbfcd785dd",
@@ -211,9 +211,9 @@ public class CyanTest {
                         "afd12f2476006ef6aa8778190b29676a70039df8688f9dee69c779bdc8ff0223",
                         "e557a5ee879632727f5979d6b9cea69d87e3dab54a8c1b6685d86dfbfcd785dd",
                         "45a5b62c4ff5490baa75d33bf4f03ba6c5b0095678b0f4055312eef7b780b7bf"),
-                new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.metadata.serverTimeOffset),
-                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
+                new SessionData(new ArrayList<>(), torusKey.sessionData.sessionAuthKey),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.metadata.serverTimeOffset),
+                new NodesData(torusKey.nodesData.nodeIndexes)
         ));
     }
 }

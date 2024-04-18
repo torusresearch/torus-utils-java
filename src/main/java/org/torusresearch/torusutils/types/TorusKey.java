@@ -1,6 +1,6 @@
 package org.torusresearch.torusutils.types;
 
-public class RetrieveSharesResponse {
+public class TorusKey {
 
     public FinalKeyData finalKeyData;
     public OAuthKeyData oAuthKeyData;
@@ -8,7 +8,7 @@ public class RetrieveSharesResponse {
     public Metadata metadata;
     public NodesData nodesData;
 
-    public RetrieveSharesResponse(FinalKeyData finalKeyData, OAuthKeyData oAuthKeyData, SessionData sessionData, Metadata metadata, NodesData nodesData) {
+    public TorusKey(FinalKeyData finalKeyData, OAuthKeyData oAuthKeyData, SessionData sessionData, Metadata metadata, NodesData nodesData) {
         this.finalKeyData = finalKeyData;
         this.oAuthKeyData = oAuthKeyData;
         this.sessionData = sessionData;

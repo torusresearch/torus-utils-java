@@ -21,7 +21,7 @@ import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
-import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusKey;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusPublicKey;
@@ -161,12 +161,12 @@ public class MainnetTest {
     @Test
     public void shouldLogin() throws ExecutionException, InterruptedException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
+        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
-        assert (retrieveSharesResponse.getFinalKeyData().getPrivKey().equals("0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
-        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
-        assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
+        assert (torusKey.getFinalKeyData().getPrivKey().equals("0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"));
+        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
                         "ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
@@ -175,9 +175,9 @@ public class MainnetTest {
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
                         "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
                         "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
-                new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().serverTimeOffset),
-                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
+                new SessionData(new ArrayList<>(), torusKey.sessionData.sessionAuthKey),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().serverTimeOffset),
+                new NodesData(torusKey.nodesData.nodeIndexes)
         ));
     }
 
@@ -187,14 +187,14 @@ public class MainnetTest {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
-        RetrieveSharesResponse retrieveSharesResponse = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
+        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
             put("verify_params", new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", retrieveSharesResponse.getoAuthKeyData().getEvmAddress());
-        assertTrue(JwtUtils.getTimeDiff(retrieveSharesResponse.getMetadata().getServerTimeOffset()) < 20);
-        assertThat(retrieveSharesResponse).isEqualToComparingFieldByFieldRecursively(new RetrieveSharesResponse(
+        assertEquals("0x621a4d458cFd345dAE831D9E756F10cC40A50381", torusKey.getoAuthKeyData().getEvmAddress());
+        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x621a4d458cFd345dAE831D9E756F10cC40A50381",
                         "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",
                         "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
@@ -203,9 +203,9 @@ public class MainnetTest {
                         "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",
                         "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
                         "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
-                new SessionData(new ArrayList<>(), retrieveSharesResponse.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, retrieveSharesResponse.getMetadata().serverTimeOffset),
-                new NodesData(retrieveSharesResponse.nodesData.nodeIndexes)
+                new SessionData(new ArrayList<>(), torusKey.sessionData.sessionAuthKey),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().serverTimeOffset),
+                new NodesData(torusKey.nodesData.nodeIndexes)
         ));
     }
 }
