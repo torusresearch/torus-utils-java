@@ -1,11 +1,11 @@
 package org.torusresearch.torusutils.types;
 
+import static org.torusresearch.fetchnodedetails.types.Utils.METADATA_MAP;
+import static org.torusresearch.fetchnodedetails.types.Utils.SIGNER_MAP;
+
 import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 
 import java.math.BigInteger;
-
-import static org.torusresearch.fetchnodedetails.types.Utils.METADATA_MAP;
-import static org.torusresearch.fetchnodedetails.types.Utils.SIGNER_MAP;
 
 public class TorusCtorOptions {
     private String legacyMetadataHost;
@@ -25,6 +25,7 @@ public class TorusCtorOptions {
         this.legacyMetadataHost = METADATA_MAP.get(network);
         this.allowHost = SIGNER_MAP.get(network) + "/api/allow";
         this.signerHost = SIGNER_MAP.get(network) + "/api/sign";
+        this.serverTimeOffset = BigInteger.valueOf(System.currentTimeMillis() / 1000);
     }
 
     public TorusNetwork getNetwork() {

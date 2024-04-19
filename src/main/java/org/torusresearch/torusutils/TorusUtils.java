@@ -561,9 +561,11 @@ public class TorusUtils {
                                 }
                                 KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
                                 completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey(networkMigrated)));
-                                GetOrSetNonceResult.PubNonce pubNonce = keyAssignResultFirstKey.getNonceData().getPubNonce();
-                                if (pubNonce != null && pubNonce.getX() != null) {
-                                    thresholdNonceData = keyAssignResult.getKeys()[0].getNonceData();
+                                if (Utils.isSapphireNetwork(networkMigrated)) {
+                                    GetOrSetNonceResult.PubNonce pubNonce = keyAssignResultFirstKey.getNonceData().getPubNonce();
+                                    if (pubNonce != null && pubNonce.getX() != null) {
+                                        thresholdNonceData = keyAssignResult.getKeys()[0].getNonceData();
+                                    }
                                 }
                             }
                             String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
@@ -722,7 +724,7 @@ public class TorusUtils {
 
                                 List<BigInteger> serverOffsetTimes = serverTimeOffsetResponses;
 
-                                BigInteger serverTimeOffsetResponse = this.options.getServerTimeOffset().shortValueExact() != 0 ?
+                                BigInteger serverTimeOffsetResponse = this.options.getServerTimeOffset() != BigInteger.ZERO ?
                                         this.options.getServerTimeOffset() : Utils.calculateMedian(serverOffsetTimes);
 
                                 if (predicateResolved.get()) return null;
@@ -812,7 +814,7 @@ public class TorusUtils {
                         typeOfUser = TypeOfUser.v2;
                         // for tss key no need to add pub nonce
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
-                    } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(this.options.getNetwork())) {
+                    } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
                         if (this.options.isEnableOneKey()) {
                             nonceResult = this.getNonce(privateKey, serverTimeOffsetResponse).get();
                             pubNonce = nonceResult.getPubNonce();
@@ -838,7 +840,7 @@ public class TorusUtils {
                     } else {
                         typeOfUser = TypeOfUser.v2;
                         ECPoint oAuthPubKeyPoint = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
-                        if (nonceResult.getPubNonce().getX().length() > 0 && nonceResult.getPubNonce().getY().length() > 0) {
+                        if (nonceResult.getPubNonce() != null && nonceResult.getPubNonce().getX().length() > 0 && nonceResult.getPubNonce().getY().length() > 0) {
                             ECPoint noncePoint = curve.getCurve().createPoint(new BigInteger(nonceResult.getPubNonce().getX(), 16), new BigInteger(nonceResult.getPubNonce().getY(), 16));
                             finalPubKey = oAuthPubKeyPoint.add(noncePoint);
                         }

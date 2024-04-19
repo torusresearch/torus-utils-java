@@ -131,7 +131,7 @@ public class SapphireMainnetTest {
 
     @DisplayName("should allow test tss verifier id to fetch shares")
     @Test
-    public void shouldAllowTestTssVerifierIdToFetchShares() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldAllowTestTssVerifierIdToFetchShares() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         int nonce = 0;
         String tssTag = "default";
@@ -205,6 +205,7 @@ public class SapphireMainnetTest {
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), HashEnabledVerifier, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, idToken).get();
+        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("13941ecd812b08d8a33a20bc975f0cd1c3f82de25b20c0c863ba5f21580b65f6"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB",

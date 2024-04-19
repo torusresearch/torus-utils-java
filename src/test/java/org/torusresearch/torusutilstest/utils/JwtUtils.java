@@ -34,6 +34,7 @@ public class JwtUtils {
         BigInteger systemTimestampMillis = BigInteger.valueOf(System.currentTimeMillis());
         BigInteger timeDifferenceMillis = systemTimestampMillis.subtract(timestampInMillis);
         BigInteger timeDifferenceSeconds = timeDifferenceMillis.divide(BigInteger.valueOf(1000));
+        //System.out.println("Time difference: " + timeDifferenceSeconds + " seconds");
         return timeDifferenceSeconds.intValue();
     }
 }
