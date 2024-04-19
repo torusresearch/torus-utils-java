@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
+import com.google.gson.Gson;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +26,7 @@ import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
+import org.torusresearch.torusutils.types.SessionToken;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusKey;
@@ -45,8 +47,12 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class SapphireDevnetTest {
 
@@ -383,6 +389,45 @@ public class SapphireDevnetTest {
         assertNotNull(result.oAuthKeyData.evmAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertFalse(result.metadata.upgraded);
+    }
+
+    @DisplayName("should be able to update the `sessionTime` of the token signature data")
+    @Test
+    public void shouldUpdateSessionTimeOfTokenSignatureData() throws Exception {
+        String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
+        String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
+        torusNodeEndpoints[1] = "https://example.com";
+
+        int customSessionTime = 3600;
+        TorusUtils.setSessionTime(customSessionTime);
+
+        TorusKey torusKey = torusUtils.retrieveShares(torusNodeEndpoints, nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
+            put("verifier_id", TORUS_TEST_EMAIL);
+        }}, idToken).get();
+
+        List<Map<String, String>> signatures = new ArrayList<>();
+        for (SessionToken sessionToken : torusKey.getSessionData().getSessionTokenData()) {
+            Map<String, String> signature = new HashMap<>();
+            signature.put("data", sessionToken.getToken());
+            signature.put("sig", sessionToken.getSignature());
+            signatures.add(signature);
+        }
+
+        List<Map<String, Object>> parsedSigsData = new ArrayList<>();
+        for (Map<String, String> sig : signatures) {
+            byte[] decodedBytes = Base64.getDecoder().decode((String) sig.get("data"));
+            String decodedString = new String(decodedBytes);
+            Map<String, Object> parsedSigData = new Gson().fromJson(decodedString, HashMap.class);
+            parsedSigsData.add(parsedSigData);
+        }
+
+        long currentTimeSec = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+        for (Map<String, Object> ps : parsedSigsData) {
+            long sessionTime = ((Number) ps.get("exp")).longValue() - currentTimeSec;
+            assert sessionTime > (customSessionTime - 5); // giving a latency leeway of 5 seconds
+            assert customSessionTime <= sessionTime;
+        }
     }
 
 }

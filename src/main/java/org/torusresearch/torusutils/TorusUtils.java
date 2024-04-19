@@ -99,8 +99,8 @@ public class TorusUtils {
         return err instanceof GetOrSetNonceError;
     }
 
-    public void setSessionTime(int sessionTime) {
-        this.sessionTime = sessionTime;
+    public static void setSessionTime(int _sessionTime) {
+        sessionTime = _sessionTime;
     }
 
     BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
