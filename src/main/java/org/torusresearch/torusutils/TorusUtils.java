@@ -59,12 +59,16 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.Security;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -558,7 +562,7 @@ public class TorusUtils {
                                 KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
                                 completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey(networkMigrated)));
                                 GetOrSetNonceResult.PubNonce pubNonce = keyAssignResultFirstKey.getNonceData().getPubNonce();
-                                if (pubNonce != null && pubNonce.getX() != null && Objects.equals(keyAssignResultFirstKey.getPublicKey().getX(), pubNonce.getX())) {
+                                if (pubNonce != null && pubNonce.getX() != null) {
                                     thresholdNonceData = keyAssignResult.getKeys()[0].getNonceData();
                                 }
                             }
@@ -589,13 +593,14 @@ public class TorusUtils {
                                 List<CompletableFuture<byte[]>> sessionTokenSigPromises = new ArrayList<>();
                                 List<CompletableFuture<byte[]>> sessionTokenPromises = new ArrayList<>();
                                 List<BigInteger> serverTimeOffsetResponses = new ArrayList<>();
+                                KeyAssignResult currentShareResponse = null;
 
                                 for (int i = 0; i < shareResponses.length; i++) {
                                     if (shareResponses[i] != null && !shareResponses[i].isEmpty()) {
                                         try {
                                             JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
                                             if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
-                                                KeyAssignResult currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
+                                                currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
                                                 isNewKeyArr.add(currentShareResponse.getIsNewKey());
                                                 serverTimeOffsetResponses.add(currentShareResponse.getServerTimeOffset() != null ? new BigInteger(currentShareResponse.getServerTimeOffset()) : BigInteger.ZERO);
                                                 if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
@@ -679,21 +684,40 @@ public class TorusUtils {
                                 List<CompletableFuture<byte[]>> sessionSigsResolved = allPromises.subList(sharePromises.size(), sharePromises.size() + sessionTokenSigPromises.size());
                                 List<CompletableFuture<byte[]>> sessionTokensResolved = allPromises.subList(sharePromises.size() + sessionTokenSigPromises.size(), allPromises.size());
 
+                                List<CompletableFuture<byte[]>> validSigs = new ArrayList<>();
+                                for (CompletableFuture<byte[]> sig : sessionSigsResolved) {
+                                    if (sig != null) {
+                                        validSigs.add(sig);
+                                    }
+                                }
+
+                                int minThresholdRequired = (int) Math.floor(endpoints.length / 2) + 1;
+                                if (verifierParams.get("extended_verifier_id") != null && validSigs.size() < minThresholdRequired) {
+                                    throw new Error("Insufficient number of signatures from nodes, required: " + minThresholdRequired + ", found: " + validSigs.size());
+                                }
+
+                                List<CompletableFuture<byte[]>> validTokens = new ArrayList<>();
+                                for (CompletableFuture<byte[]> token : sessionTokensResolved) {
+                                    if (token != null) {
+                                        validTokens.add(token);
+                                    }
+                                }
+
+                                if (verifierParams.get("extended_verifier_id") != null && validTokens.size() < minThresholdRequired) {
+                                    throw new Error("Insufficient number of session tokens from nodes, required: " + minThresholdRequired + ", found: " + validTokens.size());
+                                }
+
                                 for (int index = 0; index < sessionTokensResolved.size(); index++) {
                                     if (sessionSigsResolved.get(index) == null) {
                                         sessionTokenData.add(null);
                                     } else {
                                         sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
-                                                Utils.bytesToHex(sessionSigsResolved.get(index).get()),
-                                                currentShareResponse.getNodePubx(),
-                                                currentShareResponse.getNodePuby()));
+                                                        Utils.bytesToHex(sessionSigsResolved.get(index).get()),
+                                                        currentShareResponse.getNodePubx(),
+                                                        currentShareResponse.getNodePuby()
+                                                )
+                                        );
                                     }
-                                }
-
-                                String isNewKey = Utils.thresholdSame(isNewKeyArr, k);
-                                if (isNewKey == null) {
-                                    System.err.println("retrieveShare - invalid result from nodes, threshold number of is_new_key results are not matching");
-                                    throw new RuntimeException("Threshold Error");
                                 }
 
                                 List<BigInteger> serverOffsetTimes = serverTimeOffsetResponses;
@@ -702,6 +726,15 @@ public class TorusUtils {
                                         this.options.getServerTimeOffset() : Utils.calculateMedian(serverOffsetTimes);
 
                                 if (predicateResolved.get()) return null;
+
+                                List<BigInteger> _nodeIndexs = new ArrayList<>(nodeIndexs);
+                                for (int index = 0; index < sharesResolved.size(); index++) {
+                                    Object curr = sharesResolved.get(index);
+                                    if (curr != null) {
+                                        decryptedShares.add(new DecryptedShare(_nodeIndexs.get(index), new BigInteger(curr.toString())));
+                                    }
+                                }
+
                                 List<List<Integer>> allCombis = Utils.kCombinations(decryptedShares.size(), k);
                                 for (List<Integer> currentCombi : allCombis) {
                                     List<BigInteger> currentCombiSharesIndexes = new ArrayList<>();
