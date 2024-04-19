@@ -804,8 +804,7 @@ public class TorusUtils {
                         nonceResult = this.getNonce(privateKey, serverTimeOffsetResponse).get();
                         metadataNonce = new BigInteger(Utils.isEmpty(nonceResult.getNonce()) ? "0" : nonceResult.getNonce(), 16);
                     }
-                    List<BigInteger> nodeIndexes = new ArrayList<>();
-                    nodeIndexes.addAll(nodeIndexs);
+                    List<BigInteger> nodeIndexes = new ArrayList<>(nodeIndexs);
                     ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
                     ECPoint finalPubKey = null;
                     GetOrSetNonceResult.PubNonce pubNonce = null;
