@@ -68,6 +68,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -713,10 +714,12 @@ public class TorusUtils {
                                     if (sessionSigsResolved.get(index) == null) {
                                         sessionTokenData.add(null);
                                     } else {
+                                        JsonRPCResponse jsonRPCResponse = gson.fromJson(shareResponses[index], JsonRPCResponse.class);
+                                        KeyAssignResult keyAssignResult = gson.fromJson(Utils.convertToJsonObject(jsonRPCResponse.getResult()), KeyAssignResult.class);
                                         sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
                                                         Utils.bytesToHex(sessionSigsResolved.get(index).get()),
-                                                        currentShareResponse.getNodePubx(),
-                                                        currentShareResponse.getNodePuby()
+                                                        keyAssignResult.getNodePubx(),
+                                                        keyAssignResult.getNodePuby()
                                                 )
                                         );
                                     }
@@ -724,7 +727,7 @@ public class TorusUtils {
 
                                 List<BigInteger> serverOffsetTimes = serverTimeOffsetResponses;
 
-                                BigInteger serverTimeOffsetResponse = this.options.getServerTimeOffset() != BigInteger.ZERO ?
+                                BigInteger serverTimeOffsetResponse = !Objects.equals(this.options.getServerTimeOffset(), BigInteger.ZERO) ?
                                         this.options.getServerTimeOffset() : Utils.calculateMedian(serverOffsetTimes);
 
                                 if (predicateResolved.get()) return null;
@@ -1050,7 +1053,6 @@ public class TorusUtils {
                             e.printStackTrace();
                         }
                     } else {
-                        typeOfUser = TypeOfUser.v2;
                         oAuthPubKey = Utils.getPublicKeyFromHex(X, Y);
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(X, 16), new BigInteger(Y, 16));
                         finalPubKey = finalPubKey.add(curve.getG().multiply(nonce)).normalize();
