@@ -75,7 +75,7 @@ public class CyanTest {
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
         assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", publicAddress.getFinalKeyData().getEvmAddress());
         assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
@@ -95,7 +95,7 @@ public class CyanTest {
     public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
+        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
         assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", key.getFinalKeyData().getEvmAddress());
         assertEquals(TypeOfUser.v2, key.getMetadata().getTypeOfUser());
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
@@ -112,7 +112,7 @@ public class CyanTest {
         String v2Verifier = "tkey-google-cyan";
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
-        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
+        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x29446f428293a4E6470AEaEDa6EAfA0F842EF54e",
                         "8b6f2048aba8c7833e3b02c5b6522bb18c484ad0025156e428f17fb8d8c34021",
@@ -130,7 +130,7 @@ public class CyanTest {
 
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
-        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
+        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
         assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xe8a19482cbe5FaC896A5860Ca4156fb999DDc73b",
                         "c491ba39155594896b27cf71a804ccf493289d918f40e6ba4d590f1c76139e9e",
@@ -152,7 +152,7 @@ public class CyanTest {
     public void shouldKeyAssign() throws ExecutionException, InterruptedException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-cyan", email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs("tkey-google-cyan", email, "")).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs("tkey-google-cyan", email, "")).get();
         System.out.println(email + " -> " + publicAddress.getFinalKeyData().getEvmAddress());
         assertNotNull(publicAddress.getFinalKeyData().getEvmAddress());
         assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
