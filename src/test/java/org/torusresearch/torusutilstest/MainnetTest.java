@@ -51,7 +51,7 @@ public class MainnetTest {
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.MAINNET, FetchNodeDetails.PROXY_ADDRESS_MAINNET);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom");
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID");
         opts.setNetwork("mainnet");
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
@@ -75,8 +75,8 @@ public class MainnetTest {
         VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", key.getAddress());
-        assertEquals(TypeOfUser.v1, key.getTypeOfUser());
+        assertEquals("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E", key.getAddress());//0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A
+        assertEquals(TypeOfUser.v2, key.getTypeOfUser());
 
         String v2Verifier = "tkey-google";
         // 1/1 user
@@ -88,8 +88,8 @@ public class MainnetTest {
         // v1 user
         String v2nTestEmail = "caspertorus@gmail.com";
         TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail)).get();
-        assertEquals("0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53", key3.getAddress());
-        assertEquals(TypeOfUser.v1, key3.getTypeOfUser());
+        assertEquals("0x40A4A04fDa1f29a3667152C8830112FBd6A77BDD", key3.getAddress());
+        assertEquals(TypeOfUser.v2, key3.getTypeOfUser());
     }
 
     @DisplayName("Key Assign test")
