@@ -50,7 +50,7 @@ public class CyanTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CYAN, FetchNodeDetails.PROXY_ADDRESS_CYAN);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CYAN);
         TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID");
         opts.setNetwork("cyan");
         opts.setSignerHost("https://signer-polygon.tor.us/api/sign");

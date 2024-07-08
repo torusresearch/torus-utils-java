@@ -49,7 +49,7 @@ public class AquaTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.AQUA, FetchNodeDetails.PROXY_ADDRESS_AQUA);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.AQUA);
         TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID");
         opts.setNetwork("aqua");
         opts.setSignerHost("https://signer-polygon.tor.us/api/sign");

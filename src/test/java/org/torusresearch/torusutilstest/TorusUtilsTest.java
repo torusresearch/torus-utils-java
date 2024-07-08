@@ -50,7 +50,7 @@ public class TorusUtilsTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET, FetchNodeDetails.PROXY_ADDRESS_TESTNET);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID");
         opts.setNetwork("testnet");
         torusUtils = new TorusUtils(opts);
@@ -65,7 +65,7 @@ public class TorusUtilsTest {
         VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70", publicAddress.getAddress());
+        assertEquals("0x872eEfa7495599A6983d396fE8dcf542457CF33f", publicAddress.getAddress());
     }
 
 
@@ -75,7 +75,7 @@ public class TorusUtilsTest {
         VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70", key.getAddress());
+        assertEquals("0x872eEfa7495599A6983d396fE8dcf542457CF33f", key.getAddress());
         assertEquals(TypeOfUser.v1, key.getTypeOfUser());
 
         String v2Verifier = "tkey-google-lrc";
