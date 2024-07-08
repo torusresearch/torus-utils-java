@@ -112,7 +112,7 @@ public class CyanTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(retrieveSharesResponse.getPrivKey());
-        BigInteger requiredPrivateKey = new BigInteger("1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8", 16);
+        BigInteger requiredPrivateKey = new BigInteger("42385046760370370667571434468449261359414980205144543049037030193411736357576", 10);
         assert (requiredPrivateKey.equals(retrieveSharesResponse.getPrivKey()));
         assertEquals("0xC615aA03Dd8C9b2dc6F7c43cBDfF2c34bBa47Ec9", retrieveSharesResponse.getEthAddress());
     }
