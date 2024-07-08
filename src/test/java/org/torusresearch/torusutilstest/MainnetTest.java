@@ -50,7 +50,7 @@ public class MainnetTest {
     @BeforeAll
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.MAINNET, FetchNodeDetails.PROXY_ADDRESS_MAINNET);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.MAINNET);
         TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID");
         opts.setNetwork("mainnet");
         torusUtils = new TorusUtils(opts);

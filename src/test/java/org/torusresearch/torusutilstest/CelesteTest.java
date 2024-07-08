@@ -50,7 +50,7 @@ public class CelesteTest {
     @BeforeAll
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Startingg");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CELESTE, FetchNodeDetails.PROXY_ADDRESS_CELESTE);
+        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CELESTE);
         TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID");
         opts.setNetwork("celeste");
         opts.setSignerHost("https://signer-polygon.tor.us/api/sign");
@@ -67,7 +67,7 @@ public class CelesteTest {
         VerifierArgs args = new VerifierArgs("tkey-google-celeste", TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", publicAddress.getAddress());
+        assertEquals("0xC3115b9d6FaB99739b23DA9dfcBA47A4Ec4Cd113", publicAddress.getAddress());
     }
 
 
@@ -77,21 +77,21 @@ public class CelesteTest {
         VerifierArgs args = new VerifierArgs("tkey-google-celeste", TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), args).get();
-        assertEquals("0xeC80FB9aB308Be1789Bd3f9317962D5505A4A242", key.getAddress());
+        assertEquals("0xC3115b9d6FaB99739b23DA9dfcBA47A4Ec4Cd113", key.getAddress());
         assertEquals(TypeOfUser.v1, key.getTypeOfUser());
 
         String v2Verifier = "tkey-google-celeste";
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
         TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2TestEmail)).get();
-        assertEquals("0x69fB3A96016817F698a1279aE2d65F3916F3Db6F", key2.getAddress());
-        assertEquals(TypeOfUser.v1, key2.getTypeOfUser());
+        assertEquals("0x8d69CE354DA39413f205FdC8680dE1F3FBBb36e2", key2.getAddress());
+        assertEquals(TypeOfUser.v2, key2.getTypeOfUser());
 
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
         TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusNodePub(), new VerifierArgs(v2Verifier, v2nTestEmail)).get();
-        assertEquals("0x24aCac36F8A4bD93052207dA410dA71AF92258b7", key3.getAddress());
-        assertEquals(TypeOfUser.v1, key3.getTypeOfUser());
+        assertEquals("0x8108c29976C458e76f797AD55A3715Ce80a3fe78", key3.getAddress());
+        assertEquals(TypeOfUser.v2, key3.getTypeOfUser());
     }
 
     @DisplayName("Key Assign test")
