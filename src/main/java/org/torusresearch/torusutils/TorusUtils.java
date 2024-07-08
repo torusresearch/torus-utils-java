@@ -3,15 +3,39 @@ package org.torusresearch.torusutils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import okhttp3.internal.http2.Header;
+
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.apis.*;
-import org.torusresearch.torusutils.helpers.*;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.CommitmentRequestParams;
+import org.torusresearch.torusutils.apis.JsonRPCResponse;
+import org.torusresearch.torusutils.apis.KeyAssignResult;
+import org.torusresearch.torusutils.apis.KeyAssignment;
+import org.torusresearch.torusutils.apis.NodeSignature;
+import org.torusresearch.torusutils.apis.PubKey;
+import org.torusresearch.torusutils.apis.ShareRequestParams;
+import org.torusresearch.torusutils.apis.VerifierLookupItem;
+import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
+import org.torusresearch.torusutils.helpers.AES256CBC;
+import org.torusresearch.torusutils.helpers.Base64;
+import org.torusresearch.torusutils.helpers.PredicateFailedException;
+import org.torusresearch.torusutils.helpers.Some;
+import org.torusresearch.torusutils.helpers.Utils;
+import org.torusresearch.torusutils.types.DecryptedShare;
+import org.torusresearch.torusutils.types.GetOrSetNonceError;
+import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.types.MetadataParams;
+import org.torusresearch.torusutils.types.MetadataPubKey;
+import org.torusresearch.torusutils.types.MetadataResponse;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusCtorOptions;
+import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.TypeOfUser;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
@@ -26,6 +50,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import okhttp3.internal.http2.Header;
 
 public class TorusUtils {
 
@@ -94,7 +120,8 @@ public class TorusUtils {
 
     public CompletableFuture<RetrieveSharesResponse> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, HashMap<String, Object> extraParams) {
         try {
-            APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork())}, true).get();
+            APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifier_id", verifierParams.get("verifier_id").toString()), new Header("network", this.options.getNetwork()), new Header("clientid", this.options.getClientId()),
+                    new Header("enablegating", "true")}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             // generate temporary private and public key that is used to secure receive shares
             ECKeyPair tmpKey = Keys.createEcKeyPair();

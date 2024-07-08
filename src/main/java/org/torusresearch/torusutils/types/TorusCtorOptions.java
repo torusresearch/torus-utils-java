@@ -13,6 +13,7 @@ public class TorusCtorOptions {
     private String network = "mainnet";
 
     private boolean legacyNonce = false;
+    private String clientId;
 
     public TorusCtorOptions(String origin) {
         this.origin = origin;
@@ -80,5 +81,13 @@ public class TorusCtorOptions {
 
     public void setLegacyNonce(boolean legacyNonce) {
         this.legacyNonce = legacyNonce;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 }
