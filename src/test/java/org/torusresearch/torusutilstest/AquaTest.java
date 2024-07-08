@@ -1,6 +1,11 @@
 package org.torusresearch.torusutilstest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.auth0.jwt.algorithms.Algorithm;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,7 +13,11 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.TorusNetwork;
 import org.torusresearch.torusutils.TorusUtils;
-import org.torusresearch.torusutils.types.*;
+import org.torusresearch.torusutils.types.RetrieveSharesResponse;
+import org.torusresearch.torusutils.types.TorusCtorOptions;
+import org.torusresearch.torusutils.types.TorusException;
+import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
 import org.torusresearch.torusutilstest.utils.VerifyParams;
@@ -24,8 +33,6 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class AquaTest {
 
@@ -43,7 +50,7 @@ public class AquaTest {
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.AQUA, FetchNodeDetails.PROXY_ADDRESS_AQUA);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom");
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID");
         opts.setNetwork("aqua");
         opts.setSignerHost("https://signer-polygon.tor.us/api/sign");
         opts.setAllowHost("https://signer-polygon.tor.us/api/allow");

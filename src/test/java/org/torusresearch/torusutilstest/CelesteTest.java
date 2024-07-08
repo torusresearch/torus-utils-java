@@ -51,7 +51,7 @@ public class CelesteTest {
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Startingg");
         fetchNodeDetails = new FetchNodeDetails(TorusNetwork.CELESTE, FetchNodeDetails.PROXY_ADDRESS_CELESTE);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom");
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID");
         opts.setNetwork("celeste");
         opts.setSignerHost("https://signer-polygon.tor.us/api/sign");
         opts.setAllowHost("https://signer-polygon.tor.us/api/allow");
