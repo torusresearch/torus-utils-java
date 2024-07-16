@@ -4,22 +4,22 @@ import org.jetbrains.annotations.Nullable;
 
 public class FinalKeyData {
 
-    public String evmAddress;
+    public String walletAddress;
     public String X;
     public String Y;
 
     @Nullable
     public String privKey;
 
-    public FinalKeyData(String evmAddress, String X, String Y, @Nullable String privKey) {
-        this.evmAddress = evmAddress;
+    public FinalKeyData(String walletAddress, String X, String Y, @Nullable String privKey) {
+        this.walletAddress = walletAddress;
         this.X = X;
         this.Y = Y;
         this.privKey = privKey;
     }
 
-    public String getEvmAddress() {
-        return evmAddress;
+    public String getWalletAddress() {
+        return walletAddress;
     }
 
     public String getX() {

@@ -76,7 +76,7 @@ public class CyanTest {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
-        assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", publicAddress.getFinalKeyData().getEvmAddress());
+        assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", publicAddress.getFinalKeyData().getWalletAddress());
         assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xA3767911A84bE6907f26C572bc89426dDdDB2825",
@@ -96,7 +96,7 @@ public class CyanTest {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
-        assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", key.getFinalKeyData().getEvmAddress());
+        assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", key.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key.getMetadata().getTypeOfUser());
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xA3767911A84bE6907f26C572bc89426dDdDB2825",
@@ -125,7 +125,7 @@ public class CyanTest {
                 ), BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().getServerTimeOffset()),
                 new NodesData(key2.nodesData.nodeIndexes)
         ));
-        assertEquals("0x8EA83Ace86EB414747F2b23f03C38A34E0217814", key2.getFinalKeyData().getEvmAddress());
+        assertEquals("0x8EA83Ace86EB414747F2b23f03C38A34E0217814", key2.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
 
         // 2/n user
@@ -143,7 +143,7 @@ public class CyanTest {
                 ), BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().getServerTimeOffset()),
                 new NodesData(key3.nodesData.nodeIndexes)
         ));
-        assertEquals("0xCC1f953f6972a9e3d685d260399D6B85E2117561", key3.getFinalKeyData().getEvmAddress());
+        assertEquals("0xCC1f953f6972a9e3d685d260399D6B85E2117561", key3.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
     }
 
@@ -153,11 +153,11 @@ public class CyanTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-cyan", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs("tkey-google-cyan", email, "")).get();
-        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getEvmAddress());
-        assertNotNull(publicAddress.getFinalKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
-        assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
+        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
+        assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getoAuthKeyData().getWalletAddress(), "");
         assertFalse(publicAddress.getMetadata().isUpgraded());
     }
 
@@ -198,7 +198,7 @@ public class CyanTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04", torusKey.getoAuthKeyData().getEvmAddress());
+        assertEquals("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04", torusKey.getoAuthKeyData().getWalletAddress());
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04",
                         "afd12f2476006ef6aa8778190b29676a70039df8688f9dee69c779bdc8ff0223",

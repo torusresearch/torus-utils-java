@@ -144,7 +144,7 @@ public class SapphireDevnetTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
         assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0x4924F91F5d6701dDd41042D94832bB17B76F316F", torusPublicKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0x4924F91F5d6701dDd41042D94832bB17B76F316F", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xac997dE675Fb69FCb0F4115A23c0061A892A2772",
                         "9508a251dfc4146a132feb96111c136538f4fabd20fc488dbcaaf762261c1528",
@@ -178,9 +178,9 @@ public class SapphireDevnetTest {
         VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, email, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), args).get();
-        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getEvmAddress());
-        assertNotNull(publicAddress.getFinalKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
+        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
     }
 
     @DisplayName("Login test")
@@ -221,11 +221,11 @@ public class SapphireDevnetTest {
         }}, token).get();
         assert (torusKey.getMetadata().getTypeOfUser().equals(TypeOfUser.v2));
         assertEquals(torusKey.getMetadata().isUpgraded(), false);
-        assertEquals("", torusKey.finalKeyData.getEvmAddress());
+        assertEquals("", torusKey.finalKeyData.getWalletAddress());
         assertEquals(null, torusKey.finalKeyData.getX());
         assertEquals(null, torusKey.finalKeyData.getY());
         assertEquals("", torusKey.finalKeyData.getPrivKey());
-        assertNotEquals("", torusKey.oAuthKeyData.getEvmAddress());
+        assertNotEquals("", torusKey.oAuthKeyData.getWalletAddress());
         assertNotEquals("", torusKey.oAuthKeyData.getX());
         assertNotEquals("", torusKey.oAuthKeyData.getY());
         assertNotEquals("", torusKey.oAuthKeyData.getPrivKey());
@@ -271,7 +271,7 @@ public class SapphireDevnetTest {
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, args).get();
-        assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219",
                         "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67",
@@ -294,7 +294,7 @@ public class SapphireDevnetTest {
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, args).get();
         assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219",
                         "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67",
@@ -320,8 +320,8 @@ public class SapphireDevnetTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
-        assertNotNull(result.getFinalKeyData().getEvmAddress());
-        assertNotNull(result.oAuthKeyData.evmAddress);
+        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertNotNull(result.metadata.nonce);
     }
@@ -340,7 +340,7 @@ public class SapphireDevnetTest {
             put("verifier_id", email);
         }}, idToken).get();
         assertNotNull(result.finalKeyData.privKey);
-        assertNotNull(result.oAuthKeyData.evmAddress);
+        assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertEquals(new BigInteger("0"), result.metadata.nonce);
         assertTrue(result.metadata.upgraded);
@@ -385,8 +385,8 @@ public class SapphireDevnetTest {
         VerifierArgs verifierArgs = new VerifierArgs(TORUS_TEST_VERIFIER, email, tssVerifierId);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), verifierArgs).get();
-        assertNotNull(result.finalKeyData.evmAddress);
-        assertNotNull(result.oAuthKeyData.evmAddress);
+        assertNotNull(result.finalKeyData.walletAddress);
+        assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertFalse(result.metadata.upgraded);
     }

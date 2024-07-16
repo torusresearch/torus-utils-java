@@ -82,7 +82,7 @@ public class SapphireMainnetTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), args).get();
         //assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0x327b2742768B436d09153429E762FADB54413Ded", torusPublicKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0x327b2742768B436d09153429E762FADB54413Ded", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xb1a49C6E50a1fC961259a8c388EAf5953FA5152b",
                         "a9f5a463aefb16e90f4cbb9de4a5b6b7f6c6a3831cefa0f20cccb9e7c7b01c20",
@@ -105,10 +105,10 @@ public class SapphireMainnetTest {
         VerifierArgs args = new VerifierArgs(verifier, email, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
-        assertNotEquals("", result.finalKeyData.evmAddress);
-        assertNotNull(result.finalKeyData.evmAddress);
-        assertNotEquals("", result.finalKeyData.evmAddress);
-        assertNotNull(result.finalKeyData.evmAddress);
+        assertNotEquals("", result.finalKeyData.walletAddress);
+        assertNotNull(result.finalKeyData.walletAddress);
+        assertNotEquals("", result.finalKeyData.walletAddress);
+        assertNotNull(result.finalKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertFalse(result.metadata.upgraded);
     }
@@ -123,8 +123,8 @@ public class SapphireMainnetTest {
         VerifierArgs verifierArgs = new VerifierArgs(TORUS_TEST_VERIFIER, email, tssVerifierId);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), verifierArgs).get();
-        assertNotNull(result.finalKeyData.evmAddress);
-        assertNotNull(result.oAuthKeyData.evmAddress);
+        assertNotNull(result.finalKeyData.walletAddress);
+        assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertFalse(result.metadata.upgraded);
     }
@@ -143,7 +143,7 @@ public class SapphireMainnetTest {
             put("verifier_id", email);
         }}, idToken).get();
         assertNotNull(result.finalKeyData.privKey);
-        assertNotNull(result.oAuthKeyData.evmAddress);
+        assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertEquals(BigInteger.ZERO, result.metadata.nonce);
         assertTrue(result.metadata.upgraded);
@@ -157,7 +157,7 @@ public class SapphireMainnetTest {
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, args).get();
         //assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB", torusPublicKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xeBe48BE7693a36Ff562D18c4494AC4496A45EaaC",
                         "147d0a97d498ac17172dd92546617e06f2c32c405d414dfc06632b8fbcba93d8",
@@ -180,7 +180,7 @@ public class SapphireMainnetTest {
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, args).get();
         assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB", torusPublicKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xeBe48BE7693a36Ff562D18c4494AC4496A45EaaC",
                         "147d0a97d498ac17172dd92546617e06f2c32c405d414dfc06632b8fbcba93d8",
@@ -265,8 +265,8 @@ public class SapphireMainnetTest {
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", email);
         }}, hashedIdToken).get();
-        assertNotNull(result.finalKeyData.evmAddress);
-        assertNotNull(result.oAuthKeyData.evmAddress);
+        assertNotNull(result.finalKeyData.walletAddress);
+        assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertNotNull(result.metadata.nonce);
     }
@@ -278,7 +278,7 @@ public class SapphireMainnetTest {
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, args).get();
-        assertEquals("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB", torusPublicKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xeBe48BE7693a36Ff562D18c4494AC4496A45EaaC",
                         "147d0a97d498ac17172dd92546617e06f2c32c405d414dfc06632b8fbcba93d8",

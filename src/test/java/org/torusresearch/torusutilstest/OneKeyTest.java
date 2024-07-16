@@ -85,7 +85,7 @@ public class OneKeyTest {
                 new Metadata(null, new BigInteger("186a20d9b00315855ff5622a083aca6b2d34ef66ef6e0a4de670f5b2fde37e0d", 16), TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
-        assertEquals("0x930abEDDCa6F9807EaE77A3aCc5c78f20B168Fd1", publicAddress.getFinalKeyData().getEvmAddress());
+        assertEquals("0x930abEDDCa6F9807EaE77A3aCc5c78f20B168Fd1", publicAddress.getFinalKeyData().getWalletAddress());
         assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
     }
 
@@ -95,11 +95,11 @@ public class OneKeyTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(TORUS_TEST_VERIFIER, email, ""), true).get();
-        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getEvmAddress());
-        assertNotNull(publicAddress.getFinalKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
-        assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
+        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
+        assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getoAuthKeyData().getWalletAddress(), "");
         assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v2);
         assertEquals(publicAddress.getMetadata().isUpgraded(), false);
     }
@@ -139,7 +139,7 @@ public class OneKeyTest {
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", email);
         }}, JwtUtils.generateIdToken(email, algorithmRs)).get();
-        System.out.println(torusKey.getFinalKeyData().getPrivKey() + " priv key " + torusKey.getFinalKeyData().getEvmAddress() + " nonce " + torusKey.getMetadata().getNonce());
+        System.out.println(torusKey.getFinalKeyData().getPrivKey() + " priv key " + torusKey.getFinalKeyData().getWalletAddress() + " nonce " + torusKey.getMetadata().getNonce());
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assertEquals(torusKey.getFinalKeyData().getPrivKey(), "9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075");
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
@@ -172,7 +172,7 @@ public class OneKeyTest {
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, hashedIdToken).get();
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B", torusKey.getFinalKeyData().getEvmAddress());
+        assertEquals("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B", torusKey.getFinalKeyData().getWalletAddress());
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B",
                         "78658b2671f1bd6a488baf2afb8ce6f8d8b9a1a70842130b3c8756a9d51d9723",

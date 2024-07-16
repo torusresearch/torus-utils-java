@@ -77,7 +77,7 @@ public class AquaTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
         assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0x79F06350eF34Aeed4BE68e26954D405D573f1438", publicAddress.getFinalKeyData().getEvmAddress());
+        assertEquals("0x79F06350eF34Aeed4BE68e26954D405D573f1438", publicAddress.getFinalKeyData().getWalletAddress());
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
                         "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
@@ -96,7 +96,7 @@ public class AquaTest {
         VerifierArgs args = new VerifierArgs("tkey-google-aqua", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
-        assertEquals("0x79F06350eF34Aeed4BE68e26954D405D573f1438", key.getFinalKeyData().getEvmAddress());
+        assertEquals("0x79F06350eF34Aeed4BE68e26954D405D573f1438", key.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key.getMetadata().getTypeOfUser());
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
@@ -113,7 +113,7 @@ public class AquaTest {
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
         TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2TestEmail, "")).get();
-        assertEquals("0xBc32f315515AdE7010cabC5Fd68c966657A570BD", key2.getFinalKeyData().getEvmAddress());
+        assertEquals("0xBc32f315515AdE7010cabC5Fd68c966657A570BD", key2.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x4ea5260fF85678A2a326D08DF9C44d1f559a5828",
@@ -129,7 +129,7 @@ public class AquaTest {
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
         TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2nTestEmail, "")).get();
-        assertEquals("0x5469C5aCB0F30929226AfF4622918DA8E1424a8D", key3.getFinalKeyData().getEvmAddress());
+        assertEquals("0x5469C5aCB0F30929226AfF4622918DA8E1424a8D", key3.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
         assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD",
@@ -150,11 +150,11 @@ public class AquaTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-aqua", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
                 new VerifierArgs("tkey-google-aqua", email, "")).get();
-        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getEvmAddress());
-        assertNotNull(publicAddress.getFinalKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getFinalKeyData().getEvmAddress(), "");
-        assertNotNull(publicAddress.getoAuthKeyData().getEvmAddress());
-        assertNotEquals(publicAddress.getoAuthKeyData().getEvmAddress(), "");
+        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
+        assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getoAuthKeyData().getWalletAddress(), "");
         assertFalse(publicAddress.getMetadata().isUpgraded());
     }
 
@@ -201,7 +201,7 @@ public class AquaTest {
                 }},
                 hashedIdToken).get();
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", torusKey.getoAuthKeyData().evmAddress);
+        assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", torusKey.getoAuthKeyData().walletAddress);
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D",
                         "37a4ac8cbef68e88bcec5909d9b6fffb539187365bb723f3d7bffe56ae80e31d",

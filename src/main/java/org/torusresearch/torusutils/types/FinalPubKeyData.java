@@ -4,18 +4,18 @@ import java.util.Objects;
 
 public class FinalPubKeyData {
 
-    public String evmAddress;
+    public String walletAddress;
     public String x;
     public String y;
 
-    public FinalPubKeyData(String evmAddress, String x, String y) {
-        this.evmAddress = evmAddress;
+    public FinalPubKeyData(String walletAddress, String x, String y) {
+        this.walletAddress = walletAddress;
         this.x = x;
         this.y = y;
     }
 
-    public String getEvmAddress() {
-        return evmAddress;
+    public String getWalletAddress() {
+        return walletAddress;
     }
 
     public String getX() {
@@ -31,11 +31,11 @@ public class FinalPubKeyData {
         if (this == o) return true;
         if (!(o instanceof FinalPubKeyData)) return false;
         FinalPubKeyData that = (FinalPubKeyData) o;
-        return getEvmAddress().equals(that.getEvmAddress()) && getX().equals(that.getX()) && getY().equals(that.getY());
+        return getWalletAddress().equals(that.getWalletAddress()) && getX().equals(that.getX()) && getY().equals(that.getY());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getEvmAddress(), getX(), getY());
+        return Objects.hash(getWalletAddress(), getX(), getY());
     }
 }
