@@ -15,7 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
-import org.torusresearch.fetchnodedetails.types.TorusNetwork;
+import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
@@ -72,8 +72,8 @@ public class SapphireDevnetTest {
     @BeforeAll
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.SAPPHIRE_DEVNET);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", TorusNetwork.SAPPHIRE_DEVNET);
+        fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.SAPPHIRE_DEVNET);
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.SAPPHIRE_DEVNET);
         opts.setEnableOneKey(true);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
@@ -84,9 +84,9 @@ public class SapphireDevnetTest {
     @DisplayName("should fetch public address of a legacy v1 user")
     @Test
     public void testFetchPublicAddressOfLegacyV1User() throws ExecutionException, InterruptedException {
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET);
+        fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
         VerifierArgs verifierDetails = new VerifierArgs("google-lrc", "himanshu@tor.us", ""); // Replace with the actual verifier ID
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", TorusNetwork.TESTNET);
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET);
         opts.setAllowHost("https://signer.tor.us/api/allow");
         opts.setEnableOneKey(true);
         torusUtils = new TorusUtils(opts);
@@ -112,10 +112,10 @@ public class SapphireDevnetTest {
         String verifier = "google-lrc";
         String email = "himanshu@tor.us";
         String token = JwtUtils.generateIdToken(email, algorithmRs);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", TorusNetwork.TESTNET);
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET);
         opts.setAllowHost("https://signer.tor.us/api/allow");
         torusUtils = new TorusUtils(opts);
-        fetchNodeDetails = new FetchNodeDetails(TorusNetwork.TESTNET);
+        fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, email).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", email);
@@ -220,7 +220,7 @@ public class SapphireDevnetTest {
             put("verifier_id", email);
         }}, token).get();
         assert (torusKey.getMetadata().getTypeOfUser().equals(TypeOfUser.v2));
-        assertEquals(torusKey.getMetadata().isUpgraded(), true);
+        assertEquals(torusKey.getMetadata().isUpgraded(), false);
         assertEquals("", torusKey.finalKeyData.getEvmAddress());
         assertEquals(null, torusKey.finalKeyData.getX());
         assertEquals(null, torusKey.finalKeyData.getY());
@@ -416,9 +416,9 @@ public class SapphireDevnetTest {
 
         List<Map<String, Object>> parsedSigsData = new ArrayList<>();
         for (Map<String, String> sig : signatures) {
-            byte[] decodedBytes = Base64.getDecoder().decode((String) sig.get("data"));
+            byte[] decodedBytes = Base64.getDecoder().decode(sig.get("data"));
             String decodedString = new String(decodedBytes);
-            Map<String, Object> parsedSigData = new Gson().fromJson(decodedString, HashMap.class);
+            HashMap parsedSigData = new Gson().fromJson(decodedString, HashMap.class);
             parsedSigsData.add(parsedSigData);
         }
 

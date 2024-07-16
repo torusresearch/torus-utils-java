@@ -3,7 +3,7 @@ package org.torusresearch.torusutils.types;
 import static org.torusresearch.fetchnodedetails.types.Utils.METADATA_MAP;
 import static org.torusresearch.fetchnodedetails.types.Utils.SIGNER_MAP;
 
-import org.torusresearch.fetchnodedetails.types.TorusNetwork;
+import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 
 import java.math.BigInteger;
 
@@ -14,11 +14,11 @@ public class TorusCtorOptions {
     // in seconds
     private BigInteger serverTimeOffset = new BigInteger("0");
     private String origin;
-    private TorusNetwork network;
+    private Web3AuthNetwork network;
     private String clientId;
     private boolean enableOneKey = false;
 
-    public TorusCtorOptions(String origin, String clientId, TorusNetwork network) {
+    public TorusCtorOptions(String origin, String clientId, Web3AuthNetwork network) {
         this.origin = origin;
         this.clientId = clientId;
         this.network = network;
@@ -28,11 +28,11 @@ public class TorusCtorOptions {
         this.serverTimeOffset = BigInteger.valueOf(System.currentTimeMillis() / 1000);
     }
 
-    public TorusNetwork getNetwork() {
+    public Web3AuthNetwork getNetwork() {
         return network;
     }
 
-    public void setNetwork(TorusNetwork network) {
+    public void setNetwork(Web3AuthNetwork network) {
         this.network = network;
     }
 
