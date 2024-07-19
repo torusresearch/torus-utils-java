@@ -4,6 +4,8 @@ public class SetNonceData {
 
     private String operation;
     private String data;
+
+    private String seed;
     private String timestamp;
 
     public SetNonceData(String operation, String timestamp) {
@@ -11,9 +13,10 @@ public class SetNonceData {
         this.timestamp = timestamp;
     }
 
-    public SetNonceData(String operation, String data, String timestamp) {
+    public SetNonceData(String operation, String data, String seed, String timestamp) {
         this.operation = operation;
         this.data = data;
+        this.seed = seed;
         this.timestamp = timestamp;
     }
 
@@ -31,5 +34,9 @@ public class SetNonceData {
 
     public String getTimestamp() {
         return timestamp;
+    }
+
+    public String getSeed() {
+        return seed;
     }
 }

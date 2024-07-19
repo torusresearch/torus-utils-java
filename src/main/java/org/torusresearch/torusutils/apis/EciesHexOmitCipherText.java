@@ -1,18 +1,15 @@
 package org.torusresearch.torusutils.apis;
 
-public class ShareMetadata {
+public class EciesHexOmitCipherText {
+    private final String iv;
+    private final String ephemPublicKey;
+    private final String mac;
+    private final String mode;
 
-    private String iv;
-    private String ephemPublicKey;
-    private String mac;
-    private String mode;
-    private String ciphertext;
-
-    public ShareMetadata(String iv, String ephemPublicKey, String ciphertext, String mac, String mode) {
+    public EciesHexOmitCipherText(String iv, String ephemPublicKey, String mac, String mode) {
         this.iv = iv;
         this.ephemPublicKey = ephemPublicKey;
         this.mac = mac;
-        this.ciphertext = ciphertext;
         this.mode = mode;
     }
 
@@ -30,9 +27,5 @@ public class ShareMetadata {
 
     public String getMode() {
         return mode;
-    }
-
-    public String getCiphertext() {
-        return ciphertext;
     }
 }

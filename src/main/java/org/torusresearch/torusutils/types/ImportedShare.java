@@ -1,58 +1,149 @@
 package org.torusresearch.torusutils.types;
 
-import org.torusresearch.torusutils.apis.ShareMetadata;
+import org.torusresearch.torusutils.apis.EciesHexOmitCipherText;
 
 public class ImportedShare {
-    private final String pub_key_x;
-    private final String pub_key_y;
-    private final String encrypted_share;
-    private final ShareMetadata encrypted_share_metadata;
-    private final Integer node_index;
-    private final String key_type;
-    private final String nonce_data;
-    private final String nonce_signature;
 
+    private String oauth_pub_key_x;
+    private String oauth_pub_key_y;
+    private Point final_user_point;
+    private String signing_pub_key_x;
+    private String signing_pub_key_y;
+    private String encryptedShare;
+    private EciesHexOmitCipherText encryptedShareMetadata;
+    private String encryptedSeed;
+    private int node_index;
+    private KeyType key_type;
+    private String nonce_data;
+    private String nonce_signature;
 
-    public ImportedShare(String pub_key_x, String pub_key_y, String encrypted_share, ShareMetadata encrypted_share_metadata, Integer node_index, String key_type, String nonce_data, String nonce_signature) {
-        this.pub_key_x = pub_key_x;
-        this.pub_key_y = pub_key_y;
-        this.encrypted_share = encrypted_share;
-        this.encrypted_share_metadata = encrypted_share_metadata;
+    public ImportedShare(String oauth_pub_key_x, String oauth_pub_key_y, Point final_user_point, String signing_pub_key_x, String signing_pub_key_y, String encryptedShare,
+                         EciesHexOmitCipherText encryptedShareMetadata, String encryptedSeed, int node_index, KeyType key_type,
+                         String nonce_data, String nonce_signature) {
+        this.oauth_pub_key_x = oauth_pub_key_x;
+        this.oauth_pub_key_y = oauth_pub_key_y;
+        this.final_user_point = final_user_point;
+        this.signing_pub_key_x = signing_pub_key_x;
+        this.signing_pub_key_y = signing_pub_key_y;
+        this.encryptedShare = encryptedShare;
+        this.encryptedShareMetadata = encryptedShareMetadata;
+        this.encryptedSeed = encryptedSeed;
         this.node_index = node_index;
         this.key_type = key_type;
         this.nonce_data = nonce_data;
         this.nonce_signature = nonce_signature;
     }
 
-    public String getPub_key_x() {
-        return pub_key_x;
+    public ImportedShare(String oauth_pub_key_x, String oauth_pub_key_y, Point final_user_point, String signing_pub_key_x, String signing_pub_key_y, String encryptedShare,
+                         EciesHexOmitCipherText encryptedShareMetadata, int node_index, KeyType key_type,
+                         String nonce_data, String nonce_signature) {
+        this.oauth_pub_key_x = oauth_pub_key_x;
+        this.oauth_pub_key_y = oauth_pub_key_y;
+        this.final_user_point = final_user_point;
+        this.signing_pub_key_x = signing_pub_key_x;
+        this.signing_pub_key_y = signing_pub_key_y;
+        this.encryptedShare = encryptedShare;
+        this.encryptedShareMetadata = encryptedShareMetadata;
+        this.node_index = node_index;
+        this.key_type = key_type;
+        this.nonce_data = nonce_data;
+        this.nonce_signature = nonce_signature;
     }
 
-    public String getPub_key_y() {
-        return pub_key_y;
+    // Getters and Setters
+    public String getOauth_pub_key_x() {
+        return oauth_pub_key_x;
     }
 
-    public String getEncrypted_share() {
-        return encrypted_share;
+    public void setOauth_pub_key_x(String oauth_pub_key_x) {
+        this.oauth_pub_key_x = oauth_pub_key_x;
     }
 
-    public Integer getNode_index() {
+    public String getOauth_pub_key_y() {
+        return oauth_pub_key_y;
+    }
+
+    public void setOauth_pub_key_y(String oauth_pub_key_y) {
+        this.oauth_pub_key_y = oauth_pub_key_y;
+    }
+
+    public Point getFinal_user_point() {
+        return final_user_point;
+    }
+
+    public void setFinal_user_point(Point final_user_point) {
+        this.final_user_point = final_user_point;
+    }
+
+    public String getSigning_pub_key_x() {
+        return signing_pub_key_x;
+    }
+
+    public void setSigning_pub_key_x(String signing_pub_key_x) {
+        this.signing_pub_key_x = signing_pub_key_x;
+    }
+
+    public String getSigning_pub_key_y() {
+        return signing_pub_key_y;
+    }
+
+    public void setSigning_pub_key_y(String signing_pub_key_y) {
+        this.signing_pub_key_y = signing_pub_key_y;
+    }
+
+    public String getEncryptedShare() {
+        return encryptedShare;
+    }
+
+    public void setEncryptedShare(String encryptedShare) {
+        this.encryptedShare = encryptedShare;
+    }
+
+    public EciesHexOmitCipherText getEncryptedShareMetadata() {
+        return encryptedShareMetadata;
+    }
+
+    public void setEncryptedShareMetadata(EciesHexOmitCipherText encryptedShareMetadata) {
+        this.encryptedShareMetadata = encryptedShareMetadata;
+    }
+
+    public String getEncryptedSeed() {
+        return encryptedSeed;
+    }
+
+    public void setEncryptedSeed(String encryptedSeed) {
+        this.encryptedSeed = encryptedSeed;
+    }
+
+    public int getNode_index() {
         return node_index;
     }
 
-    public String getKey_type() {
+    public void setNode_index(int node_index) {
+        this.node_index = node_index;
+    }
+
+    public KeyType getKey_type() {
         return key_type;
+    }
+
+    public void setKey_type(KeyType key_type) {
+        this.key_type = key_type;
     }
 
     public String getNonce_data() {
         return nonce_data;
     }
 
+    public void setNonce_data(String nonce_data) {
+        this.nonce_data = nonce_data;
+    }
+
     public String getNonce_signature() {
         return nonce_signature;
     }
 
-    public ShareMetadata getEncrypted_share_metadata() {
-        return encrypted_share_metadata;
+    public void setNonce_signature(String nonce_signature) {
+        this.nonce_signature = nonce_signature;
     }
 }

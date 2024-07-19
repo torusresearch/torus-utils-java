@@ -12,9 +12,9 @@ public class KeyAssignment {
     private String node_index;
     private HashMap<String, String[]> verifiers;
     private String share;
-    private ShareMetadata metadata;
+    private Ecies metadata;
     private GetOrSetNonceResult nonceResult;
-    private ShareMetadata share_metadata;
+    private Ecies share_metadata;
     private GetOrSetNonceResult nonce_data;
 
     //Old schema keys
@@ -22,7 +22,7 @@ public class KeyAssignment {
     private Integer Threshold;
     private HashMap<String, String[]> Verifiers;
     private String Share;
-    private ShareMetadata Metadata;
+    private Ecies Metadata;
 
     public KeyAssignment() {
     }
@@ -51,7 +51,7 @@ public class KeyAssignment {
         }
     }
 
-    public ShareMetadata getShareMetadata() {
+    public Ecies getShareMetadata() {
         return share_metadata;
     }
 
@@ -63,7 +63,7 @@ public class KeyAssignment {
         return node_index;
     }
 
-    public ShareMetadata getMetadata(String network) {
+    public Ecies getMetadata(String network) {
         if (Utils.isSapphireNetwork(network)) {
             return share_metadata;
         } else {
@@ -89,7 +89,7 @@ public class KeyAssignment {
         return Share;
     }
 
-    public ShareMetadata getLegacyMetadata() {
+    public Ecies getLegacyMetadata() {
         return Metadata;
     }
 }

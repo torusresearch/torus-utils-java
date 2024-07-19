@@ -4,19 +4,22 @@ import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
 
 import com.google.gson.Gson;
 
+import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.Ecies;
 import org.torusresearch.torusutils.apis.GetPubKeyOrKeyAssignRequestParams;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.KeyLookupResult;
 import org.torusresearch.torusutils.apis.KeysRPCResponse;
-import org.torusresearch.torusutils.apis.ShareMetadata;
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.types.KeyType;
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
 import org.torusresearch.torusutils.types.Share;
@@ -34,7 +37,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Provider;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -105,12 +110,12 @@ public class Utils {
         return combs;
     }
 
-    public static CompletableFuture<KeyLookupResult> getPubKeyOrKeyAssign(String[] endpoints, String network, String verifier, String verifierId, String extendedVerifierId) {
+    public static CompletableFuture<KeyLookupResult> getPubKeyOrKeyAssign(String[] endpoints, String network, String verifier, String verifierId, KeyType keyType, String extendedVerifierId) {
         int k = endpoints.length / 2 + 1;
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
             lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("GetPubKeyOrKeyAssign",
-                    new GetPubKeyOrKeyAssignRequestParams(verifier, verifierId, extendedVerifierId,
+                    new GetPubKeyOrKeyAssignRequestParams(verifier, verifierId, extendedVerifierId, keyType,
                             true, true, true)), false));
         }
         return new Some<>(lookupPromises, (lookupResults, resolved) -> {
@@ -455,8 +460,8 @@ public class Utils {
         return bos.toByteArray();
     }
 
-    public static ShareMetadata encParamsBufToHex(ShareMetadata encParams) {
-        return new ShareMetadata(
+    public static Ecies encParamsBufToHex(Ecies encParams) {
+        return new Ecies(
                 bytesToHex(encParams.getIv().getBytes(StandardCharsets.UTF_8)),
                 bytesToHex(encParams.getEphemPublicKey().getBytes(StandardCharsets.UTF_8)),
                 bytesToHex(encParams.getCiphertext().getBytes(StandardCharsets.UTF_8)),
@@ -507,4 +512,108 @@ public class Utils {
         BigInteger mid2 = arr.get(arrSize / 2);
         return (mid1.add(mid2)).divide(BigInteger.valueOf(2));
     }
+
+    public static ECParameterSpec getKeyCurve(KeyType keyType) {
+        switch (keyType) {
+            case ed25519:
+                return getCurveParams("Ed25519");
+            case secp256k1:
+                return getCurveParams("secp256k1");
+            default:
+                throw new IllegalArgumentException("Invalid keyType: " + keyType);
+        }
+    }
+
+    private static ECParameterSpec getCurveParams(String curveName) {
+        Provider bcProvider = Security.getProvider("BC");
+        if (bcProvider == null) {
+            throw new IllegalStateException("BouncyCastle provider not found");
+        }
+        ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec(curveName);
+        if (spec == null) {
+            throw new IllegalArgumentException("Unsupported curve: " + curveName);
+        }
+        return new ECParameterSpec(spec.getCurve(), spec.getG(), spec.getN(), spec.getH(), spec.getSeed());
+    }
+
+    public static int getProxyCoordinatorEndpointIndex(String[] endpoints, String verifier, String verifierId) {
+        String verifierIdStr = verifier + verifierId;
+        byte[] hashedVerifierId = keccak256(verifierIdStr.getBytes(StandardCharsets.UTF_8));
+        BigInteger hashedBigInt = new BigInteger(1, hashedVerifierId);
+        BigInteger modResult = hashedBigInt.mod(BigInteger.valueOf(endpoints.length));
+        return modResult.intValue();
+    }
+
+    private static byte[] keccak256(byte[] input) {
+        Keccak.Digest256 digest = new Keccak.Digest256();
+        return digest.digest(input);
+    }
+
+    public static byte[] getRandomBytes(int length) {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] bytes = new byte[length];
+        secureRandom.nextBytes(bytes);
+        return bytes;
+    }
+
+    public static String addLeading0sForLength64(String input) {
+        StringBuilder inputBuilder = new StringBuilder(input);
+        while (inputBuilder.length() < 64) {
+            inputBuilder.insert(0, "0");
+        }
+        input = inputBuilder.toString();
+        return input;
+    }
+
+    public static String stripLeadingZeros(String hexString) {
+        int len = hexString.length();
+        int firstNonZero = 0;
+        // Find the first non-zero character index
+        while (firstNonZero < len - 1 && hexString.charAt(firstNonZero) == '0') {
+            firstNonZero++;
+        }
+        return hexString.substring(firstNonZero);
+    }
+
+    public static String addLeadingZerosForLength64(String input) {
+        int targetLength = 64;
+        int inputLength = input.length();
+
+        if (inputLength >= targetLength) {
+            return input;
+        } else {
+            int numberOfZeros = targetLength - inputLength;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < numberOfZeros; i++) {
+                sb.append('0');
+            }
+            sb.append(input);
+            return sb.toString();
+        }
+    }
+
+    public static String serializeHex(byte[] data) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : data) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }
+
+    public static String strip04Prefix(String pubKey) {
+        if (pubKey.startsWith("04")) {
+            return pubKey.substring(2);
+        }
+        return pubKey;
+    }
+
+    public static String convertByteToHexadecimal(byte[] byteArray) {
+        StringBuilder hex = new StringBuilder();
+        // Iterating through each byte in the array
+        for (byte b : byteArray) {
+            hex.append(String.format("%02X", b));
+        }
+        return hex.toString().toLowerCase(Locale.ROOT);
+    }
+
 }

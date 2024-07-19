@@ -141,7 +141,7 @@ public class SapphireMainnetTest {
         TorusKey result = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("extended_verifier_id", tssVerifierId);
             put("verifier_id", email);
-        }}, idToken).get();
+        }}, idToken, nodeDetails.getTorusNodePub()).get();
         assertNotNull(result.finalKeyData.privKey);
         assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
@@ -204,7 +204,7 @@ public class SapphireMainnetTest {
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), HashEnabledVerifier, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
-        }}, idToken).get();
+        }}, idToken, nodeDetails.getTorusNodePub()).get();
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("13941ecd812b08d8a33a20bc975f0cd1c3f82de25b20c0c863ba5f21580b65f6"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
@@ -232,7 +232,7 @@ public class SapphireMainnetTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
-        }}, token).get();
+        }}, token, nodeDetails.getTorusNodePub()).get();
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("dfb39b84e0c64b8c44605151bf8670ae6eda232056265434729b6a8a50fa3419"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
@@ -264,7 +264,7 @@ public class SapphireMainnetTest {
             put("verify_params", new VerifyParams[]{new VerifyParams(idToken, email)});
             put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
             put("verifier_id", email);
-        }}, hashedIdToken).get();
+        }}, hashedIdToken, nodeDetails.getTorusNodePub()).get();
         assertNotNull(result.finalKeyData.walletAddress);
         assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);

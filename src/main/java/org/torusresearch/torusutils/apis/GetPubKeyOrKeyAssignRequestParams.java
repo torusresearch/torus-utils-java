@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.apis;
 
+import org.torusresearch.torusutils.types.KeyType;
+
 public class GetPubKeyOrKeyAssignRequestParams {
     private final String verifier;
     private final String verifier_id;
@@ -7,12 +9,14 @@ public class GetPubKeyOrKeyAssignRequestParams {
     private final boolean one_key_flow;
     private final boolean fetch_node_index;
     private final boolean distributed_metadata;
+    private final KeyType key_type;
 
-    public GetPubKeyOrKeyAssignRequestParams(String _verifier, String _verifier_id, String _extended_verifier_id, boolean _one_key_flow,
+    public GetPubKeyOrKeyAssignRequestParams(String _verifier, String _verifier_id, String _extended_verifier_id, KeyType key_type, boolean _one_key_flow,
                                              boolean _fetch_node_index, boolean distributed_metadata) {
         verifier = _verifier;
         verifier_id = _verifier_id;
         this.extended_verifier_id = _extended_verifier_id;
+        this.key_type = key_type;
         this.one_key_flow = _one_key_flow;
         this.fetch_node_index = _fetch_node_index;
         this.distributed_metadata = distributed_metadata;
@@ -40,5 +44,9 @@ public class GetPubKeyOrKeyAssignRequestParams {
 
     public boolean isDistributed_metadata() {
         return distributed_metadata;
+    }
+
+    public KeyType getKeyType() {
+        return key_type;
     }
 }

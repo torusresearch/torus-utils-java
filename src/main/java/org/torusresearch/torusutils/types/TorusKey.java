@@ -7,6 +7,7 @@ public class TorusKey {
     public SessionData sessionData;
     public Metadata metadata;
     public NodesData nodesData;
+    public PostboxKeyData postboxKeyData;
 
     public TorusKey(FinalKeyData finalKeyData, OAuthKeyData oAuthKeyData, SessionData sessionData, Metadata metadata, NodesData nodesData) {
         this.finalKeyData = finalKeyData;
@@ -34,5 +35,13 @@ public class TorusKey {
 
     public NodesData getNodesData() {
         return nodesData;
+    }
+
+    public PostboxKeyData getPostboxKeyData() {
+        return postboxKeyData;
+    }
+
+    public void setPostboxKeyData(PostboxKeyData postboxKeyData) {
+        this.postboxKeyData = postboxKeyData;
     }
 }

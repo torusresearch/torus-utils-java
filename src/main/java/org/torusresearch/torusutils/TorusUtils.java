@@ -1,6 +1,8 @@
 package org.torusresearch.torusutils;
 
 import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;
+import static org.torusresearch.torusutils.helpers.KeyUtils.generateShares;
+import static org.torusresearch.torusutils.helpers.Utils.getRandomBytes;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,14 +14,15 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.types.LegacyNetworkMigrationInfo;
+import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.CommitmentRequestParams;
+import org.torusresearch.torusutils.apis.Ecies;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.KeyAssignResult;
 import org.torusresearch.torusutils.apis.KeyAssignment;
 import org.torusresearch.torusutils.apis.NodeSignature;
 import org.torusresearch.torusutils.apis.PubKey;
-import org.torusresearch.torusutils.apis.ShareMetadata;
 import org.torusresearch.torusutils.apis.ShareRequestParams;
 import org.torusresearch.torusutils.apis.VerifierLookupItem;
 import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
@@ -34,18 +37,17 @@ import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.GetOrSetNonceError;
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
 import org.torusresearch.torusutils.types.ImportedShare;
+import org.torusresearch.torusutils.types.KeyType;
 import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.MetadataParams;
 import org.torusresearch.torusutils.types.MetadataPubKey;
 import org.torusresearch.torusutils.types.MetadataResponse;
 import org.torusresearch.torusutils.types.NodesData;
-import org.torusresearch.torusutils.types.NonceMetadataParams;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.PrivateKeyWithNonceResult;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.SessionToken;
-import org.torusresearch.torusutils.types.SetNonceData;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusKey;
@@ -79,6 +81,7 @@ public class TorusUtils {
 
     public final TorusCtorOptions options;
     private static int sessionTime = 86400;
+    private KeyType keyType = KeyType.secp256k1;
     public static final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
     ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
 
@@ -88,6 +91,7 @@ public class TorusUtils {
 
     public TorusUtils(TorusCtorOptions options) {
         this.options = options;
+        this.keyType = options.getKeyType();
     }
 
     public static void setAPIKey(String apiKey) {
@@ -157,9 +161,30 @@ public class TorusUtils {
     }
 
     public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams,
-                                                      String idToken, HashMap<String, Object> extraParams, String networkMigrated,
-                                                      @Nullable ImportedShare[] importedShares) {
+                                                      String idToken, TorusNodePub[] nodePubkeys, HashMap<String, Object> extraParams, String networkMigrated,
+                                                      boolean useDkg, @Nullable ImportedShare[] importedShares) {
         try {
+            if (nodePubkeys.length == 0) {
+                throw new IllegalArgumentException("nodePubkeys param is required");
+            }
+
+            if (nodePubkeys.length != indexes.length) {
+                throw new IllegalArgumentException("nodePubkeys length must be same as indexes length");
+            }
+
+            if (nodePubkeys.length != endpoints.length) {
+                throw new IllegalArgumentException("nodePubkeys length must be same as endpoints length");
+            }
+
+            // dkg is used by default only for secp256k1 keys,
+            // for ed25519 keys import keys flows is the default
+            boolean shouldUseDkg = useDkg;
+            shouldUseDkg = this.keyType != KeyType.ed25519;
+
+            if (!shouldUseDkg && (nodePubkeys.length == 0)) {
+                throw new IllegalArgumentException("nodePubkeys param is required");
+            }
+
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifierid", verifierParams.get("verifier_id").toString()), new Header("network", networkMigrated),
                     new Header("clientid", this.options.getClientId()), new Header("enablegating", "true")}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
@@ -170,6 +195,26 @@ public class TorusUtils {
             String pubKey = Utils.padLeft(sessionAuthKey.getPublicKey().toString(16), '0', 128);
             String pubKeyX = pubKey.substring(0, pubKey.length() / 2);
             String pubKeyY = pubKey.substring(pubKey.length() / 2);
+
+            List<ImportedShare> newImportedShares = new ArrayList<>();
+            List<ImportedShare> finalImportedShares = new ArrayList<>();
+
+            if (!newImportedShares.isEmpty()) {
+                if (newImportedShares.size() != endpoints.length) {
+                    throw new IllegalArgumentException("Invalid imported shares length");
+                }
+                finalImportedShares.addAll(newImportedShares);
+            } else if (!useDkg) {
+                byte[] bufferKey;
+                if (keyType.equals(KeyType.secp256k1)) {
+                    bufferKey = Keys.createEcKeyPair().getPrivateKey().toByteArray();
+                } else {
+                    bufferKey = getRandomBytes(32);
+                }
+                List<ImportedShare> generatedShares = generateShares(keyType, this.options.getServerTimeOffset(), Arrays.stream(indexes).toList(), Arrays.stream(nodePubkeys).toList(), Arrays.toString(bufferKey));
+                finalImportedShares.addAll(generatedShares);
+            }
+
             String tokenCommitment = org.web3j.crypto.Hash.sha3String(idToken);
             int t = endpoints.length / 4;
             int k = t * 2 + 1;
@@ -248,10 +293,10 @@ public class TorusUtils {
                         String req;
                         List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
                         if (finalIsImportShareReq) {
-                            verifierParams.put("pub_key_x", importedShares[i].getPub_key_x());
-                            verifierParams.put("pub_key_y", importedShares[i].getPub_key_y());
-                            verifierParams.put("encrypted_share", importedShares[i].getEncrypted_share());
-                            verifierParams.put("encrypted_share_metadata", importedShares[i].getEncrypted_share_metadata());
+                            verifierParams.put("pub_key_x", importedShares[i].getOauth_pub_key_x());
+                            verifierParams.put("pub_key_y", importedShares[i].getOauth_pub_key_y());
+                            verifierParams.put("encrypted_share", importedShares[i].getEncryptedShare());
+                            verifierParams.put("encrypted_share_metadata", importedShares[i].getEncryptedShareMetadata());
                             verifierParams.put("node_index", importedShares[i].getNode_index());
                             verifierParams.put("key_type", importedShares[i].getKey_type());
                             verifierParams.put("nonce_data", importedShares[i].getNonce_data());
@@ -338,7 +383,7 @@ public class TorusUtils {
                                                 serverTimeOffsetResponses.add(currentShareResponse.getServerTimeOffset() != null ? new BigInteger(currentShareResponse.getServerTimeOffset()) : BigInteger.ZERO);
                                                 if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
                                                     // Decrypt sessionSig if enc metadata is sent
-                                                    ShareMetadata[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
+                                                    Ecies[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
                                                     if (sessionTokenSigMetaData != null && sessionTokenSigMetaData[0] != null && sessionTokenSigMetaData[0].getEphemPublicKey() != null) {
                                                         try {
                                                             AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenSigMetaData[0].getEphemPublicKey(),
@@ -358,7 +403,7 @@ public class TorusUtils {
 
                                                 if (currentShareResponse.getSessionTokens() != null && currentShareResponse.getSessionTokens().length > 0) {
                                                     // Decrypt sessionToken if enc metadata is sent
-                                                    ShareMetadata[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
+                                                    Ecies[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
                                                     if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
                                                             currentShareResponse.getSessionTokenMetadata()[0].getEphemPublicKey() != null) {
                                                         try {
@@ -624,12 +669,12 @@ public class TorusUtils {
         }
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, @Nullable ImportedShare[] importedShares) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), importedShares);
+    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, TorusNodePub[] nodePubkeys, @Nullable ImportedShare[] importedShares) {
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, nodePubkeys, null, getMigratedNetworkInfo(), false, importedShares);
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), new ImportedShare[]{});
+    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, TorusNodePub[] nodePubkeys) {
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, nodePubkeys, null, getMigratedNetworkInfo(), false, new ImportedShare[]{});
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
@@ -662,7 +707,7 @@ public class TorusUtils {
         System.out.println("> torusUtils.java/getPublicAddress " + endpoints + " " + verifierArgs + " " + isExtended);
         AtomicBoolean isNewKey = new AtomicBoolean(false);
         Gson gson = new Gson();
-        return Utils.getPubKeyOrKeyAssign(endpoints, networkMigrated, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), verifierArgs.getExtendedVerifierId())
+        return Utils.getPubKeyOrKeyAssign(endpoints, networkMigrated, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.keyType, verifierArgs.getExtendedVerifierId())
                 .thenComposeAsync(keyAssignResult -> {
                     String errorResult = keyAssignResult.getErrResult();
                     String keyResult = keyAssignResult.getKeyResult();
@@ -851,7 +896,7 @@ public class TorusUtils {
 
     public CompletableFuture<GetOrSetNonceResult> getOrSetNonce(String X, String Y, boolean getOnly) {
         String msg = getOnly ? "getNonce" : "getOrSetNonce";
-        MetadataParams data = new MetadataParams(X, Y, new MetadataParams.MetadataSetData(msg, null), null);
+        MetadataParams data = new MetadataParams(X, Y, new MetadataParams.MetadataSetData(msg, null), null, KeyType.secp256k1);
         return this._getOrSetNonce(data);
     }
 
@@ -871,29 +916,6 @@ public class TorusUtils {
 
     public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, VerifierArgs verifierArgs) {
         return getNewPublicAddress(endpoints, verifierArgs, false, getMigratedNetworkInfo());
-    }
-
-    public NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce) {
-        long timeMillis = System.currentTimeMillis() / 1000L;
-        BigInteger timestamp = this.options.getServerTimeOffset().add(new BigInteger(String.valueOf(timeMillis)));
-        ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
-        String derivedPubKeyString = Utils.padLeft(derivedECKeyPair.getPublicKey().toString(16), '0', 128);
-        String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2);
-        String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);
-        SetNonceData setNonceData = new SetNonceData(operation, timestamp.toString(16));
-        if (nonce != null) {
-            setNonceData.setData(Utils.padLeft(nonce.toString(16), '0', 64));
-        }
-        Gson gson = new Gson();
-        String setDataString = gson.toJson(setNonceData);
-        System.out.println("nonceData " + setDataString);
-        byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
-        ECDSASignature signature = derivedECKeyPair.sign(hashedData);
-        String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
-        byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
-        String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
-        System.out.println("signature: " + sig);
-        return new NonceMetadataParams(derivedPubKeyX, derivedPubKeyY, setNonceData, finalSig);
     }
 
     public MetadataParams generateMetadataParams(String message, BigInteger privateKey, BigInteger serverTimeOffset) {
@@ -918,7 +940,6 @@ public class TorusUtils {
         String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
         byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
         String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
-        return new MetadataParams(derivedPubKeyX, derivedPubKeyY, setData, finalSig);
+        return new MetadataParams(derivedPubKeyX, derivedPubKeyY, setData, finalSig, KeyType.secp256k1);
     }
-
 }

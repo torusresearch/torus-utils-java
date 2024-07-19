@@ -1,14 +1,28 @@
 package org.torusresearch.torusutils.types;
 
+import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+
 import java.math.BigInteger;
 
 public class Point {
-    private BigInteger x;
-    private BigInteger y;
+    private final BigInteger x;
+    private final BigInteger y;
+    private final ECDomainParameters ecCurve;
+
+    public Point(String x, String y) {
+        this.x = new BigInteger(x, 16);
+        this.y = new BigInteger(y, 16);
+        ECParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp256k1");
+        this.ecCurve = new ECDomainParameters(spec.getCurve(), spec.getG(), spec.getN(), spec.getH(), spec.getSeed());
+    }
 
     public Point(BigInteger x, BigInteger y) {
         this.x = x;
         this.y = y;
+        ECParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp256k1");
+        this.ecCurve = new ECDomainParameters(spec.getCurve(), spec.getG(), spec.getN(), spec.getH(), spec.getSeed());
     }
 
     public BigInteger getX() {
@@ -22,17 +36,13 @@ public class Point {
     public byte[] encode(String enc) {
         switch (enc) {
             case "arr":
-                String hexX = x.toString(16);
-                String hexY = y.toString(16);
-                byte[] prefix = hexStringToByteArray("04");
-                byte[] encodedX = hexStringToByteArray(hexX);
-                byte[] encodedY = hexStringToByteArray(hexY);
-                return concatByteArrays(prefix, encodedX, encodedY);
+                return concatenateByteArrays(
+                        hexStringToByteArray("04"),
+                        hexStringToByteArray(this.x.toString(16)),
+                        hexStringToByteArray(this.y.toString(16))
+                );
             case "elliptic-compressed":
-                // Implement the logic for encoding as elliptic-compressed
-                // Return the encoded point as a byte array
-                // You'll need to use the EC library or implement the encoding algorithm yourself
-                throw new UnsupportedOperationException("Encoding as elliptic-compressed is not implemented yet");
+                return ecCurve.getCurve().createPoint(x, y).getEncoded(true);
             default:
                 throw new IllegalArgumentException("Invalid encoding in Point");
         }
@@ -48,7 +58,7 @@ public class Point {
         return byteArray;
     }
 
-    private byte[] concatByteArrays(byte[]... byteArrays) {
+    private byte[] concatenateByteArrays(byte[]... byteArrays) {
         int totalLength = 0;
         for (byte[] byteArray : byteArrays) {
             totalLength += byteArray.length;
