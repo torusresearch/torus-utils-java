@@ -1,8 +1,6 @@
 package org.torusresearch.torusutils;
 
 import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;
-import static org.torusresearch.torusutils.helpers.KeyUtils.generateShares;
-import static org.torusresearch.torusutils.helpers.Utils.getRandomBytes;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,8 +26,10 @@ import org.torusresearch.torusutils.apis.VerifierLookupItem;
 import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
 import org.torusresearch.torusutils.helpers.AES256CBC;
 import org.torusresearch.torusutils.helpers.Base64;
+import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.PredicateFailedException;
 import org.torusresearch.torusutils.helpers.Some;
+import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.helpers.Utils;
 import org.torusresearch.torusutils.types.DecryptedShare;
 import org.torusresearch.torusutils.types.FinalKeyData;
@@ -195,25 +195,6 @@ public class TorusUtils {
             String pubKey = Utils.padLeft(sessionAuthKey.getPublicKey().toString(16), '0', 128);
             String pubKeyX = pubKey.substring(0, pubKey.length() / 2);
             String pubKeyY = pubKey.substring(pubKey.length() / 2);
-
-            List<ImportedShare> newImportedShares = new ArrayList<>();
-            List<ImportedShare> finalImportedShares = new ArrayList<>();
-
-            if (!newImportedShares.isEmpty()) {
-                if (newImportedShares.size() != endpoints.length) {
-                    throw new IllegalArgumentException("Invalid imported shares length");
-                }
-                finalImportedShares.addAll(newImportedShares);
-            } else if (!useDkg) {
-                byte[] bufferKey;
-                if (keyType.equals(KeyType.secp256k1)) {
-                    bufferKey = Keys.createEcKeyPair().getPrivateKey().toByteArray();
-                } else {
-                    bufferKey = getRandomBytes(32);
-                }
-                List<ImportedShare> generatedShares = generateShares(keyType, this.options.getServerTimeOffset(), Arrays.stream(indexes).toList(), Arrays.stream(nodePubkeys).toList(), Arrays.toString(bufferKey));
-                finalImportedShares.addAll(generatedShares);
-            }
 
             String tokenCommitment = org.web3j.crypto.Hash.sha3String(idToken);
             int t = endpoints.length / 4;
@@ -624,10 +605,10 @@ public class TorusUtils {
                         pubNonce = nonceResult.getPubNonce();
                     }
 
-                    String oAuthKeyAddress = this.generateAddressFromPrivKey(privateKey.toString(16));
+                    String oAuthKeyAddress = KeyUtils.generateAddressFromPrivKey(privateKey.toString(16));
                     String finalEvmAddress = "";
                     if (finalPubKey != null) {
-                        finalEvmAddress = generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger(), finalPubKey.normalize().getAffineYCoord().toBigInteger());
+                        finalEvmAddress = KeyUtils.generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger(), finalPubKey.normalize().getAffineYCoord().toBigInteger());
                     }
 
                     String finalPrivKey = "";
@@ -691,18 +672,6 @@ public class TorusUtils {
         }
     }
 
-    public String generateAddressFromPrivKey(String privateKey) {
-        BigInteger privKey = new BigInteger(privateKey, 16);
-        return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.toByteArray())));
-    }
-
-    public String generateAddressFromPubKey(BigInteger pubKeyX, BigInteger pubKeyY) {
-        ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
-        ECPoint rawPoint = curve.getCurve().createPoint(pubKeyX, pubKeyY);
-        String finalPubKey = Utils.padLeft(rawPoint.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(rawPoint.getAffineYCoord().toString(), '0', 64);
-        return Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
-    }
-
     public CompletableFuture<TorusPublicKey> getNewPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended, String networkMigrated) {
         System.out.println("> torusUtils.java/getPublicAddress " + endpoints + " " + verifierArgs + " " + isExtended);
         AtomicBoolean isNewKey = new AtomicBoolean(false);
@@ -740,6 +709,7 @@ public class TorusUtils {
 
                     VerifierLookupItem verifierLookupItem = verifierLookupRequestResult.getKeys()[0];
                     isNewKey.set(true);
+                    String pubKey = KeyUtils.getPublicKeyFromCoords(verifierLookupItem.getPub_key_X(), verifierLookupItem.getPub_key_Y(), true);
                     String X = verifierLookupItem.getPub_key_X();
                     String Y = verifierLookupItem.getPub_key_Y();
                     TypeOfUser typeOfUser = TypeOfUser.v1;
@@ -753,11 +723,11 @@ public class TorusUtils {
                     }
                     CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
 
-                    ECPoint oAuthPubKey = null;
-                    ECPoint finalPubKey = null;
+                    String oAuthPubKey = null;
+                    String finalPubKey = null;
 
                     if (verifierArgs.getExtendedVerifierId() != null && !verifierArgs.getExtendedVerifierId().equals("")) {
-                        finalPubKey = Utils.getPublicKeyFromHex(X, Y);
+                        finalPubKey = pubKey;
                         oAuthPubKey = finalPubKey;
                     } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
                         try {
@@ -766,27 +736,43 @@ public class TorusUtils {
                             e.printStackTrace();
                         }
                     } else {
-                        oAuthPubKey = Utils.getPublicKeyFromHex(X, Y);
-                        finalPubKey = curve.getCurve().createPoint(new BigInteger(X, 16), new BigInteger(Y, 16));
-                        finalPubKey = finalPubKey.add(curve.getG().multiply(nonce)).normalize();
-                        pubNonce = nonceResult.getPubNonce();
+                        try {
+                            String[] pubKeyCoords = KeyUtils.getPublicKeyCoords(pubKey);
+                            String _X = pubKeyCoords[0];
+                            String _Y = pubKeyCoords[1];
+                            oAuthPubKey = KeyUtils.getPublicKeyFromCoords(_X, _Y, true);
+                            finalPubKey = oAuthPubKey;
+                            pubNonce = nonceResult.getPubNonce();
+                            if (!pubNonce.getX().isEmpty() && !pubNonce.getY().isEmpty()) {
+                                String pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubNonce.getX(), pubNonce.getY(), true);
+                                finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPubKey, pubNonceKey), false);
+                            }
+                        } catch (TorusUtilError e) {
+                            throw new RuntimeException(e);
+                        }
                     }
 
-                    if (oAuthPubKey == null) {
-                        throw new Error("Unable to derive oAuthPubKey");
+                    if (oAuthPubKey == null || finalPubKey == null) {
+                        throw new Error("could not derive private key");
                     }
-                    String oAuthX = oAuthPubKey.getAffineXCoord().toString();
-                    String oAuthY = oAuthPubKey.getAffineYCoord().toString();
-                    String oAuthAddress = generateAddressFromPubKey(oAuthPubKey.getAffineXCoord().toBigInteger(), oAuthPubKey.getAffineYCoord().toBigInteger());
-                    if (finalPubKey == null) {
-                        throw new Error("Unable to derive finalPubKey");
+                    String[] oAuthPubKeyCoords;
+                    String[] finalPubKeyCoords;
+                    try {
+                        oAuthPubKeyCoords = KeyUtils.getPublicKeyCoords(oAuthPubKey);
+                        finalPubKeyCoords = KeyUtils.getPublicKeyCoords(finalPubKey);
+                    } catch (TorusUtilError e) {
+                        throw new RuntimeException(e);
                     }
-                    String finalX = finalPubKey != null ? finalPubKey.getXCoord().toString() : "";
-                    String finalY = finalPubKey != null ? finalPubKey.getYCoord().toString() : "";
-                    String finalAddress = finalPubKey != null ? generateAddressFromPubKey(finalPubKey.getXCoord().toBigInteger(), finalPubKey.getYCoord().toBigInteger()) : "";
+                    String oAuthPubKeyX = oAuthPubKeyCoords[0];
+                    String oAuthPubKeyY = oAuthPubKeyCoords[1];
+                    String finalPubKeyX = finalPubKeyCoords[0];
+                    String finalPubKeyY = finalPubKeyCoords[1];
 
-                    TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthX, oAuthY),
-                            new FinalPubKeyData(finalAddress, finalX, finalY),
+                    String oAuthAddress = KeyUtils.generateAddressFromPubKey(new BigInteger(oAuthPubKeyX, 16), new BigInteger(oAuthPubKeyY, 16));
+                    String finalAddresss = KeyUtils.generateAddressFromPubKey(new BigInteger(finalPubKeyX, 16), new BigInteger(finalPubKeyY, 16));
+
+                    TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthPubKeyX, oAuthPubKeyY),
+                            new FinalPubKeyData(finalAddresss, finalPubKeyX, finalPubKeyY),
                             new Metadata(pubNonce, nonce, TypeOfUser.v2, nonceResult != null && nonceResult.isUpgraded(), finalServerTimeOffset),
                             new NodesData(nodeIndexes));
                     keyCf.complete(key);
@@ -842,13 +828,13 @@ public class TorusUtils {
         }
         String oAuthX = oAuthPubKey.getAffineXCoord().toString();
         String oAuthY = oAuthPubKey.getAffineYCoord().toString();
-        String oAuthAddress = generateAddressFromPubKey(oAuthPubKey.getAffineXCoord().toBigInteger(), oAuthPubKey.getAffineYCoord().toBigInteger());
+        String oAuthAddress = KeyUtils.generateAddressFromPubKey(oAuthPubKey.getAffineXCoord().toBigInteger(), oAuthPubKey.getAffineYCoord().toBigInteger());
         if (typeOfUser.equals(TypeOfUser.v2) && finalPubKey == null) {
             throw new Error("Unable to derive finalPubKey");
         }
         String finalX = finalPubKey != null ? finalPubKey.getAffineXCoord().toString() : "";
         String finalY = finalPubKey != null ? finalPubKey.getAffineYCoord().toString() : "";
-        String finalAddress = finalPubKey != null ? generateAddressFromPubKey(finalPubKey.getAffineXCoord().toBigInteger(), finalPubKey.getAffineYCoord().toBigInteger()) : "";
+        String finalAddress = finalPubKey != null ? KeyUtils.generateAddressFromPubKey(finalPubKey.getAffineXCoord().toBigInteger(), finalPubKey.getAffineYCoord().toBigInteger()) : "";
 
         TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthX, oAuthY),
                 new FinalPubKeyData(finalAddress, finalX, finalY),
@@ -896,7 +882,7 @@ public class TorusUtils {
 
     public CompletableFuture<GetOrSetNonceResult> getOrSetNonce(String X, String Y, boolean getOnly) {
         String msg = getOnly ? "getNonce" : "getOrSetNonce";
-        MetadataParams data = new MetadataParams(X, Y, new MetadataParams.MetadataSetData(msg, null), null, KeyType.secp256k1);
+        MetadataParams data = new MetadataParams(X, Y, new MetadataParams.MetadataSetData(msg, null), null);
         return this._getOrSetNonce(data);
     }
 
@@ -940,6 +926,6 @@ public class TorusUtils {
         String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
         byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
         String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
-        return new MetadataParams(derivedPubKeyX, derivedPubKeyY, setData, finalSig, KeyType.secp256k1);
+        return new MetadataParams(derivedPubKeyX, derivedPubKeyY, setData, finalSig);
     }
 }
