@@ -63,7 +63,7 @@ public class CyanTest {
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.CYAN);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BA5akJpGy6j5bVNL33RKpe64AXTiPGTSCYOI0i-BbDtbOYWtFQNdLzaC-WKibRtQ0sV_TVHC42TdOTbyZXdN-XI", Web3AuthNetwork.CYAN);
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID", Web3AuthNetwork.CYAN);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));

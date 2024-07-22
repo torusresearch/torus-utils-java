@@ -62,7 +62,7 @@ public class TorusUtilsTest {
     static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET);
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID", Web3AuthNetwork.TESTNET);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));

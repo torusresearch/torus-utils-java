@@ -13,6 +13,7 @@ import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
@@ -29,6 +30,7 @@ import org.torusresearch.torusutils.types.Share;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
+import org.web3j.crypto.Keys;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -86,24 +88,16 @@ public class KeyUtils {
         return curve.getN();
     }
 
-    public static String generateAddressFromPubKey(String publicKeyX, String publicKeyY) {
-        String publicKeyHex = getPublicKeyFromCoords(publicKeyX, publicKeyY, false);
-        byte[] publicKeyData = Hex.decode(publicKeyHex);
-        byte[] ethAddrData = keccak256(publicKeyData);
-        String ethAddrlower = Hex.toHexString(ethAddrData).substring(24).toLowerCase();
-        return toChecksumAddress(ethAddrlower);
+    public static String generateAddressFromPrivKey(String privateKey) {
+        BigInteger privKey = new BigInteger(privateKey, 16);
+        return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.toByteArray())));
     }
 
-    public static String toChecksumAddress(String hexAddress) {
-        String lowerCaseAddress = hexAddress.toLowerCase();
-        byte[] hash = keccak256(lowerCaseAddress.getBytes(StandardCharsets.UTF_8));
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < lowerCaseAddress.length(); i++) {
-            char c = lowerCaseAddress.charAt(i);
-            int hashValue = Character.digit(hash[i], 16);
-            result.append(hashValue >= 8 ? Character.toUpperCase(c) : c);
-        }
-        return "0x" + result;
+    public static String generateAddressFromPubKey(BigInteger pubKeyX, BigInteger pubKeyY) {
+        ECNamedCurveParameterSpec curve = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
+        ECPoint rawPoint = curve.getCurve().createPoint(pubKeyX, pubKeyY);
+        String finalPubKey = Utils.padLeft(rawPoint.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(rawPoint.getAffineYCoord().toString(), '0', 64);
+        return Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
     }
 
     public static String[] getPublicKeyCoords(String pubKey) throws TorusUtilError {

@@ -19,7 +19,7 @@ public class TorusCtorOptions {
     private boolean enableOneKey = false;
     private KeyType keyType = KeyType.secp256k1;
 
-    public TorusCtorOptions(String origin, String clientId, Web3AuthNetwork network, KeyType keyType) {
+    public TorusCtorOptions(String origin, String clientId, Web3AuthNetwork network) {
         this.origin = origin;
         this.clientId = clientId;
         this.network = network;
@@ -27,11 +27,7 @@ public class TorusCtorOptions {
         this.allowHost = SIGNER_MAP.get(network) + "/api/allow";
         this.signerHost = SIGNER_MAP.get(network) + "/api/sign";
         this.serverTimeOffset = BigInteger.valueOf(System.currentTimeMillis() / 1000);
-        this.keyType = keyType;
-    }
-
-    public TorusCtorOptions(String origin, String clientId, Web3AuthNetwork network) {
-        this(origin, clientId, network, KeyType.secp256k1);
+        //this.keyType = keyType;
     }
 
     public Web3AuthNetwork getNetwork() {

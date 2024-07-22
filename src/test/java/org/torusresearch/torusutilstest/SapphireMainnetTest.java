@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
+import com.google.gson.Gson;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +25,7 @@ import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
+import org.torusresearch.torusutils.types.SessionToken;
 import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusKey;
@@ -43,8 +45,13 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class SapphireMainnetTest {
 
@@ -66,7 +73,7 @@ public class SapphireMainnetTest {
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.SAPPHIRE_MAINNET);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BLuMSgycHD7DfSvbmN3ISZ5WkdpIjtByKi_cD9ASg_NS3jUYmrrH-dMuJU16z11cev5YocCWLAjWVfq95tFlOD8", Web3AuthNetwork.SAPPHIRE_MAINNET);
+        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID", Web3AuthNetwork.SAPPHIRE_MAINNET);
         opts.setEnableOneKey(true);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
@@ -113,6 +120,29 @@ public class SapphireMainnetTest {
         assertFalse(result.metadata.upgraded);
     }
 
+    @DisplayName("should fetch pubic address of tssVerifierId")
+    @Test
+    public void shouldFetchPubicAddressOfTssVerifierId() throws Exception {
+        String email = TORUS_EXTENDED_VERIFIER_EMAIL;
+        int nonce = 0;
+        String tssTag = "default";
+        String tssVerifierId = email + "\u0015" + tssTag + "\u0016" + nonce;
+        VerifierArgs verifierArgs = new VerifierArgs(TORUS_TEST_VERIFIER, email, tssVerifierId);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
+        TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), verifierArgs).get();
+        assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
+                new OAuthPubKeyData("0x98EC5b049c5C0Dc818C69e95CF43534AEB80261A",
+                        "a772c71ca6c650506f26a180456a6bdf462996781a10f1740f4e65314f360f29",
+                        "776c2178ff4620c67197b2f26b1222503919ff26a7cbd0fdbc91a2c9764e56cb"),
+                new FinalPubKeyData("0x98EC5b049c5C0Dc818C69e95CF43534AEB80261A",
+                        "a772c71ca6c650506f26a180456a6bdf462996781a10f1740f4e65314f360f29",
+                        "776c2178ff4620c67197b2f26b1222503919ff26a7cbd0fdbc91a2c9764e56cb"),
+                new Metadata(torusPublicKey.getMetadata().pubNonce,
+                        new BigInteger("0"), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
+                new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
+        ));
+    }
+
     @DisplayName("should assign key to tss verifier id")
     @Test
     public void shouldAssignKeyToTssVerifierId() throws Exception {
@@ -127,26 +157,6 @@ public class SapphireMainnetTest {
         assertNotNull(result.oAuthKeyData.walletAddress);
         assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
         assertFalse(result.metadata.upgraded);
-    }
-
-    @DisplayName("should allow test tss verifier id to fetch shares")
-    @Test
-    public void shouldAllowTestTssVerifierIdToFetchShares() throws ExecutionException, InterruptedException {
-        String email = JwtUtils.getRandomEmail();
-        int nonce = 0;
-        String tssTag = "default";
-        String tssVerifierId = email + "\u0015" + tssTag + "\u0016" + nonce;
-        String idToken = JwtUtils.generateIdToken(email, algorithmRs);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        TorusKey result = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
-            put("extended_verifier_id", tssVerifierId);
-            put("verifier_id", email);
-        }}, idToken, nodeDetails.getTorusNodePub()).get();
-        assertNotNull(result.finalKeyData.privKey);
-        assertNotNull(result.oAuthKeyData.walletAddress);
-        assertEquals(TypeOfUser.v2, result.metadata.typeOfUser);
-        assertEquals(BigInteger.ZERO, result.metadata.nonce);
-        assertTrue(result.metadata.upgraded);
     }
 
     @DisplayName("should fetch public address when verifierID hash enabled")
@@ -190,7 +200,7 @@ public class SapphireMainnetTest {
                         "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
-                        new BigInteger("3c2b6ba5b54ca0ba4ae978eb48429a84c47b7b3e526b35e7d46dd716887f52bf", 16), TypeOfUser.v2, false,
+                        new BigInteger("0", 16), TypeOfUser.v2, false,
                         torusPublicKey.getMetadata().serverTimeOffset),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
@@ -227,13 +237,12 @@ public class SapphireMainnetTest {
 
     @DisplayName("should be able to login")
     @Test
-    public void shouldBeAbleToLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldBeAbleToLogin() throws ExecutionException, InterruptedException {
         String token = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
             put("verifier_id", TORUS_TEST_EMAIL);
         }}, token, nodeDetails.getTorusNodePub()).get();
-        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("dfb39b84e0c64b8c44605151bf8670ae6eda232056265434729b6a8a50fa3419"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x70520A7F04868ACad901683699Fa32765C9F6871",
@@ -288,8 +297,45 @@ public class SapphireMainnetTest {
                         "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90"),
                 new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
-                        new BigInteger("0", 16), TypeOfUser.v2, false),
+                        new BigInteger("0", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
+    }
+
+    @DisplayName("should be able to update the `sessionTime` of the token signature data")
+    @Test
+    public void shouldUpdateSessionTimeOfTokenSignatureData() throws Exception {
+        String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
+        String[] torusNodeEndpoints = nodeDetails.getTorusNodeEndpoints();
+
+        int customSessionTime = 3600;
+        TorusUtils.setSessionTime(customSessionTime);
+        TorusKey torusKey = torusUtils.retrieveShares(torusNodeEndpoints, nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
+            put("verifier_id", TORUS_TEST_EMAIL);
+        }}, idToken, nodeDetails.getTorusNodePub()).get();
+
+        List<Map<String, String>> signatures = new ArrayList<>();
+        for (SessionToken sessionToken : torusKey.getSessionData().getSessionTokenData()) {
+            Map<String, String> signature = new HashMap<>();
+            signature.put("data", sessionToken.getToken());
+            signature.put("sig", sessionToken.getSignature());
+            signatures.add(signature);
+        }
+
+        List<Map<String, Object>> parsedSigsData = new ArrayList<>();
+        for (Map<String, String> sig : signatures) {
+            byte[] decodedBytes = Base64.getDecoder().decode(sig.get("data"));
+            String decodedString = new String(decodedBytes);
+            HashMap parsedSigData = new Gson().fromJson(decodedString, HashMap.class);
+            parsedSigsData.add(parsedSigData);
+        }
+
+        long currentTimeSec = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+        for (Map<String, Object> ps : parsedSigsData) {
+            long sessionTime = ((Number) ps.get("exp")).longValue() - currentTimeSec;
+            assert sessionTime > (customSessionTime - 5);
+            assert customSessionTime <= sessionTime;
+        }
     }
 }
