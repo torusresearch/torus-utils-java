@@ -11,7 +11,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.json.JSONObject;
-import org.torusresearch.fetchnodedetails.types.LegacyNetworkMigrationInfo;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.CommitmentRequestParams;
@@ -146,11 +145,6 @@ public class TorusUtils {
         // of that it's possible to have another BC implementation loaded in VM.
         Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
-
-    private boolean isLegacyNetwork() {
-        LegacyNetworkMigrationInfo legacyNetworkMigrationInfo = LEGACY_NETWORKS_ROUTE_MAP.getOrDefault(this.options.getNetwork().toString(), null);
-        return legacyNetworkMigrationInfo != null && !legacyNetworkMigrationInfo.getMigrationCompleted();
     }
 
     public static String getPostboxKey(TorusKey torusKey) {
