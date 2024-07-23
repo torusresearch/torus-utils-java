@@ -471,13 +471,15 @@ public class TorusUtils {
                                         sessionTokenData.add(null);
                                     } else {
                                         JsonRPCResponse jsonRPCResponse = gson.fromJson(shareResponses[index], JsonRPCResponse.class);
-                                        KeyAssignResult keyAssignResult = gson.fromJson(Utils.convertToJsonObject(jsonRPCResponse.getResult()), KeyAssignResult.class);
-                                        sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
-                                                        Utils.bytesToHex(sessionSigsResolved.get(index).get()),
-                                                        keyAssignResult.getNodePubx(),
-                                                        keyAssignResult.getNodePuby()
-                                                )
-                                        );
+                                        if (jsonRPCResponse.getResult() != null && !jsonRPCResponse.getResult().equals("")) {
+                                            KeyAssignResult keyAssignResult = gson.fromJson(Utils.convertToJsonObject(jsonRPCResponse.getResult()), KeyAssignResult.class);
+                                            sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
+                                                            Utils.bytesToHex(sessionSigsResolved.get(index).get()),
+                                                            keyAssignResult.getNodePubx(),
+                                                            keyAssignResult.getNodePuby()
+                                                    )
+                                            );
+                                        }
                                     }
                                 }
 
