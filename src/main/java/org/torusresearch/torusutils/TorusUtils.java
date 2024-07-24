@@ -268,14 +268,25 @@ public class TorusUtils {
                         String req;
                         List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
                         if (finalIsImportShareReq) {
+                            verifierParams.put("verifieridentifier", verifier);
+                            verifierParams.put("verifier_id", verifierParams.get("verifier_id").toString());
+                            verifierParams.put("extended_verifier_id", verifierParams.get("extended_verifier_id").toString());
+                            verifierParams.put("idtoken", idToken);
+                            verifierParams.put("nodesignatures", nodeSignatures);
                             verifierParams.put("pub_key_x", importedShares[i].getOauth_pub_key_x());
                             verifierParams.put("pub_key_y", importedShares[i].getOauth_pub_key_y());
+                            verifierParams.put("signing_pub_key_x", importedShares[i].getSigning_pub_key_x());
+                            verifierParams.put("signing_pub_key_y", importedShares[i].getSigning_pub_key_y());
                             verifierParams.put("encrypted_share", importedShares[i].getEncryptedShare());
                             verifierParams.put("encrypted_share_metadata", importedShares[i].getEncryptedShareMetadata());
                             verifierParams.put("node_index", importedShares[i].getNode_index());
                             verifierParams.put("key_type", importedShares[i].getKey_type());
                             verifierParams.put("nonce_data", importedShares[i].getNonce_data());
                             verifierParams.put("nonce_signature", importedShares[i].getNonce_signature());
+                            verifierParams.put("sub_verifier_ids", verifierParams.get("sub_verifier_ids"));
+                            verifierParams.put("session_token_exp_second", extraParams.get("session_token_exp_second"));
+                            verifierParams.put("verify_params", verifierParams.get("verify_params"));
+                            verifierParams.put("sss_endpoint", endpoints[i]);
                             shareRequestItems.add(verifierParams);
                             req = APIUtils.generateJsonRPCObject("ImportShare", new ShareRequestParams(shareRequestItems));
                         } else {
