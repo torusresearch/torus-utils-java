@@ -37,8 +37,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class KeyUtils {
     private static final ECDomainParameters curve;
@@ -231,16 +231,16 @@ public class KeyUtils {
         }
 
         Polynomial poly = Lagrange.generateRandomPolynomial(degree, new BigInteger(keyData.getOAuthKey(), 16), null);
-        HashMap<BigInteger, Share> shares = poly.generateShares(nodeIndexesBN.toArray(new BigInteger[0]));
+        Map<String, Share> shares = poly.generateShares(nodeIndexesBN.toArray(new BigInteger[0]));
 
         NonceMetadataParams nonceParams = KeyUtils.generateNonceMetadataParams("getOrSetNonce", new BigInteger(keyData.getSigningKey(), 16), new BigInteger(keyData.getNonce(), 16), serverTimeOffset);
 
         List<Ecies> encShares = new ArrayList<>();
         for (int i = 0; i < nodePubKeys.size(); i++) {
-            String indexHex = nodeIndexes.get(i).toString(16);
-            String indexHexPadded = Utils.addLeadingZerosForLength64(indexHex);
+            String indexHex = String.format("%064x", nodeIndexes.get(i));
+            //String indexHexPadded = Utils.addLeadingZerosForLength64(indexHex);
 
-            Share shareInfo = shares.get(indexHexPadded);
+            Share shareInfo = shares.get(indexHex);
 
             String iv = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));
             String nodePub = KeyUtils.getPublicKeyFromCoords(nodePubKeys.get(i).getX(), nodePubKeys.get(i).getY(), true);

@@ -1,6 +1,6 @@
 package org.torusresearch.torusutils.types;
 
-import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
+import static org.torusresearch.torusutils.helpers.KeyUtils.getOrderOfCurve;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -16,8 +16,8 @@ public class Polynomial {
         return polynomial.length;
     }
 
-    public BigInteger polyEval(String x) {
-        BigInteger tmpX = new BigInteger(x, 16);
+    /*public BigInteger polyEval(BigInteger x) {
+        BigInteger tmpX = x;
         BigInteger xi = new BigInteger(tmpX.toByteArray());
         BigInteger sum = BigInteger.ZERO.add(polynomial[0]);
         for (int i = 1; i < polynomial.length; i++) {
@@ -28,19 +28,32 @@ public class Polynomial {
             xi = xi.mod(secp256k1N);
         }
         return sum;
+    }*/
+
+    public BigInteger polyEval(BigInteger x) {
+        BigInteger tmpX = x;
+        BigInteger xi = new BigInteger(tmpX.toString());
+        BigInteger sum = BigInteger.ZERO;
+        BigInteger orderOfCurve = getOrderOfCurve();
+
+        sum = sum.add(polynomial[0]);
+        for (int i = 1; i < polynomial.length; i++) {
+            BigInteger tmp = xi.multiply(polynomial[i]);
+            sum = sum.add(tmp).mod(orderOfCurve);
+            xi = xi.multiply(tmpX).mod(orderOfCurve);
+        }
+
+        return sum;
     }
 
-    public HashMap<BigInteger, Share> generateShares(BigInteger[] shareIndexes) {
-        BigInteger[] newShareIndexes = new BigInteger[shareIndexes.length];
-        for (int i = 0; i < shareIndexes.length; i++) {
-            BigInteger index = shareIndexes[i];
-            newShareIndexes[i] = index;
+    public HashMap<String, Share> generateShares(BigInteger[] shareIndexes) {
+        HashMap<String, Share> shares = new HashMap<>();
+
+        for (BigInteger shareIndex : shareIndexes) {
+            String hexString = String.format("%064x", shareIndex);
+            shares.put(hexString, new Share(shareIndex, polyEval(shareIndex)));
         }
 
-        HashMap<BigInteger, Share> shares = new HashMap<>();
-        for (BigInteger shareIndex : newShareIndexes) {
-            shares.put(shareIndex, new Share(shareIndex, polyEval(shareIndex.toString(16))));
-        }
         return shares;
     }
 }

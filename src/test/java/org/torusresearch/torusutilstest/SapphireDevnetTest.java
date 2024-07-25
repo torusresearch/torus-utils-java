@@ -17,6 +17,7 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
+import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.GetOrSetNonceResult;
@@ -30,6 +31,7 @@ import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusKey;
 import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
 import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
@@ -374,5 +376,39 @@ public class SapphireDevnetTest {
             assert sessionTime > (customSessionTime - 30);
             assert customSessionTime <= sessionTime;
         }
+    }
+
+    @Test
+    public void testShouldBeAbleToImportKeyForANewUser() throws Exception {
+        String fakeEmail = JwtUtils.getRandomEmail();
+        String jwt = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
+        String privateKey = KeyUtils.generateSecret();
+
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, fakeEmail).get();
+        TorusKey val = torusUtils.importPrivateKey(
+                nodeDetails.getTorusNodeSSSEndpoints(),
+                nodeDetails.getTorusIndexes(),
+                nodeDetails.getTorusNodePub(),
+                TORUS_TEST_VERIFIER,
+                new HashMap<String, Object>() {{
+                    put("verifier_id", fakeEmail);
+                }},
+                jwt,
+                privateKey,
+                new TorusUtilsExtraParams()
+        ).get();
+
+        assertEquals(val.getFinalKeyData().getPrivKey(), privateKey);
+
+        jwt = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
+        TorusPublicKey addressRetrieval = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
+                new VerifierArgs(TORUS_TEST_VERIFIER, fakeEmail)).get();
+        String publicAddress = KeyUtils.generateAddressFromPrivKey(privateKey);
+        String retrievedAddress = KeyUtils.getPublicKeyFromCoords(
+                addressRetrieval.getFinalKeyData().getX(),
+                addressRetrieval.getFinalKeyData().getY(), true
+        );
+        assertEquals(publicAddress, retrievedAddress);
+
     }
 }

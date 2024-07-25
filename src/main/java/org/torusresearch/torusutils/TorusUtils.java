@@ -51,6 +51,7 @@ import org.torusresearch.torusutils.types.TorusCtorOptions;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusKey;
 import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
 import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.web3j.crypto.ECDSASignature;
@@ -257,9 +258,6 @@ public class TorusUtils {
                         Gson gson = new Gson();
                         nodeSignatures[l] = gson.fromJson(nodeSigs.get(l), NodeSignature.class);
                     }
-                    verifierParams.put("idtoken", idToken);
-                    verifierParams.put("nodesignatures", nodeSignatures);
-                    verifierParams.put("verifieridentifier", verifier);
                     if (extraParams != null) {
                         extraParams.put("session_token_exp_second", sessionTime);
                         verifierParams.putAll(extraParams);
@@ -270,7 +268,9 @@ public class TorusUtils {
                         if (finalIsImportShareReq) {
                             verifierParams.put("verifieridentifier", verifier);
                             verifierParams.put("verifier_id", verifierParams.get("verifier_id").toString());
-                            verifierParams.put("extended_verifier_id", verifierParams.get("extended_verifier_id").toString());
+                            if (verifierParams.get("extended_verifier_id") != null) {
+                                verifierParams.put("extended_verifier_id", verifierParams.get("extended_verifier_id").toString());
+                            }
                             verifierParams.put("idtoken", idToken);
                             verifierParams.put("nodesignatures", nodeSignatures);
                             verifierParams.put("pub_key_x", importedShares[i].getOauth_pub_key_x());
@@ -283,12 +283,18 @@ public class TorusUtils {
                             verifierParams.put("key_type", importedShares[i].getKey_type());
                             verifierParams.put("nonce_data", importedShares[i].getNonce_data());
                             verifierParams.put("nonce_signature", importedShares[i].getNonce_signature());
-                            verifierParams.put("sub_verifier_ids", verifierParams.get("sub_verifier_ids"));
-                            verifierParams.put("session_token_exp_second", extraParams.get("session_token_exp_second"));
-                            verifierParams.put("verify_params", verifierParams.get("verify_params"));
+                            if (verifierParams.get("sub_verifier_ids") != null) {
+                                verifierParams.put("sub_verifier_ids", verifierParams.get("sub_verifier_ids"));
+                            }
+                            if (extraParams != null) {
+                                verifierParams.put("session_token_exp_second", extraParams.get("session_token_exp_second"));
+                            }
+                            if (verifierParams.get("verify_params") != null) {
+                                verifierParams.put("verify_params", verifierParams.get("verify_params"));
+                            }
                             verifierParams.put("sss_endpoint", endpoints[i]);
                             shareRequestItems.add(verifierParams);
-                            req = APIUtils.generateJsonRPCObject("ImportShare", new ShareRequestParams(shareRequestItems));
+                            req = APIUtils.generateJsonRPCObject("ImportShares", new ShareRequestParams(shareRequestItems));
                         } else {
                             shareRequestItems.add(verifierParams);
                             req = APIUtils.generateJsonRPCObject(Utils.getJsonRPCObjectMethodName(networkMigrated), new ShareRequestParams(shareRequestItems));
@@ -934,5 +940,39 @@ public class TorusUtils {
         byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
         String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
         return new MetadataParams(derivedPubKeyX, derivedPubKeyY, setData, finalSig);
+    }
+
+
+    public CompletableFuture<TorusKey> importPrivateKey(
+            String[] endpoints,
+            BigInteger[] nodeIndexes,
+            TorusNodePub[] nodePubKeys,
+            String verifier,
+            HashMap<String, Object> verifierParams,
+            String idToken,
+            String newPrivateKey,
+            TorusUtilsExtraParams extraParams) throws Exception {
+
+        if (endpoints.length != nodeIndexes.length) {
+            CompletableFuture<TorusKey> future = new CompletableFuture<>();
+            future.completeExceptionally(new TorusUtilError("Length of endpoints must be the same as length of nodeIndexes"));
+            return future;
+        }
+
+        if (extraParams.getSessionTokenExpSecond() == null) {
+            extraParams.setSessionTokenExpSecond(sessionTime);
+        }
+
+        List<ImportedShare> shares = KeyUtils.generateShares(this.keyType, options.getServerTimeOffset(), List.of(nodeIndexes), List.of(nodePubKeys), newPrivateKey);
+
+        return this.retrieveShares(
+                endpoints,
+                nodeIndexes,
+                verifier,
+                verifierParams,
+                idToken,
+                nodePubKeys,
+                shares.toArray(new ImportedShare[0])
+        );
     }
 }
