@@ -262,17 +262,17 @@ public class TorusUtils {
                         extraParams.put("session_token_exp_second", sessionTime);
                         verifierParams.putAll(extraParams);
                     }
+                    verifierParams.put("idtoken", idToken);
+                    verifierParams.put("nodesignatures", nodeSignatures);
+                    verifierParams.put("verifieridentifier", verifier);
                     for (int i = 0; i < endpoints.length; i++) {
                         String req;
                         List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
                         if (finalIsImportShareReq) {
-                            verifierParams.put("verifieridentifier", verifier);
                             verifierParams.put("verifier_id", verifierParams.get("verifier_id").toString());
                             if (verifierParams.get("extended_verifier_id") != null) {
                                 verifierParams.put("extended_verifier_id", verifierParams.get("extended_verifier_id").toString());
                             }
-                            verifierParams.put("idtoken", idToken);
-                            verifierParams.put("nodesignatures", nodeSignatures);
                             verifierParams.put("pub_key_x", importedShares[i].getOauth_pub_key_x());
                             verifierParams.put("pub_key_y", importedShares[i].getOauth_pub_key_y());
                             verifierParams.put("signing_pub_key_x", importedShares[i].getSigning_pub_key_x());
