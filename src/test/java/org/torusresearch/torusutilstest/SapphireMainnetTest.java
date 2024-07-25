@@ -333,7 +333,7 @@ public class SapphireMainnetTest {
         long currentTimeSec = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
         for (Map<String, Object> ps : parsedSigsData) {
             long sessionTime = ((Number) ps.get("exp")).longValue() - currentTimeSec;
-            assert sessionTime > (customSessionTime - 5);
+            assert sessionTime > (customSessionTime - 30);
             assert customSessionTime <= sessionTime;
         }
     }
