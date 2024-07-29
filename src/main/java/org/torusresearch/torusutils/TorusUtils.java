@@ -265,7 +265,50 @@ public class TorusUtils {
                     verifierParams.put("idtoken", idToken);
                     verifierParams.put("nodesignatures", nodeSignatures);
                     verifierParams.put("verifieridentifier", verifier);
-                    for (int i = 0; i < endpoints.length; i++) {
+                    if (finalIsImportShareReq) {
+                        List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
+                        for (int i = 0; i < endpoints.length; i++) {
+                            HashMap<String, Object> _verifierParams = new HashMap<>(verifierParams);
+                            _verifierParams.putAll(verifierParams);
+                            _verifierParams.put("verifier_id", verifierParams.get("verifier_id").toString());
+                            if (verifierParams.get("extended_verifier_id") != null) {
+                                _verifierParams.put("extended_verifier_id", verifierParams.get("extended_verifier_id").toString());
+                            }
+                            _verifierParams.put("pub_key_x", importedShares[i].getOauth_pub_key_x());
+                            _verifierParams.put("pub_key_y", importedShares[i].getOauth_pub_key_y());
+                            _verifierParams.put("signing_pub_key_x", importedShares[i].getSigning_pub_key_x());
+                            _verifierParams.put("signing_pub_key_y", importedShares[i].getSigning_pub_key_y());
+                            _verifierParams.put("encrypted_share", importedShares[i].getEncryptedShare());
+                            _verifierParams.put("encrypted_share_metadata", importedShares[i].getEncryptedShareMetadata());
+                            _verifierParams.put("node_index", importedShares[i].getNode_index());
+                            _verifierParams.put("key_type", importedShares[i].getKey_type());
+                            _verifierParams.put("nonce_data", importedShares[i].getNonce_data());
+                            _verifierParams.put("nonce_signature", importedShares[i].getNonce_signature());
+                            if (verifierParams.get("sub_verifier_ids") != null) {
+                                _verifierParams.put("sub_verifier_ids", verifierParams.get("sub_verifier_ids"));
+                            }
+                            if (extraParams != null) {
+                                _verifierParams.put("session_token_exp_second", extraParams.get("session_token_exp_second"));
+                            } else {
+                                _verifierParams.put("session_token_exp_second", sessionTime);
+                            }
+                            if (verifierParams.get("verify_params") != null) {
+                                _verifierParams.put("verify_params", verifierParams.get("verify_params"));
+                            }
+                            _verifierParams.put("sss_endpoint", endpoints[i]);
+                            shareRequestItems.add(_verifierParams);
+                        }
+                        String req = APIUtils.generateJsonRPCObject("ImportShares", new ShareRequestParams(shareRequestItems));
+                        promiseArrRequests.add(APIUtils.post(endpoints[Utils.getProxyCoordinatorEndpointIndex(endpoints, verifier, verifierParams.get("verifier_id").toString())], req, true));
+                    } else {
+                        for (String endpoint : endpoints) {
+                            List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
+                            shareRequestItems.add(verifierParams);
+                            String req = APIUtils.generateJsonRPCObject(Utils.getJsonRPCObjectMethodName(networkMigrated), new ShareRequestParams(shareRequestItems));
+                            promiseArrRequests.add(APIUtils.post(endpoint, req, true));
+                        }
+                    }
+                    /*for (int i = 0; i < endpoints.length; i++) {
                         String req;
                         List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
                         if (finalIsImportShareReq) {
@@ -300,7 +343,7 @@ public class TorusUtils {
                             req = APIUtils.generateJsonRPCObject(Utils.getJsonRPCObjectMethodName(networkMigrated), new ShareRequestParams(shareRequestItems));
                         }
                         promiseArrRequests.add(APIUtils.post(endpoints[i], req, true));
-                    }
+                    }*/
                     return new Some<>(promiseArrRequests, (shareResponses, predicateResolved) -> {
                         try {
                             // check if threshold number of nodes have returned the same user public key
@@ -963,7 +1006,7 @@ public class TorusUtils {
             extraParams.setSessionTokenExpSecond(sessionTime);
         }
 
-        List<ImportedShare> shares = KeyUtils.generateShares(this.keyType, options.getServerTimeOffset(), List.of(nodeIndexes), List.of(nodePubKeys), newPrivateKey);
+        List<ImportedShare> shares = KeyUtils.generateShares(this.keyType, options.getServerTimeOffset(), Arrays.asList(nodeIndexes), Arrays.asList(nodePubKeys), newPrivateKey);
 
         return this.retrieveShares(
                 endpoints,

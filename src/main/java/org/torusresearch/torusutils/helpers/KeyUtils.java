@@ -3,7 +3,8 @@ package org.torusresearch.torusutils.helpers;
 import static org.torusresearch.torusutils.helpers.Utils.addLeading0sForLength64;
 import static org.torusresearch.torusutils.helpers.Utils.getRandomBytes;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.bouncycastle.asn1.x9.ECNamedCurveTable;
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -173,7 +174,7 @@ public class KeyUtils {
         );
     }
 
-    public static NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce, BigInteger serverTimeOffset) {
+    public static NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce, BigInteger serverTimeOffset) throws JsonProcessingException {
         long timeSeconds = System.currentTimeMillis() / 1000L;
         BigInteger timestamp = serverTimeOffset.add(BigInteger.valueOf(timeSeconds));
 
@@ -192,11 +193,13 @@ public class KeyUtils {
         }
 
         // Convert SetNonceData object to JSON string
-        Gson gson = new Gson();
-        String setDataString = gson.toJson(setNonceData);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String encodedData = objectMapper.writeValueAsString(setNonceData);
+        /*Gson gson = new Gson();
+        String setDataString = gson.toJson(setNonceData);*/
 
         // Hash the JSON string using keccak256 (SHA-3)
-        byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
+        byte[] hashedData = Hash.sha3(encodedData.getBytes(StandardCharsets.UTF_8));
 
         // Sign the hashed data using ECDSA with the private key
         ECDSASignature signature = ecKeyPair.sign(hashedData);
@@ -213,7 +216,8 @@ public class KeyUtils {
         String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
 
         // Return a new NonceMetadataParams object with the derived values
-        return new NonceMetadataParams(derivedPubKeyX, derivedPubKeyY, setNonceData, setDataString, finalSig);
+        return new NonceMetadataParams(derivedPubKeyX, derivedPubKeyY, setNonceData,
+                Base64.encodeBytes(encodedData.getBytes(StandardCharsets.UTF_8)), finalSig);
     }
 
     public static List<ImportedShare> generateShares(KeyType keyType, BigInteger serverTimeOffset, List<BigInteger> nodeIndexes, List<TorusNodePub> nodePubKeys, String privateKey) throws Exception {

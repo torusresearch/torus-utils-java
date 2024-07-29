@@ -536,14 +536,6 @@ public class Utils {
         return new ECParameterSpec(spec.getCurve(), spec.getG(), spec.getN(), spec.getH(), spec.getSeed());
     }
 
-    public static int getProxyCoordinatorEndpointIndex(String[] endpoints, String verifier, String verifierId) {
-        String verifierIdStr = verifier + verifierId;
-        byte[] hashedVerifierId = keccak256(verifierIdStr.getBytes(StandardCharsets.UTF_8));
-        BigInteger hashedBigInt = new BigInteger(1, hashedVerifierId);
-        BigInteger modResult = hashedBigInt.mod(BigInteger.valueOf(endpoints.length));
-        return modResult.intValue();
-    }
-
     private static byte[] keccak256(byte[] input) {
         Keccak.Digest256 digest = new Keccak.Digest256();
         return digest.digest(input);
@@ -614,6 +606,13 @@ public class Utils {
             hex.append(String.format("%02X", b));
         }
         return hex.toString().toLowerCase(Locale.ROOT);
+    }
+
+    public static int getProxyCoordinatorEndpointIndex(String[] endpoints, String verifier, String verifierId) {
+        String verifierIdString = verifier + verifierId;
+        String hashedVerifierId = Hash.sha3(verifierIdString).replace("0x", "");
+        BigInteger proxyEndPointNum = new BigInteger(hashedVerifierId, 16).mod(BigInteger.valueOf(endpoints.length));
+        return proxyEndPointNum.intValue();
     }
 
 }

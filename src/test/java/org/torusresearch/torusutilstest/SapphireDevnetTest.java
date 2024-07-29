@@ -381,7 +381,7 @@ public class SapphireDevnetTest {
     @Test
     public void testShouldBeAbleToImportKeyForANewUser() throws Exception {
         String fakeEmail = JwtUtils.getRandomEmail();
-        String jwt = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
+        String jwt = JwtUtils.generateIdToken(fakeEmail, algorithmRs);
         String privateKey = KeyUtils.generateSecret();
 
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, fakeEmail).get();
@@ -401,6 +401,17 @@ public class SapphireDevnetTest {
         assertEquals(val.getFinalKeyData().getPrivKey(), privateKey);
 
         jwt = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
+        TorusKey shareRetrieval = torusUtils.retrieveShares(
+                nodeDetails.getTorusNodeSSSEndpoints(),
+                nodeDetails.getTorusIndexes(),
+                TORUS_TEST_VERIFIER,
+                new HashMap<String, Object>() {{
+                    put("verifier_id", fakeEmail);
+                }},
+                jwt,
+                nodeDetails.getTorusNodePub()
+        ).get();
+        assertEquals(shareRetrieval.getFinalKeyData().getPrivKey(), privateKey);
         TorusPublicKey addressRetrieval = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
                 new VerifierArgs(TORUS_TEST_VERIFIER, fakeEmail)).get();
         String publicAddress = KeyUtils.generateAddressFromPrivKey(privateKey);
