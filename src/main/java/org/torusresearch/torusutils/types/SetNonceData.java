@@ -2,10 +2,11 @@ package org.torusresearch.torusutils.types;
 
 public class SetNonceData {
 
-    private String operation;
     private String data;
 
-    private String seed;
+    private String operation;
+
+    private String seed = "";
     private String timestamp;
 
     public SetNonceData(String operation, String timestamp) {
@@ -14,8 +15,8 @@ public class SetNonceData {
     }
 
     public SetNonceData(String operation, String data, String seed, String timestamp) {
-        this.operation = operation;
         this.data = data;
+        this.operation = operation;
         this.seed = seed;
         this.timestamp = timestamp;
     }

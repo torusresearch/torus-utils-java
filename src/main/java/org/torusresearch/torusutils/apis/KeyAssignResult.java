@@ -47,4 +47,8 @@ public class KeyAssignResult {
     public String getServerTimeOffset() {
         return server_time_offset;
     }
+
+    public void setServerTimeOffset(String server_time_offset) {
+        this.server_time_offset = server_time_offset;
+    }
 }

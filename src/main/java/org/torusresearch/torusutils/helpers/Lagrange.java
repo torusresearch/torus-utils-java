@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.helpers;
 
+import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
+
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
 import org.torusresearch.torusutils.types.Share;
@@ -104,61 +106,28 @@ public class Lagrange {
         return lagrange(points);
     }
 
-    public static String lagrangeInterpolation(String[] shares, int[] nodeIndex) throws TorusUtilError {
-        List<BigInteger> sharesList = new ArrayList<>();
-        for (String share : shares) {
-            sharesList.add(new BigInteger(Utils.padLeft(share, '0', 64), 16));
+    public static BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
+        if (shares.length != nodeIndex.length) {
+            return null;
         }
-
-        List<BigInteger> indexList = new ArrayList<>();
-        for (int index : nodeIndex) {
-            indexList.add(BigInteger.valueOf(index));
-        }
-
-        if (sharesList.size() != indexList.size()) {
-            throw new TorusUtilError("sharesList not equal to indexList length in lagrangeInterpolation");
-        }
-
-        BigInteger secret = BigInteger.ZERO;
-        int sharesDecrypt = 0;
-
-        for (int i = 0; i < sharesList.size(); i++) {
-            BigInteger upper = BigInteger.ONE;
-            BigInteger lower = BigInteger.ONE;
-
-            for (int j = 0; j < sharesList.size(); j++) {
+        BigInteger secret = new BigInteger("0");
+        for (int i = 0; i < shares.length; i++) {
+            BigInteger upper = new BigInteger("1");
+            BigInteger lower = new BigInteger("1");
+            for (int j = 0; j < shares.length; j++) {
                 if (i != j) {
-                    BigInteger negatedJ = indexList.get(j).multiply(BigInteger.valueOf(-1));
-                    upper = upper.multiply(negatedJ).mod(KeyUtils.getOrderOfCurve());
-
-                    BigInteger temp = indexList.get(i).subtract(indexList.get(j)).mod(KeyUtils.getOrderOfCurve());
-                    lower = lower.multiply(temp).mod(KeyUtils.getOrderOfCurve());
+                    upper = upper.multiply(nodeIndex[j].negate());
+                    upper = upper.mod(secp256k1N);
+                    BigInteger temp = nodeIndex[i].subtract(nodeIndex[j]);
+                    temp = temp.mod(secp256k1N);
+                    lower = lower.multiply(temp).mod(secp256k1N);
                 }
             }
-
-            BigInteger inv;
-            try {
-                inv = lower.modInverse(KeyUtils.getOrderOfCurve());
-            } catch (ArithmeticException e) {
-                throw new TorusUtilError("Inverse calculation failed: " + e.getMessage());
-            }
-
-            BigInteger delta = upper.multiply(inv).mod(KeyUtils.getOrderOfCurve());
-            delta = delta.multiply(sharesList.get(i)).mod(KeyUtils.getOrderOfCurve());
-            secret = secret.add(delta).mod(KeyUtils.getOrderOfCurve());
-            sharesDecrypt++;
+            BigInteger delta = upper.multiply(lower.modInverse(secp256k1N)).mod(secp256k1N);
+            delta = delta.multiply(shares[i]).mod(secp256k1N);
+            secret = secret.add(delta);
         }
-
-        if (secret.equals(BigInteger.ZERO)) {
-            throw new TorusUtilError("Interpolation failed: secret is zero");
-        }
-
-        String secretString = Utils.stripLeadingZeros(secret.toString(16));
-        if (sharesDecrypt == sharesList.size()) {
-            return Utils.padLeft(secretString, '0', 64);
-        } else {
-            throw new TorusUtilError("Interpolation failed: shares not fully decrypted");
-        }
+        return secret.mod(secp256k1N);
     }
 
     public static Polynomial generateRandomPolynomial(int degree, BigInteger secret, List<Share> deterministicShares) throws Exception {

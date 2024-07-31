@@ -4,7 +4,7 @@ import static org.torusresearch.torusutils.helpers.Utils.addLeading0sForLength64
 import static org.torusresearch.torusutils.helpers.Utils.getRandomBytes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import org.bouncycastle.asn1.x9.ECNamedCurveTable;
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -193,10 +193,10 @@ public class KeyUtils {
         }
 
         // Convert SetNonceData object to JSON string
-        ObjectMapper objectMapper = new ObjectMapper();
-        String encodedData = objectMapper.writeValueAsString(setNonceData);
-        /*Gson gson = new Gson();
-        String setDataString = gson.toJson(setNonceData);*/
+        /*ObjectMapper objectMapper = new ObjectMapper();
+        String encodedData = objectMapper.writeValueAsString(setNonceData);*/
+        Gson gson = new Gson();
+        String encodedData = gson.toJson(setNonceData);
 
         // Hash the JSON string using keccak256 (SHA-3)
         byte[] hashedData = Hash.sha3(encodedData.getBytes(StandardCharsets.UTF_8));
@@ -243,13 +243,14 @@ public class KeyUtils {
         for (int i = 0; i < nodePubKeys.size(); i++) {
             String indexHex = String.format("%064x", nodeIndexes.get(i));
             //String indexHexPadded = Utils.addLeadingZerosForLength64(indexHex);
+            //BigInt and converted to
 
             Share shareInfo = shares.get(indexHex);
 
             String iv = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));
             String nodePub = KeyUtils.getPublicKeyFromCoords(nodePubKeys.get(i).getX(), nodePubKeys.get(i).getY(), true);
             AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, nodePub, iv);
-            String encryptedMsg = aes256cbc.encrypt(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64).getBytes(StandardCharsets.UTF_8));
+            String encryptedMsg = aes256cbc.encryptAndHex(AES256CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
             String mac = aes256cbc.getMacKey();
             Ecies encrypted = new Ecies(iv, nodePub, encryptedMsg, mac);
             encShares.add(encrypted);
