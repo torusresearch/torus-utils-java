@@ -166,7 +166,7 @@ public class AquaTest {
                 nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
                     put("verifier_id", TORUS_TEST_EMAIL);
                 }},
-                JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), nodeDetails.getTorusNodePub()).get();
+                JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
         System.out.println(torusKey.getFinalKeyData().getPrivKey());
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"));
@@ -199,7 +199,7 @@ public class AquaTest {
                     put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
                     put("verifier_id", TORUS_TEST_EMAIL);
                 }},
-                hashedIdToken, nodeDetails.getTorusNodePub()).get();
+                hashedIdToken).get();
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", torusKey.getoAuthKeyData().walletAddress);
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(

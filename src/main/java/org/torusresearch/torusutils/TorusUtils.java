@@ -11,7 +11,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.json.JSONObject;
-import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.CommitmentRequestParams;
 import org.torusresearch.torusutils.apis.Ecies;
@@ -155,29 +154,9 @@ public class TorusUtils {
     }
 
     public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams,
-                                                      String idToken, TorusNodePub[] nodePubkeys, HashMap<String, Object> extraParams, String networkMigrated,
-                                                      boolean useDkg, @Nullable ImportedShare[] importedShares) {
+                                                      String idToken, HashMap<String, Object> extraParams, String networkMigrated,
+                                                      @Nullable ImportedShare[] importedShares) {
         try {
-            if (nodePubkeys.length == 0) {
-                throw new IllegalArgumentException("nodePubkeys param is required");
-            }
-
-            if (nodePubkeys.length != indexes.length) {
-                throw new IllegalArgumentException("nodePubkeys length must be same as indexes length");
-            }
-
-            if (nodePubkeys.length != endpoints.length) {
-                throw new IllegalArgumentException("nodePubkeys length must be same as endpoints length");
-            }
-
-            // dkg is used by default only for secp256k1 keys,
-            // for ed25519 keys import keys flows is the default
-            boolean shouldUseDkg = useDkg;
-            shouldUseDkg = this.keyType != KeyType.ed25519;
-
-            if (!shouldUseDkg && (nodePubkeys.length == 0)) {
-                throw new IllegalArgumentException("nodePubkeys param is required");
-            }
 
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifierid", verifierParams.get("verifier_id").toString()), new Header("network", networkMigrated),
                     new Header("clientid", this.options.getClientId()), new Header("enablegating", "true")}, true).get();
@@ -657,12 +636,12 @@ public class TorusUtils {
         }
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, TorusNodePub[] nodePubkeys, @Nullable ImportedShare[] importedShares) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, nodePubkeys, null, getMigratedNetworkInfo(), false, importedShares);
+    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, @Nullable ImportedShare[] importedShares) {
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), importedShares);
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, TorusNodePub[] nodePubkeys) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, nodePubkeys, null, getMigratedNetworkInfo(), false, new ImportedShare[]{});
+    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), new ImportedShare[]{});
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
