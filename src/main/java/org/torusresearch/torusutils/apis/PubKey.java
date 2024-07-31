@@ -3,10 +3,14 @@ package org.torusresearch.torusutils.apis;
 public class PubKey {
     private final String X;
     private final String Y;
+    private final String SignerX;
+    private final String SignerY;
 
-    public PubKey(String _X, String _Y) {
-        X = _X;
-        Y = _Y;
+    public PubKey(String X, String Y, String SignerX, String SignerY) {
+        this.X = X;
+        this.Y = Y;
+        this.SignerX = SignerX;
+        this.SignerY = SignerY;
     }
 
     public String getX() {
@@ -15,5 +19,13 @@ public class PubKey {
 
     public String getY() {
         return Y;
+    }
+
+    public String getSignerX() {
+        return SignerX;
+    }
+
+    public String getSignerY() {
+        return SignerY;
     }
 }
