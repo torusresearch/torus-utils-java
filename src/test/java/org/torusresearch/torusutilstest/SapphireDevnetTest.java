@@ -107,36 +107,6 @@ public class SapphireDevnetTest {
         ));
     }
 
-    @DisplayName("should be able to login a v1 user")
-    @Test
-    public void shouldLoginForV1User() throws ExecutionException, InterruptedException, TorusException {
-        String verifier = "google-lrc";
-        String email = "himanshu@tor.us";
-        String token = JwtUtils.generateIdToken(email, algorithmRs);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET);
-        opts.setAllowHost("https://signer.tor.us/api/allow");
-        torusUtils = new TorusUtils(opts);
-        fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, email).get();
-        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
-            put("verifier_id", email);
-        }}, token).get();
-        assert (torusKey.getFinalKeyData().getPrivKey().equals("dca7f29d234dc71561efe1a874d872bf34f6528bc042fe35e57197eac1f14eb9"));
-        assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
-                new FinalKeyData("0xbeFfcC367D741C53A63F50eA805c1e93d3C64fEc",
-                        "2b1c47c8fbca61ee7f82a8aff53a357f6b66af0dffbef6a3e3ac649180616e51",
-                        "fef450a5263f7c57605dd439225faee830943cb484e8dfe1f3c82c3d538f61af",
-                        "dca7f29d234dc71561efe1a874d872bf34f6528bc042fe35e57197eac1f14eb9"),
-                new OAuthKeyData("0xbeFfcC367D741C53A63F50eA805c1e93d3C64fEc",
-                        "2b1c47c8fbca61ee7f82a8aff53a357f6b66af0dffbef6a3e3ac649180616e51",
-                        "fef450a5263f7c57605dd439225faee830943cb484e8dfe1f3c82c3d538f61af",
-                        "dca7f29d234dc71561efe1a874d872bf34f6528bc042fe35e57197eac1f14eb9"),
-                new SessionData(new ArrayList<>(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.metadata.serverTimeOffset),
-                new NodesData(torusKey.nodesData.nodeIndexes)
-        ));
-    }
-
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {

@@ -65,6 +65,18 @@ public class AES256CBC {
         }
     }
 
+    public String encryptAndHex(byte[] src) throws TorusException {
+        Cipher cipher;
+        try {
+            cipher = Cipher.getInstance(TRANSFORMATION);
+            cipher.init(Cipher.ENCRYPT_MODE, makeKey(), makeIv());
+            return Utils.convertByteToHexadecimal(cipher.doFinal(src));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new TorusException("Torus Internal Error", e);
+        }
+    }
+
     public byte[] decrypt(String src) throws TorusException {
         Cipher cipher;
         try {
@@ -75,8 +87,20 @@ public class AES256CBC {
             e.printStackTrace();
             throw new TorusException("Torus Internal Error", e);
         }
-
     }
+
+    public byte[] decryptHex(String src) throws TorusException {
+        Cipher cipher;
+        try {
+            cipher = Cipher.getInstance(TRANSFORMATION);
+            cipher.init(Cipher.DECRYPT_MODE, makeKey(), makeIv());
+            return cipher.doFinal(toByteArray(src));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new TorusException("Torus Internal Error", e);
+        }
+    }
+
 
     private BigInteger ecdh(String privateKeyHex, String ephemPublicKeyHex) {
         String affineX = ephemPublicKeyHex.substring(2, 66);
