@@ -234,7 +234,7 @@ public class TorusUtils {
                         Gson gson = new Gson();
                         nodeSignatures[l] = gson.fromJson(nodeSigs.get(l), NodeSignature.class);
                     }
-                    ShareRequestItem shareRequestItem = new ShareRequestItem();
+                    ShareRequestItem shareRequestItem = new ShareRequestItem();  // TODO: Fix this, move the creation of the object into the loop, when adding the object to the ArrayList like this it is NOT doing a deep copy into a new object.
                     shareRequestItem.setIdtoken(idToken);
                     shareRequestItem.setNodesignatures(nodeSignatures);
                     shareRequestItem.setVerifieridentifier(verifier);
