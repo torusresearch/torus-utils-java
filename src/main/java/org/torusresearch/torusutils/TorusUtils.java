@@ -452,7 +452,8 @@ public class TorusUtils {
                                                     //BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(base64)));
 
                                                     String decryptedHex = Utils.convertByteToHexadecimal(Base64.decode(base64));
-                                                    byte[] decrypted = aes256cbc.decrypt(decryptedHex);
+                                                    byte[] decrypted = aes256cbc.decryptHex(decryptedHex);
+
                                                     shares.add(Utils.convertByteToHexadecimal(decrypted));
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
