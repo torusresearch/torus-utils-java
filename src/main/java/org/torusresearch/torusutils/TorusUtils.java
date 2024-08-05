@@ -159,7 +159,7 @@ public class TorusUtils {
             String tokenCommitment = Hash.sha3String(idToken);
 
             int minRequiredCommitmments = (endpoints.length * 3 / 4) + 1;
-            int threshold = (endpoints.length * 2) + 1;
+            int threshold = (endpoints.length / 2) + 1;
 
             boolean isImportShareReq = false;
             if (importedShares != null && importedShares.length > 0) {
