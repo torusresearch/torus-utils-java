@@ -242,9 +242,6 @@ public class KeyUtils {
         List<Ecies> encShares = new ArrayList<>();
         for (int i = 0; i < nodePubKeys.size(); i++) {
             String indexHex = String.format("%064x", nodeIndexes.get(i));
-            //String indexHexPadded = Utils.addLeadingZerosForLength64(indexHex);
-            //BigInt and converted to
-
             Share shareInfo = shares.get(indexHex);
 
             String iv = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));

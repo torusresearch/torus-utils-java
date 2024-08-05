@@ -21,6 +21,7 @@ public class Ecies {
         this.ephemPublicKey = ephemPublicKey;
         this.mac = mac;
         this.ciphertext = ciphertext;
+        this.mode = "AES256";
     }
 
     public String getIv() {

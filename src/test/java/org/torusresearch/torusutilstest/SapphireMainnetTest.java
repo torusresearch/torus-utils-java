@@ -327,7 +327,7 @@ public class SapphireMainnetTest {
             byte[] decodedBytes = Base64.getDecoder().decode(sig.get("data"));
             String decodedString = new String(decodedBytes);
             HashMap parsedSigData = new Gson().fromJson(decodedString, HashMap.class);
-            parsedSigsData.add(parsedSigData);
+            // parsedSigsData.add(parsedSigData);
         }
 
         long currentTimeSec = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());

@@ -138,27 +138,28 @@ public class TorusUtils {
 
     public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams,
                                                       String idToken, HashMap<String, Object> extraParams, String networkMigrated,
-                                                      @Nullable ImportedShare[] importedShares) {
+                                                      @Nullable ImportedShare[] importedShares) { // TODO: Rename to retrieveOrImportShare
         try {
 
-            if (endpoints.length != indexes.length) {
+            if (endpoints.length != indexes.length) { // TODO: Fix params for this function, indexes are no longer needed here, other params are missing.
                 throw new IllegalArgumentException("Length of endpoints must be the same as length of nodeIndexes");
             }
 
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifierid", verifierParams.get("verifier_id").toString()), new Header("network", networkMigrated),
-                    new Header("clientid", this.options.getClientId()), new Header("enablegating", "true")}, true).get();
+                    new Header("clientid", this.options.getClientId()), new Header("enablegating", "true")}, true).get(); // TODO: Check these headers
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             Set<SessionToken> sessionTokenData = new HashSet<>();
             Set<BigInteger> nodeIndexs = new HashSet<>();
             // generate temporary private and public key that is used to secure receive shares
-            ECKeyPair sessionAuthKey = Keys.createEcKeyPair();
-            String pubKey = Utils.padLeft(sessionAuthKey.getPublicKey().toString(16), '0', 128);
+            ECKeyPair sessionAuthKey = Keys.createEcKeyPair(); // TODO: Change this to indicate it is a secp256k1 key
+            String pubKey = Utils.padLeft(sessionAuthKey.getPublicKey().toString(16), '0', 128); // TODO: Refactor this to common class, avoid padding manually, this also helps with indicating where padding should not be used.
             String pubKeyX = pubKey.substring(0, pubKey.length() / 2);
             String pubKeyY = pubKey.substring(pubKey.length() / 2);
 
             String tokenCommitment = Hash.sha3String(idToken);
-            int t = endpoints.length / 4;
-            int k = t * 2 + 1;
+
+            int minRequiredCommitmments = (endpoints.length * 3 / 4) + 1;
+            int threshold = (endpoints.length * 2) + 1;
 
             boolean isImportShareReq = false;
             if (importedShares != null && importedShares.length > 0) {
@@ -173,33 +174,37 @@ public class TorusUtils {
                 CompletableFuture<String> p = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.substring(2), pubKeyX, pubKeyY, String.valueOf(System.currentTimeMillis()), verifier)), false);
                 promiseArr.add(i, p);
             }
-            // send share request once k + t number of commitment requests have completed
+
+            // send share request once minRequiredCommitmments number of commitment requests have completed
             boolean finalIsImportShareReq = isImportShareReq;
             return new Some<>(promiseArr, (resultArr, commitmentsResolved) -> {
                 List<String> completedRequests = new ArrayList<>();
-                for (String result : resultArr) {
-                    if (result != null && !result.isEmpty()) {
-                        completedRequests.add(result);
+                int received = 0;
+                for (CompletableFuture<String> result : promiseArr) {
+                    try {
+                        if (result.get() != null && !result.get().isEmpty()) {
+                            received += 1;
+                            completedRequests.add(result.get());
+                            if (!finalIsImportShareReq) {
+                                if (received >= minRequiredCommitmments) {
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        // ignore ex
                     }
                 }
+
+                // Return List<String> instead
                 CompletableFuture<List<String>> completableFuture = new CompletableFuture<>();
-                if (importedShares != null &&  importedShares.length > 0 && completedRequests.size() == endpoints.length) {
-                    completableFuture.complete(Arrays.asList(resultArr));
-                } else if (importedShares != null &&  importedShares.length == 0 && completedRequests.size() >= k + t) {
-                    Gson gson = new Gson();
-                    // we don't consider commitment to succeed unless node 1 responds
-                    boolean requiredNodeResultFound = completedRequests.stream().anyMatch(x -> {
-                        if (x == null || x.isEmpty()) return false;
-                        JsonRPCResponse nodeSigResponse = gson.fromJson(x, JsonRPCResponse.class);
-                        if (nodeSigResponse == null || nodeSigResponse.getResult() == null) return false;
-                        NodeSignature nodeSignature = gson.fromJson(Utils.convertToJsonObject(nodeSigResponse.getResult()), NodeSignature.class);
-                        return nodeSignature != null && nodeSignature.getNodeindex().equals("1");
-                    });
-                    if (requiredNodeResultFound) completableFuture.complete(completedRequests);
-                    else completableFuture.completeExceptionally(new PredicateFailedException("commitment from node 1 not found"));
-                } else {
+                if (!finalIsImportShareReq  && completedRequests.size() < minRequiredCommitmments) {
+                    completableFuture.completeExceptionally(new PredicateFailedException("insufficient responses for commitments"));
+                } else if (finalIsImportShareReq && completedRequests.size() < Arrays.stream(endpoints).count()) {
                     completableFuture.completeExceptionally(new PredicateFailedException("insufficient responses for commitments"));
                 }
+
+                completableFuture.complete(Arrays.asList(resultArr));
                 return completableFuture;
             }).getCompletableFuture().thenComposeAsync(responses -> {
                 try {
@@ -318,7 +323,7 @@ public class TorusUtils {
                                     }
                                 }
 
-                                String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
+                                String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, threshold);
                                 PubKey thresholdPubKey = null;
 
                                 if (thresholdPublicKeyString == null) {
@@ -464,7 +469,7 @@ public class TorusUtils {
                                         .filter(Objects::nonNull)
                                         .collect(Collectors.toList());
 
-                                if (validSigs.size() < k) {
+                                if (validSigs.size() < threshold) {
                                     throw new RuntimeException("Insufficient number of signatures from nodes");
                                 }
 
@@ -472,7 +477,7 @@ public class TorusUtils {
                                         .filter(Objects::nonNull)
                                         .collect(Collectors.toList());
 
-                                if (validTokens.size() < k) {
+                                if (validTokens.size() < threshold) {
                                     throw new RuntimeException("Insufficient number of tokens from nodes");
                                 }
 
@@ -503,7 +508,7 @@ public class TorusUtils {
                                     elements.add(i);
                                 }
 
-                                List<List<Integer>> allCombis = Utils.kCombinations(elements, k);
+                                List<List<Integer>> allCombis = Utils.kCombinations(elements, threshold);
 
                                 for (List<Integer> currentCombi : allCombis) {
                                     Map<Integer, String> currentCombiShares = decryptedShares.entrySet().stream()
@@ -557,7 +562,7 @@ public class TorusUtils {
                                         }
                                     }
                                 }
-                                String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, k);
+                                String thresholdPublicKeyString = Utils.thresholdSame(completedResponsesPubKeys, threshold);
                                 PubKey thresholdPubKey = null;
 
                                 if (thresholdPublicKeyString == null) {
@@ -582,7 +587,7 @@ public class TorusUtils {
                                 } else {
                                     responsesSize = completedResponses.size();
                                 }
-                                if (responsesSize >= k && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.get("extended_verifier_id") != null ||
+                                if (responsesSize >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.get("extended_verifier_id") != null ||
                                         LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated))) {
                                     List<DecryptedShare> decryptedShares = new ArrayList<>();
                                     List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
@@ -827,7 +832,7 @@ public class TorusUtils {
                                         }
                                     }
 
-                                    List<List<Integer>> allCombis = Utils.kCombinations(decryptedShares.size(), k);
+                                    List<List<Integer>> allCombis = Utils.kCombinations(decryptedShares.size(), threshold);
                                     for (List<Integer> currentCombi : allCombis) {
                                         List<BigInteger> currentCombiSharesIndexes = new ArrayList<>();
                                         List<BigInteger> currentCombiSharesValues = new ArrayList<>();
@@ -983,11 +988,11 @@ public class TorusUtils {
     }
 
     public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, @Nullable ImportedShare[] importedShares) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), importedShares);
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), importedShares); // TODO: extraParams should be passed here and not ignored
     }
 
     public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), new ImportedShare[]{});
+        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), new ImportedShare[]{}); // TODO: extraParams should be passed here and not ignored
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
@@ -1267,10 +1272,11 @@ public class TorusUtils {
             BigInteger[] nodeIndexes,
             TorusNodePub[] nodePubKeys,
             String verifier,
-            HashMap<String, Object> verifierParams,
+            HashMap<String, Object> verifierParams, // TODO: This must be strongly typed to VerifierParams
             String idToken,
             String newPrivateKey,
-            TorusUtilsExtraParams extraParams) throws Exception {
+            TorusUtilsExtraParams extraParams // TODO: This must have a default value
+    ) throws Exception {
 
         if (endpoints.length != nodeIndexes.length) {
             CompletableFuture<TorusKey> future = new CompletableFuture<>();
