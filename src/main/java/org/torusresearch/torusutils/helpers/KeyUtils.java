@@ -258,7 +258,9 @@ public class KeyUtils {
             // mac = hex:encode(mac_key_bytes)
             // mode = "AES256"
 
-            // omit ciphertext when submitting to node.
+            // for node submission
+            // ciphertext is submitted as encrypted_share
+            // omit ciphertext for encrypted_metadata.
 
             AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, nodePub, iv);
             String encryptedMsg = aes256cbc.encryptAndHex(AES256CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
