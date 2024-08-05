@@ -1,3 +1,6 @@
+// TODO: There are too many decrypt calls in this, only 3 are needed across the codebase
+//  Likewise there is only one call to decrypt
+
 package org.torusresearch.torusutils;
 
 import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;

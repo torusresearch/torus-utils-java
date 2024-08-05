@@ -46,7 +46,7 @@ public class Polynomial {
         return sum;
     }
 
-    public HashMap<String, Share> generateShares(BigInteger[] shareIndexes) {
+    public HashMap<String, Share> generateShares(BigInteger[] shareIndexes) { // TODO: Check these indexes are correct, i.e ordering starts at 0, not 1
         HashMap<String, Share> shares = new HashMap<>();
 
         for (BigInteger shareIndex : shareIndexes) {

@@ -16,7 +16,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 // TODO: Clean this up to match swift implementation, encrypt(), decrypt(), decryptNodeData(), will be much easier to debug.
 public class AES256CBC {
-    private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
+    private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding"; // TODO: Might need PKCS7 instead
     private final byte[] AES_ENCRYPTION_KEY;
     private final byte[] ENCRYPTION_IV;
 
