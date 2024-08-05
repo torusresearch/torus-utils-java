@@ -27,12 +27,8 @@ public class KeyAssignment {
     public KeyAssignment() {
     }
 
-    public PubKey getPublicKey(String network) {
-        if (Utils.isSapphireNetwork(network)) {
-            return public_key;
-        } else {
-            return PublicKey;
-        }
+    public PubKey getPublicKey() {
+        return public_key;
     }
 
     public String getThreshold() {
@@ -43,12 +39,8 @@ public class KeyAssignment {
         return verifiers;
     }
 
-    public String getShare(String network) {
-        if (Utils.isSapphireNetwork(network)) {
-            return share;
-        } else {
-            return Share;
-        }
+    public String getShare() {
+        return share;
     }
 
     public Ecies getShareMetadata() {
@@ -75,10 +67,6 @@ public class KeyAssignment {
         return nonce_data;
     }
 
-
-    public PubKey getPublicKey() {
-        return PublicKey;
-    }
 
     public Integer getLegacyThreshold() {
         return Threshold;

@@ -16,6 +16,7 @@ import org.torusresearch.fetchnodedetails.FetchNodeDetails;
 import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
+import org.torusresearch.torusutils.apis.VerifyParams;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.Metadata;
@@ -29,9 +30,9 @@ import org.torusresearch.torusutils.types.TorusKey;
 import org.torusresearch.torusutils.types.TorusPublicKey;
 import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
+import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
-import org.torusresearch.torusutilstest.utils.VerifyParams;
 import org.web3j.crypto.Hash;
 
 import java.io.IOException;
@@ -42,8 +43,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 public class AquaTest {
@@ -162,11 +161,11 @@ public class AquaTest {
     @Test
     public void shouldLogin() throws ExecutionException, InterruptedException {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
+        VerifierParams verifierParams = new VerifierParams();
+        verifierParams.setVerifierId(TORUS_TEST_EMAIL);
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(),
-                nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, new HashMap<String, Object>() {{
-                    put("verifier_id", TORUS_TEST_EMAIL);
-                }},
-                JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs)).get();
+                nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER, verifierParams,
+                JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null).get();
         System.out.println(torusKey.getFinalKeyData().getPrivKey());
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"));
@@ -179,7 +178,7 @@ public class AquaTest {
                         "c7bcc239f0957bb05bda94757eb4a5f648339424b22435da5cf7a0f2b2323664",
                         "63795690a33e575ee12d832935d563c2b5f2e1b1ffac63c32a4674152f68cb3f",
                         "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"),
-                new SessionData(new ArrayList<>(), torusKey.sessionData.sessionAuthKey),
+                new SessionData(torusKey.sessionData.sessionTokenData, torusKey.sessionData.sessionAuthKey),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.nodesData.nodeIndexes)
         ));
@@ -190,16 +189,14 @@ public class AquaTest {
     public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
+        VerifierParams verifierParams = new VerifierParams();
+        verifierParams.setVerifierId(TORUS_TEST_EMAIL);
+        verifierParams.setSubVerifierIds(new String[]{TORUS_TEST_VERIFIER});
+        verifierParams.setVerifyParams(new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(),
-                nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, new HashMap<String, Object>() {{
-                    put("verify_params", new VerifyParams[]{
-                            new VerifyParams(idToken, TORUS_TEST_EMAIL)
-                    });
-                    put("sub_verifier_ids", new String[]{TORUS_TEST_VERIFIER});
-                    put("verifier_id", TORUS_TEST_EMAIL);
-                }},
-                hashedIdToken).get();
+                nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER, verifierParams,
+                hashedIdToken, null).get();
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", torusKey.getoAuthKeyData().walletAddress);
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
@@ -211,7 +208,7 @@ public class AquaTest {
                         "37a4ac8cbef68e88bcec5909d9b6fffb539187365bb723f3d7bffe56ae80e31d",
                         "f963f2d08ed4dd0da9b8a8d74c6fdaeef7bdcde31f84fcce19fa2173d40b2c10",
                         "488d39ac548e15cfb0eaf161d86496e1645b09437df21311e24a56c4efd76355"),
-                new SessionData(new ArrayList<>(), torusKey.sessionData.sessionAuthKey),
+                new SessionData(torusKey.sessionData.sessionTokenData, torusKey.sessionData.sessionAuthKey),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.nodesData.nodeIndexes)
         ));

@@ -22,6 +22,7 @@ import org.torusresearch.torusutils.apis.KeyAssignResult;
 import org.torusresearch.torusutils.apis.KeyAssignment;
 import org.torusresearch.torusutils.apis.NodeSignature;
 import org.torusresearch.torusutils.apis.PubKey;
+import org.torusresearch.torusutils.apis.ShareRequestItem;
 import org.torusresearch.torusutils.apis.ShareRequestParams;
 import org.torusresearch.torusutils.apis.VerifierLookupItem;
 import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
@@ -57,6 +58,7 @@ import org.torusresearch.torusutils.types.TorusPublicKey;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
 import org.torusresearch.torusutils.types.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
+import org.torusresearch.torusutils.types.VerifierParams;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
@@ -136,16 +138,16 @@ public class TorusUtils {
         return torusKey.oAuthKeyData.privKey;
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams,
-                                                      String idToken, HashMap<String, Object> extraParams, String networkMigrated,
-                                                      @Nullable ImportedShare[] importedShares) { // TODO: Rename to retrieveOrImportShare
+    public CompletableFuture<TorusKey> retrieveOrImportShare(String[] endpoints, BigInteger[] indexes, String verifier, VerifierParams verifierParams,
+                                                             String idToken, TorusUtilsExtraParams extraParams, String network,
+                                                             @Nullable ImportedShare[] importedShares) { // TODO: Rename to retrieveOrImportShare: Done
         try {
 
             if (endpoints.length != indexes.length) { // TODO: Fix params for this function, indexes are no longer needed here, other params are missing.
                 throw new IllegalArgumentException("Length of endpoints must be the same as length of nodeIndexes");
             }
 
-            APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifierid", verifierParams.get("verifier_id").toString()), new Header("network", networkMigrated),
+            APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifierid", verifierParams.getVerifierId()), new Header("network", network),
                     new Header("clientid", this.options.getClientId()), new Header("enablegating", "true")}, true).get(); // TODO: Check these headers
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             Set<SessionToken> sessionTokenData = new HashSet<>();
@@ -159,7 +161,8 @@ public class TorusUtils {
             String tokenCommitment = Hash.sha3String(idToken);
 
             int minRequiredCommitmments = (endpoints.length * 3 / 4) + 1;
-            int threshold = (endpoints.length * 2) + 1;
+            int threshold = (endpoints.length / 2) + 1;
+            ;
 
             boolean isImportShareReq = false;
             if (importedShares != null && importedShares.length > 0) {
@@ -228,53 +231,48 @@ public class TorusUtils {
                         Gson gson = new Gson();
                         nodeSignatures[l] = gson.fromJson(nodeSigs.get(l), NodeSignature.class);
                     }
+                    ShareRequestItem shareRequestItem = new ShareRequestItem();
+                    shareRequestItem.setIdtoken(idToken);
+                    shareRequestItem.setNodesignatures(nodeSignatures);
+                    shareRequestItem.setVerifieridentifier(verifier);
+                    shareRequestItem.setVerifier_id(verifierParams.getVerifierId());
                     if (extraParams != null) {
-                        extraParams.put("session_token_exp_second", sessionTime);
-                        verifierParams.putAll(extraParams);
+                        shareRequestItem.setSession_token_exp_second(extraParams.getSessionTokenExpSecond());
+                    } else {
+                        shareRequestItem.setSession_token_exp_second(sessionTime);
                     }
-                    verifierParams.put("idtoken", idToken);
-                    verifierParams.put("nodesignatures", nodeSignatures);
-                    verifierParams.put("verifieridentifier", verifier);
+                    if (verifierParams.getVerifyParams() != null) {
+                        shareRequestItem.setVerify_params(verifierParams.getVerifyParams());
+                    }
+                    if (verifierParams.getSubVerifierIds() != null) {
+                        shareRequestItem.setSub_verifier_ids(verifierParams.getSubVerifierIds());
+                    }
                     if (finalIsImportShareReq) {
-                        List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
+                        List<ShareRequestItem> shareRequestItems = new ArrayList<>();
                         for (int i = 0; i < endpoints.length; i++) {
-                            HashMap<String, Object> _verifierParams = new HashMap<>(verifierParams);
-                            _verifierParams.putAll(verifierParams);
-                            _verifierParams.put("verifier_id", verifierParams.get("verifier_id").toString());
-                            if (verifierParams.get("extended_verifier_id") != null) {
-                                _verifierParams.put("extended_verifier_id", verifierParams.get("extended_verifier_id").toString());
+                            if (verifierParams.getExtendedVerifierId() != null) {
+                                shareRequestItem.setExtended_verifier_id(verifierParams.getExtendedVerifierId());
                             }
-                            _verifierParams.put("pub_key_x", importedShares[i].getOauth_pub_key_x());
-                            _verifierParams.put("pub_key_y", importedShares[i].getOauth_pub_key_y());
-                            _verifierParams.put("signing_pub_key_x", importedShares[i].getSigning_pub_key_x());
-                            _verifierParams.put("signing_pub_key_y", importedShares[i].getSigning_pub_key_y());
-                            _verifierParams.put("encrypted_share", importedShares[i].getEncryptedShare());
-                            _verifierParams.put("encrypted_share_metadata", importedShares[i].getEncryptedShareMetadata());
-                            _verifierParams.put("node_index", importedShares[i].getNode_index());
-                            _verifierParams.put("key_type", importedShares[i].getKey_type());
-                            _verifierParams.put("nonce_data", importedShares[i].getNonce_data());
-                            _verifierParams.put("nonce_signature", importedShares[i].getNonce_signature());
-                            if (verifierParams.get("sub_verifier_ids") != null) {
-                                _verifierParams.put("sub_verifier_ids", verifierParams.get("sub_verifier_ids"));
-                            }
-                            if (extraParams != null) {
-                                _verifierParams.put("session_token_exp_second", extraParams.get("session_token_exp_second"));
-                            } else {
-                                _verifierParams.put("session_token_exp_second", sessionTime);
-                            }
-                            if (verifierParams.get("verify_params") != null) {
-                                _verifierParams.put("verify_params", verifierParams.get("verify_params"));
-                            }
-                            _verifierParams.put("sss_endpoint", endpoints[i]);
-                            shareRequestItems.add(_verifierParams);
+                            shareRequestItem.setPub_key_x(importedShares[i].getOauth_pub_key_x());
+                            shareRequestItem.setPub_key_y(importedShares[i].getOauth_pub_key_y());
+                            shareRequestItem.setSigning_pub_key_x(importedShares[i].getSigning_pub_key_x());
+                            shareRequestItem.setSigning_pub_key_y(importedShares[i].getSigning_pub_key_y());
+                            shareRequestItem.setEncrypted_share(importedShares[i].getEncryptedShare());
+                            shareRequestItem.setEncrypted_share_metadata(importedShares[i].getEncryptedShareMetadata());
+                            shareRequestItem.setNode_index(importedShares[i].getNode_index());
+                            shareRequestItem.setKey_type(importedShares[i].getKey_type());
+                            shareRequestItem.setNonce_data(importedShares[i].getNonce_data());
+                            shareRequestItem.setNonce_signature(importedShares[i].getNonce_signature());
+                            shareRequestItem.setSss_endpoint(endpoints[i]);
+                            shareRequestItems.add(shareRequestItem);
                         }
-                        String req = APIUtils.generateJsonRPCObject("ImportShares", new ShareRequestParams(shareRequestItems));
-                        promiseArrRequests.add(APIUtils.post(endpoints[Utils.getProxyCoordinatorEndpointIndex(endpoints, verifier, verifierParams.get("verifier_id").toString())], req, true));
+                        String req = APIUtils.generateJsonRPCObject("ImportShares", new ShareRequestParams(shareRequestItems.toArray(new ShareRequestItem[0])));
+                        promiseArrRequests.add(APIUtils.post(endpoints[Utils.getProxyCoordinatorEndpointIndex(endpoints, verifier, verifierParams.getVerifierId())], req, true));
                     } else {
                         for (String endpoint : endpoints) {
-                            List<HashMap<String, Object>> shareRequestItems = new ArrayList<>();
-                            shareRequestItems.add(verifierParams);
-                            String req = APIUtils.generateJsonRPCObject(Utils.getJsonRPCObjectMethodName(networkMigrated), new ShareRequestParams(shareRequestItems));
+                            List<ShareRequestItem> shareRequestItems = new ArrayList<>();
+                            shareRequestItems.add(shareRequestItem);
+                            String req = APIUtils.generateJsonRPCObject("GetShareOrKeyAssign", new ShareRequestParams(shareRequestItems.toArray(new ShareRequestItem[0])));
                             promiseArrRequests.add(APIUtils.post(endpoint, req, true));
                         }
                     }
@@ -313,8 +311,8 @@ public class TorusUtils {
                                             return null;
                                         }
                                         KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
-                                        completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey(networkMigrated)));
-                                        if (Utils.isSapphireNetwork(networkMigrated)) {
+                                        completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey()));
+                                        if (Utils.isSapphireNetwork(network)) {
                                             GetOrSetNonceResult.PubNonce pubNonce = keyAssignResultFirstKey.getNonceData().getPubNonce();
                                             if (pubNonce != null && pubNonce.getX() != null) {
                                                 thresholdNonceData = keyAssignResult.getKeys()[0].getNonceData();
@@ -331,11 +329,11 @@ public class TorusUtils {
                                 }
                                 // If both thresholdNonceData and extended_verifier_id are not available,
                                 // then we need to throw an error; otherwise, the address would be incorrect.
-                                if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") == null &&
-                                        !LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
+                                if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null &&
+                                        !LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
                                     throw new RuntimeException(String.format(
                                             "Invalid metadata result from nodes, nonce metadata is empty for verifier: %s and verifierId: %s",
-                                            verifier, verifierParams.get("verifier_id"))
+                                            verifier, verifierParams.getVerifierId())
                                     );
                                 }
 
@@ -346,7 +344,7 @@ public class TorusUtils {
                                 responsesSize = shareResponseSize;
 
                                 for (KeyAssignResult item : keyAssignResults) {
-                                    if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") == null) {
+                                    if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null) {
                                         KeyAssignment keyAssignment = item.getKeys()[0];
                                         String currentPubKeyX = Utils.addLeading0sForLength64(keyAssignment.getPublicKey().getX()).toLowerCase();
                                         String thresholdPubKeyX = Utils.addLeading0sForLength64(thresholdPubKey.getX()).toLowerCase();
@@ -374,7 +372,7 @@ public class TorusUtils {
 
                                 BigInteger serverTimeOffsetResponse = (this.options.getServerTimeOffset() != null) ? this.options.getServerTimeOffset() : calculateMedian(serverOffsetTimes);
 
-                                if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") == null && !LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
+                                if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null && !LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
                                     GetOrSetNonceResult metadataNonce = this.getNonce(privateKey, serverTimeOffsetResponse).get();
                                     thresholdNonceData = metadataNonce;
                                 }
@@ -441,12 +439,12 @@ public class TorusUtils {
                                             if (firstKey.getNodeIndex() != null) {
                                                 nodeIndexs.add(new BigInteger(firstKey.getNodeIndex()));
                                             }
-                                            if (firstKey.getMetadata(networkMigrated) != null) {
+                                            if (firstKey.getShareMetadata() != null) {
                                                 try {
-                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getMetadata(networkMigrated).getEphemPublicKey(), firstKey.getMetadata(networkMigrated).getIv());
+                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
                                                     // Implementation specific oddity - hex string actually gets passed as a base64 string
 
-                                                    String base64 = firstKey.getShare(networkMigrated);
+                                                    String base64 = firstKey.getShare();
                                                     //String hexUTF8 = new String(Base64.decode(base64), StandardCharsets.UTF_8);
                                                     //byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
                                                     //BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(base64)));
@@ -537,26 +535,14 @@ public class TorusUtils {
                                 return response;
                             } else {
                                 // check if threshold number of nodes have returned the same user public key
-                                for (String shareResponse : shareResponses) {
-                                    if (shareResponse != null && !shareResponse.equals("")) {
-                                        try {
-                                            JsonRPCResponse shareResponseJson = gson.fromJson(shareResponse, JsonRPCResponse.class);
-                                            if (shareResponseJson != null && shareResponseJson.getResult() != null) {
-                                                completedResponses.add(Utils.convertToJsonObject(shareResponseJson.getResult()));
-                                            }
-                                        } catch (JsonSyntaxException e) {
-                                            // discard this, we don't care
-                                        }
-                                    }
-                                }
                                 for (String x : completedResponses) {
                                     KeyAssignResult keyAssignResult = gson.fromJson(x, KeyAssignResult.class);
                                     if (keyAssignResult == null || keyAssignResult.getKeys() == null || keyAssignResult.getKeys().length == 0) {
                                         return null;
                                     }
                                     KeyAssignment keyAssignResultFirstKey = keyAssignResult.getKeys()[0];
-                                    completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey(networkMigrated)));
-                                    if (Utils.isSapphireNetwork(networkMigrated)) {
+                                    completedResponsesPubKeys.add(Utils.convertToJsonObject(keyAssignResultFirstKey.getPublicKey()));
+                                    if (Utils.isSapphireNetwork(network)) {
                                         GetOrSetNonceResult.PubNonce pubNonce = keyAssignResultFirstKey.getNonceData().getPubNonce();
                                         if (pubNonce != null && pubNonce.getX() != null) {
                                             thresholdNonceData = keyAssignResult.getKeys()[0].getNonceData();
@@ -571,11 +557,11 @@ public class TorusUtils {
                                 }
                                 // If both thresholdNonceData and extended_verifier_id are not available,
                                 // then we need to throw an error; otherwise, the address would be incorrect.
-                                if (thresholdNonceData == null && verifierParams.get("extended_verifier_id") == null &&
-                                        !LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
+                                if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null &&
+                                        !LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
                                     throw new RuntimeException(String.format(
                                             "Invalid metadata result from nodes, nonce metadata is empty for verifier: %s and verifierId: %s",
-                                            verifier, verifierParams.get("verifier_id"))
+                                            verifier, verifierParams.getVerifierId())
                                     );
                                 }
 
@@ -588,8 +574,8 @@ public class TorusUtils {
                                 } else {
                                     responsesSize = completedResponses.size();
                                 }
-                                if (responsesSize >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.get("extended_verifier_id") != null ||
-                                        LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated))) {
+                                if (responsesSize >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.getExtendedVerifierId() != null ||
+                                        LEGACY_NETWORKS_ROUTE_MAP.containsKey(network))) {
                                     List<DecryptedShare> decryptedShares = new ArrayList<>();
                                     List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
                                     List<CompletableFuture<byte[]>> sessionTokenSigPromises = new ArrayList<>();
@@ -651,11 +637,11 @@ public class TorusUtils {
                                                     if (firstKey.getNodeIndex() != null) {
                                                         nodeIndexs.add(new BigInteger(firstKey.getNodeIndex()));
                                                     }
-                                                    if (firstKey.getMetadata(networkMigrated) != null) {
+                                                    if (firstKey.getShareMetadata() != null) {
                                                         try {
-                                                            AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getMetadata(networkMigrated).getEphemPublicKey(), firstKey.getMetadata(networkMigrated).getIv());
+                                                            AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
                                                             // Implementation specific oddity - hex string actually gets passed as a base64 string
-                                                            String hexUTF8AsBase64 = firstKey.getShare(networkMigrated);
+                                                            String hexUTF8AsBase64 = firstKey.getShare();
                                                             String hexUTF8 = new String(Base64.decode(hexUTF8AsBase64), StandardCharsets.UTF_8);
                                                             byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
                                                             BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes)));
@@ -732,11 +718,11 @@ public class TorusUtils {
                                                             if (firstKey.getNodeIndex() != null) {
                                                                 nodeIndexs.add(new BigInteger(firstKey.getNodeIndex()));
                                                             }
-                                                            if (firstKey.getMetadata(networkMigrated) != null) {
+                                                            if (firstKey.getShareMetadata() != null) {
                                                                 try {
-                                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getMetadata(networkMigrated).getEphemPublicKey(), firstKey.getMetadata(networkMigrated).getIv());
+                                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
                                                                     // Implementation specific oddity - hex string actually gets passed as a base64 string
-                                                                    String hexUTF8AsBase64 = firstKey.getShare(networkMigrated);
+                                                                    String hexUTF8AsBase64 = firstKey.getShare();
                                                                     String hexUTF8 = new String(Base64.decode(hexUTF8AsBase64), StandardCharsets.UTF_8);
                                                                     byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
                                                                     BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes)));
@@ -776,7 +762,7 @@ public class TorusUtils {
                                     }
 
                                     int minThresholdRequired = (int) Math.floor(endpoints.length / 2) + 1;
-                                    if (verifierParams.get("extended_verifier_id") != null && validSigs.size() < minThresholdRequired) {
+                                    if (verifierParams.getExtendedVerifierId() != null && validSigs.size() < minThresholdRequired) {
                                         throw new Error("Insufficient number of signatures from nodes, required: " + minThresholdRequired + ", found: " + validSigs.size());
                                     }
 
@@ -787,7 +773,7 @@ public class TorusUtils {
                                         }
                                     }
 
-                                    if (verifierParams.get("extended_verifier_id") != null && validTokens.size() < minThresholdRequired) {
+                                    if (verifierParams.getExtendedVerifierId() != null && validTokens.size() < minThresholdRequired) {
                                         throw new Error("Insufficient number of session tokens from nodes, required: " + minThresholdRequired + ", found: " + validTokens.size());
                                     }
 
@@ -805,14 +791,16 @@ public class TorusUtils {
                                                 );
                                             } else {
                                                 JsonRPCResponse jsonRPCResponse = gson.fromJson(shareResponses[index], JsonRPCResponse.class);
-                                                if (jsonRPCResponse.getResult() != null && !jsonRPCResponse.getResult().equals("")) {
+                                                if (jsonRPCResponse != null && jsonRPCResponse.getResult() != null && !jsonRPCResponse.getResult().equals("")) {
                                                     KeyAssignResult keyAssignResult = gson.fromJson(Utils.convertToJsonObject(jsonRPCResponse.getResult()), KeyAssignResult.class);
-                                                    sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
-                                                                    Utils.bytesToHex(sessionSigsResolved.get(index).get()),
-                                                                    keyAssignResult.getNodePubx(),
-                                                                    keyAssignResult.getNodePuby()
-                                                            )
-                                                    );
+                                                    if (keyAssignResult != null) {
+                                                        sessionTokenData.add(new SessionToken(Base64.encodeBytes(sessionTokensResolved.get(index).get()),
+                                                                        Utils.bytesToHex(sessionSigsResolved.get(index).get()),
+                                                                        keyAssignResult.getNodePubx(),
+                                                                        keyAssignResult.getNodePuby()
+                                                                )
+                                                        );
+                                                    }
                                                 }
                                             }
                                         }
@@ -906,11 +894,11 @@ public class TorusUtils {
                     ECPoint finalPubKey = null;
                     GetOrSetNonceResult.PubNonce pubNonce = null;
                     TypeOfUser typeOfUser;
-                    if (verifierParams.get("extended_verifier_id") != null && !verifierParams.get("extended_verifier_id").equals("")) {
+                    if (verifierParams.getExtendedVerifierId() != null && !verifierParams.getExtendedVerifierId().equals("")) {
                         typeOfUser = TypeOfUser.v2;
                         // for tss key no need to add pub nonce
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
-                    } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(networkMigrated)) {
+                    } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
                         if (this.options.isEnableOneKey()) {
                             nonceResult = this.getNonce(privateKey, serverTimeOffsetResponse).get();
                             pubNonce = nonceResult.getPubNonce();
@@ -988,12 +976,12 @@ public class TorusUtils {
         }
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken, @Nullable ImportedShare[] importedShares) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), importedShares); // TODO: extraParams should be passed here and not ignored
+    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, VerifierParams verifierParams, String idToken, @Nullable ImportedShare[] importedShares, TorusUtilsExtraParams extraParams) {
+        return this.retrieveOrImportShare(endpoints, indexes, verifier, verifierParams, idToken, extraParams, this.options.getNetwork().toString(), importedShares); // TODO: extraParams should be passed here and not ignored
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, HashMap<String, Object> verifierParams, String idToken) {
-        return this.retrieveShares(endpoints, indexes, verifier, verifierParams, idToken, null, getMigratedNetworkInfo(), new ImportedShare[]{}); // TODO: extraParams should be passed here and not ignored
+    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, VerifierParams verifierParams, String idToken, TorusUtilsExtraParams extraParams) {
+        return this.retrieveOrImportShare(endpoints, indexes, verifier, verifierParams, idToken, extraParams, this.options.getNetwork().toString(), new ImportedShare[]{}); // TODO: extraParams should be passed here and not ignored
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
@@ -1273,7 +1261,7 @@ public class TorusUtils {
             BigInteger[] nodeIndexes,
             TorusNodePub[] nodePubKeys,
             String verifier,
-            HashMap<String, Object> verifierParams, // TODO: This must be strongly typed to VerifierParams
+            VerifierParams verifierParams, // TODO: This must be strongly typed to VerifierParams
             String idToken,
             String newPrivateKey,
             TorusUtilsExtraParams extraParams // TODO: This must have a default value
@@ -1297,7 +1285,6 @@ public class TorusUtils {
                 verifier,
                 verifierParams,
                 idToken,
-                shares.toArray(new ImportedShare[0])
-        );
+                shares.toArray(new ImportedShare[0]), extraParams);
     }
 }
