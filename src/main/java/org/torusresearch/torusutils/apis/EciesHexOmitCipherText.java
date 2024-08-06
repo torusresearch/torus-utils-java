@@ -13,6 +13,13 @@ public class EciesHexOmitCipherText {
         this.mode = mode;
     }
 
+    public EciesHexOmitCipherText(String iv, String ephemPublicKey, String mac) {
+        this.iv = iv;
+        this.ephemPublicKey = ephemPublicKey;
+        this.mac = mac;
+        this.mode = "AES256";
+    }
+
     public String getIv() {
         return iv;
     }

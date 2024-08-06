@@ -32,10 +32,13 @@ import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
+import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,15 +76,21 @@ public class KeyUtils {
         return hash;
     }
 
-    public static String randomNonce() {
+    public static String randomNonce() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         return generateSecret();
     }
 
-    public static String generateSecret() {
+    /*public static String generateSecret() {
         SecureRandom random = new SecureRandom();
         byte[] secret = new byte[32];
         random.nextBytes(secret);
         return Hex.toHexString(secret);
+    }*/
+
+    public static String generateSecret() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        ECKeyPair keyPair = Keys.createEcKeyPair();
+        String privateKeyHex = Numeric.toHexStringNoPrefixZeroPadded(keyPair.getPrivateKey(), 64);
+        return privateKeyHex;
     }
 
     public static BigInteger getOrderOfCurve() {
@@ -244,7 +253,7 @@ public class KeyUtils {
             String indexHex = String.format("%064x", nodeIndexes.get(i));
             Share shareInfo = shares.get(indexHex);
 
-            String iv = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));
+            //String iv = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));
             String nodePub = KeyUtils.getPublicKeyFromCoords(nodePubKeys.get(i).getX(), nodePubKeys.get(i).getY(), true);
             // TODO: Fix this, the privateKey here is a ephemeral private key per iteration and not the imported key.
             // This ephemeral key is randomly generated, then ecdh is done with the public key, then hashed with sha512 to get:
@@ -262,10 +271,11 @@ public class KeyUtils {
             // ciphertext is submitted as encrypted_share
             // omit ciphertext for encrypted_metadata.
 
-            AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, nodePub, iv);
-            String encryptedMsg = aes256cbc.encryptAndHex(AES256CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
-            String mac = aes256cbc.getMacKey();
-            Ecies encrypted = new Ecies(iv, nodePub, encryptedMsg, mac);
+            //AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, nodePub, iv);
+            String encryptedMsg = AES_256_CBC.encryptAndHex(nodePub, AES_256_CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
+            //String encryptedMsg = aes256cbc.encryptAndHex(AES256CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
+            String mac = AES_256_CBC.macKey;
+            Ecies encrypted = new Ecies(AES_256_CBC.ivKey, nodePub, encryptedMsg, mac);
             encShares.add(encrypted);
         }
 

@@ -37,7 +37,7 @@ public class Polynomial {
         BigInteger orderOfCurve = getOrderOfCurve();
 
         sum = sum.add(polynomial[0]);
-        for (int i = 1; i < polynomial.length; i++) {
+        for (int i = 0; i < polynomial.length; i++) {
             BigInteger tmp = xi.multiply(polynomial[i]);
             sum = sum.add(tmp).mod(orderOfCurve);
             xi = xi.multiply(tmpX).mod(orderOfCurve);
@@ -49,7 +49,8 @@ public class Polynomial {
     public HashMap<String, Share> generateShares(BigInteger[] shareIndexes) { // TODO: Check these indexes are correct, i.e ordering starts at 0, not 1
         HashMap<String, Share> shares = new HashMap<>();
 
-        for (BigInteger shareIndex : shareIndexes) {
+        for (int i = 0; i < shareIndexes.length; i++) {
+            BigInteger shareIndex = shareIndexes[i];
             String hexString = String.format("%064x", shareIndex);
             shares.put(hexString, new Share(shareIndex, polyEval(shareIndex)));
         }

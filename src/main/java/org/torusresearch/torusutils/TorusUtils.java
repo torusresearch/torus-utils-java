@@ -19,7 +19,7 @@ import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.CommitmentRequestParams;
-import org.torusresearch.torusutils.apis.Ecies;
+import org.torusresearch.torusutils.apis.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.KeyAssignResult;
 import org.torusresearch.torusutils.apis.KeyAssignment;
@@ -30,6 +30,7 @@ import org.torusresearch.torusutils.apis.ShareRequestParams;
 import org.torusresearch.torusutils.apis.VerifierLookupItem;
 import org.torusresearch.torusutils.apis.VerifierLookupRequestResult;
 import org.torusresearch.torusutils.helpers.AES256CBC;
+import org.torusresearch.torusutils.helpers.AES_256_CBC;
 import org.torusresearch.torusutils.helpers.Base64;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.Lagrange;
@@ -210,7 +211,7 @@ public class TorusUtils {
                     completableFuture.completeExceptionally(new PredicateFailedException("insufficient responses for commitments"));
                 }
 
-                completableFuture.complete(Arrays.asList(resultArr));
+                completableFuture.complete(completedRequests);
                 return completableFuture;
             }).getCompletableFuture().thenComposeAsync(responses -> {
                 try {
@@ -234,25 +235,25 @@ public class TorusUtils {
                         Gson gson = new Gson();
                         nodeSignatures[l] = gson.fromJson(nodeSigs.get(l), NodeSignature.class);
                     }
-                    ShareRequestItem shareRequestItem = new ShareRequestItem();  // TODO: Fix this, move the creation of the object into the loop, when adding the object to the ArrayList like this it is NOT doing a deep copy into a new object.
-                    shareRequestItem.setIdtoken(idToken);
-                    shareRequestItem.setNodesignatures(nodeSignatures);
-                    shareRequestItem.setVerifieridentifier(verifier);
-                    shareRequestItem.setVerifier_id(verifierParams.getVerifierId());
-                    if (extraParams != null) {
-                        shareRequestItem.setSession_token_exp_second(extraParams.getSessionTokenExpSecond());
-                    } else {
-                        shareRequestItem.setSession_token_exp_second(sessionTime);
-                    }
-                    if (verifierParams.getVerifyParams() != null) {
-                        shareRequestItem.setVerify_params(verifierParams.getVerifyParams());
-                    }
-                    if (verifierParams.getSubVerifierIds() != null) {
-                        shareRequestItem.setSub_verifier_ids(verifierParams.getSubVerifierIds());
-                    }
                     if (finalIsImportShareReq) {
                         List<ShareRequestItem> shareRequestItems = new ArrayList<>();
                         for (int i = 0; i < endpoints.length; i++) {
+                            ShareRequestItem shareRequestItem = new ShareRequestItem();
+                            shareRequestItem.setIdtoken(idToken);
+                            shareRequestItem.setNodesignatures(nodeSignatures);
+                            shareRequestItem.setVerifieridentifier(verifier);
+                            shareRequestItem.setVerifier_id(verifierParams.getVerifierId());
+                            if (extraParams != null) {
+                                shareRequestItem.setSession_token_exp_second(extraParams.getSessionTokenExpSecond());
+                            } else {
+                                shareRequestItem.setSession_token_exp_second(sessionTime);
+                            }
+                            if (verifierParams.getVerifyParams() != null) {
+                                shareRequestItem.setVerify_params(verifierParams.getVerifyParams());
+                            }
+                            if (verifierParams.getSubVerifierIds() != null) {
+                                shareRequestItem.setSub_verifier_ids(verifierParams.getSubVerifierIds());
+                            }
                             if (verifierParams.getExtendedVerifierId() != null) {
                                 shareRequestItem.setExtended_verifier_id(verifierParams.getExtendedVerifierId());
                             }
@@ -273,6 +274,22 @@ public class TorusUtils {
                         promiseArrRequests.add(APIUtils.post(endpoints[Utils.getProxyCoordinatorEndpointIndex(endpoints, verifier, verifierParams.getVerifierId())], req, true));
                     } else {
                         for (String endpoint : endpoints) {
+                            ShareRequestItem shareRequestItem = new ShareRequestItem();
+                            shareRequestItem.setIdtoken(idToken);
+                            shareRequestItem.setNodesignatures(nodeSignatures);
+                            shareRequestItem.setVerifieridentifier(verifier);
+                            shareRequestItem.setVerifier_id(verifierParams.getVerifierId());
+                            if (extraParams != null) {
+                                shareRequestItem.setSession_token_exp_second(extraParams.getSessionTokenExpSecond());
+                            } else {
+                                shareRequestItem.setSession_token_exp_second(sessionTime);
+                            }
+                            if (verifierParams.getVerifyParams() != null) {
+                                shareRequestItem.setVerify_params(verifierParams.getVerifyParams());
+                            }
+                            if (verifierParams.getSubVerifierIds() != null) {
+                                shareRequestItem.setSub_verifier_ids(verifierParams.getSubVerifierIds());
+                            }
                             List<ShareRequestItem> shareRequestItems = new ArrayList<>();
                             shareRequestItems.add(shareRequestItem);
                             String req = APIUtils.generateJsonRPCObject("GetShareOrKeyAssign", new ShareRequestParams(shareRequestItems.toArray(new ShareRequestItem[0])));
@@ -343,8 +360,6 @@ public class TorusUtils {
                                 if (!thresholdPublicKeyString.isEmpty()) {
                                     thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
                                 }
-                                Integer responsesSize;
-                                responsesSize = shareResponseSize;
 
                                 for (KeyAssignResult item : keyAssignResults) {
                                     if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null) {
@@ -399,13 +414,15 @@ public class TorusUtils {
 
                                         if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
                                             // Decrypt sessionSig if enc metadata is sent
-                                            Ecies[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
+                                            EciesHexOmitCipherText[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
                                             if (sessionTokenSigMetaData != null && sessionTokenSigMetaData[0] != null && sessionTokenSigMetaData[0].getEphemPublicKey() != null) {
                                                 try {
-                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenSigMetaData[0].getEphemPublicKey(),
+                                                    /*AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenSigMetaData[0].getEphemPublicKey(),
                                                             sessionTokenSigMetaData[0].getIv());
                                                     byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokenSigs()[0], 16));
-                                                    sessionTokenSigs.add(Utils.convertByteToHexadecimal(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
+                                                    sessionTokenSigs.add(Utils.convertByteToHexadecimal(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));*/
+                                                    byte[] decrypted = AES_256_CBC.decryptNodeData(sessionTokenSigMetaData[0], currentShareResponse.getSessionTokenSigs()[0], sessionAuthKey.getPrivateKey().toString(16));
+                                                    sessionTokenSigs.add(Utils.convertByteToHexadecimal(decrypted));
                                                 } catch (Exception ex) {
                                                     System.out.println("session token sig decryption" + ex);
                                                     return null;
@@ -419,13 +436,15 @@ public class TorusUtils {
 
                                         if (currentShareResponse.getSessionTokens() != null && currentShareResponse.getSessionTokens().length > 0) {
                                             // Decrypt sessionToken if enc metadata is sent
-                                            Ecies[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
+                                            EciesHexOmitCipherText[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
                                             if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
                                                     currentShareResponse.getSessionTokenMetadata()[0].getEphemPublicKey() != null) {
                                                 try {
-                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenMetaData[0].getEphemPublicKey(), sessionTokenMetaData[0].getIv());
+                                                    /*AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenMetaData[0].getEphemPublicKey(), sessionTokenMetaData[0].getIv());
                                                     byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokens()[0], 16));
-                                                    sessionTokens.add(Utils.convertByteToHexadecimal(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
+                                                    sessionTokens.add(Utils.convertByteToHexadecimal(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));*/
+                                                    byte[] decrypted = AES_256_CBC.decryptNodeData(sessionTokenMetaData[0], currentShareResponse.getSessionTokens()[0], sessionAuthKey.getPrivateKey().toString(16));
+                                                    sessionTokens.add(Utils.convertByteToHexadecimal(decrypted));
                                                 } catch (Exception ex) {
                                                     System.out.println("share decryption" + ex);
                                                     return null;
@@ -447,15 +466,21 @@ public class TorusUtils {
                                                     AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
                                                     // Implementation specific oddity - hex string actually gets passed as a base64 string
 
-                                                    String base64 = firstKey.getShare();
+                                                    //String base64 = firstKey.getShare();
                                                     //String hexUTF8 = new String(Base64.decode(base64), StandardCharsets.UTF_8);
                                                     //byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
                                                     //BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(base64)));
 
-                                                    String decryptedHex = Utils.convertByteToHexadecimal(Base64.decode(base64));
-                                                    byte[] decrypted = aes256cbc.decryptHex(decryptedHex);
-
+                                                    String cipherData = firstKey.getShare();
+                                                    String cipherTextHex = new String(Base64.decode(cipherData), StandardCharsets.UTF_8);
+                                                    //byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
+                                                    byte[] decrypted = AES_256_CBC.decryptNodeData(firstKey.getShareMetadata(), cipherTextHex, sessionAuthKey.getPrivateKey().toString(16));
                                                     shares.add(Utils.convertByteToHexadecimal(decrypted));
+
+                                                    //String decryptedHex = Utils.convertByteToHexadecimal(Base64.decode(base64));
+                                                    //byte[] decrypted = aes256cbc.decryptHex(decryptedHex);
+
+                                                    //shares.add(Utils.convertByteToHexadecimal(decrypted));
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
@@ -571,13 +596,8 @@ public class TorusUtils {
                                 if (!thresholdPublicKeyString.isEmpty()) {
                                     thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
                                 }
-                                Integer responsesSize;
-                                if (finalIsImportShareReq) {
-                                    responsesSize = shareResponseSize;
-                                } else {
-                                    responsesSize = completedResponses.size();
-                                }
-                                if (responsesSize >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.getExtendedVerifierId() != null ||
+
+                                if (completedResponses.size() >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.getExtendedVerifierId() != null ||
                                         LEGACY_NETWORKS_ROUTE_MAP.containsKey(network))) {
                                     List<DecryptedShare> decryptedShares = new ArrayList<>();
                                     List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
@@ -585,163 +605,91 @@ public class TorusUtils {
                                     List<CompletableFuture<byte[]>> sessionTokenPromises = new ArrayList<>();
                                     List<BigInteger> serverTimeOffsetResponses = new ArrayList<>();
                                     KeyAssignResult currentShareResponse;
-
-                                    if (finalIsImportShareReq) {
-                                        for (int i = 0; i < keyAssignResults.size(); i++) {
-                                            if (keyAssignResults.get(i) != null) {
-                                                currentShareResponse = keyAssignResults.get(i);
-                                                isNewKeyArr.add(currentShareResponse.getIsNewKey());
-                                                if (currentShareResponse.getServerTimeOffset().isEmpty()) {
-                                                    currentShareResponse.setServerTimeOffset("0");
-                                                }
-                                                serverTimeOffsetResponses.add(currentShareResponse.getServerTimeOffset() != null ? new BigInteger(currentShareResponse.getServerTimeOffset()) : BigInteger.ZERO);
-                                                if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
-                                                    // Decrypt sessionSig if enc metadata is sent
-                                                    Ecies[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
-                                                    if (sessionTokenSigMetaData != null && sessionTokenSigMetaData[0] != null && sessionTokenSigMetaData[0].getEphemPublicKey() != null) {
-                                                        try {
-                                                            AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenSigMetaData[0].getEphemPublicKey(),
-                                                                    sessionTokenSigMetaData[0].getIv());
-                                                            byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokenSigs()[0], 16));
-                                                            sessionTokenSigPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
-                                                        } catch (Exception ex) {
-                                                            System.out.println("session token sig decryption" + ex);
-                                                            return null;
-                                                        }
+                                    for (int i = 0; i < shareResponses.length; i++) {
+                                        if (shareResponses[i] != null && !shareResponses[i].isEmpty()) {
+                                            try {
+                                                JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
+                                                if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
+                                                    if (finalIsImportShareReq) {
+                                                        currentShareResponse = keyAssignResults.get(i);
                                                     } else {
-                                                        sessionTokenSigPromises.add(CompletableFuture.completedFuture(currentShareResponse.getSessionTokenSigs()[0].getBytes(StandardCharsets.UTF_8)));
+                                                        currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
                                                     }
-                                                } else {
-                                                    sessionTokenSigPromises.add(CompletableFuture.completedFuture(null));
-                                                }
-
-                                                if (currentShareResponse.getSessionTokens() != null && currentShareResponse.getSessionTokens().length > 0) {
-                                                    // Decrypt sessionToken if enc metadata is sent
-                                                    Ecies[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
-                                                    if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
-                                                            currentShareResponse.getSessionTokenMetadata()[0].getEphemPublicKey() != null) {
-                                                        try {
-                                                            AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenMetaData[0].getEphemPublicKey(), sessionTokenMetaData[0].getIv());
-                                                            byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokens()[0], 16));
-                                                            sessionTokenPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
-                                                        } catch (Exception ex) {
-                                                            System.out.println("share decryption" + ex);
-                                                            return null;
-                                                        }
-                                                    } else {
-                                                        sessionTokenPromises.add(CompletableFuture.completedFuture(currentShareResponse.getSessionTokens()[0].getBytes(StandardCharsets.UTF_8)));
+                                                    isNewKeyArr.add(currentShareResponse.getIsNewKey());
+                                                    if (currentShareResponse.getServerTimeOffset().isEmpty()) {
+                                                        currentShareResponse.setServerTimeOffset("0");
                                                     }
-                                                } else {
-                                                    sessionTokenPromises.add(CompletableFuture.completedFuture(null));
-                                                }
-
-                                                if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
-                                                    KeyAssignment firstKey = currentShareResponse.getKeys()[0];
-                                                    if (firstKey.getNodeIndex() != null) {
-                                                        nodeIndexs.add(new BigInteger(firstKey.getNodeIndex()));
-                                                    }
-                                                    if (firstKey.getShareMetadata() != null) {
-                                                        try {
-                                                            AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
-                                                            // Implementation specific oddity - hex string actually gets passed as a base64 string
-                                                            String hexUTF8AsBase64 = firstKey.getShare();
-                                                            String hexUTF8 = new String(Base64.decode(hexUTF8AsBase64), StandardCharsets.UTF_8);
-                                                            byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
-                                                            BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes)));
-                                                            decryptedShares.add(new DecryptedShare(indexes[i], share));
-                                                        } catch (Exception e) {
-                                                            e.printStackTrace();
-                                                        }
-                                                    } else {
-                                                        nodeIndexs.add(null);
-                                                        sharePromises.add(CompletableFuture.completedFuture(null));
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        for (int i = 0; i < shareResponses.length; i++) {
-                                            if (shareResponses[i] != null && !shareResponses[i].isEmpty()) {
-                                                try {
-                                                    JsonRPCResponse currentJsonRPCResponse = gson.fromJson(shareResponses[i], JsonRPCResponse.class);
-                                                    if (currentJsonRPCResponse != null && currentJsonRPCResponse.getResult() != null && !currentJsonRPCResponse.getResult().equals("")) {
-                                                        if (finalIsImportShareReq) {
-                                                            currentShareResponse = keyAssignResults.get(i);
-                                                        } else {
-                                                            currentShareResponse = gson.fromJson(Utils.convertToJsonObject(currentJsonRPCResponse.getResult()), KeyAssignResult.class);
-                                                        }
-                                                        isNewKeyArr.add(currentShareResponse.getIsNewKey());
-                                                        if (currentShareResponse.getServerTimeOffset().isEmpty()) {
-                                                            currentShareResponse.setServerTimeOffset("0");
-                                                        }
-                                                        serverTimeOffsetResponses.add(currentShareResponse.getServerTimeOffset() != null ? new BigInteger(currentShareResponse.getServerTimeOffset()) : BigInteger.ZERO);
-                                                        if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
-                                                            // Decrypt sessionSig if enc metadata is sent
-                                                            Ecies[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
-                                                            if (sessionTokenSigMetaData != null && sessionTokenSigMetaData[0] != null && sessionTokenSigMetaData[0].getEphemPublicKey() != null) {
-                                                                try {
-                                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenSigMetaData[0].getEphemPublicKey(),
-                                                                            sessionTokenSigMetaData[0].getIv());
-                                                                    byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokenSigs()[0], 16));
-                                                                    sessionTokenSigPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
-                                                                } catch (Exception ex) {
-                                                                    System.out.println("session token sig decryption" + ex);
-                                                                    return null;
-                                                                }
-                                                            } else {
-                                                                sessionTokenSigPromises.add(CompletableFuture.completedFuture(currentShareResponse.getSessionTokenSigs()[0].getBytes(StandardCharsets.UTF_8)));
+                                                    serverTimeOffsetResponses.add(currentShareResponse.getServerTimeOffset() != null ? new BigInteger(currentShareResponse.getServerTimeOffset()) : BigInteger.ZERO);
+                                                    if (currentShareResponse.getSessionTokenSigs() != null && currentShareResponse.getSessionTokenSigs().length > 0) {
+                                                        // Decrypt sessionSig if enc metadata is sent
+                                                        EciesHexOmitCipherText[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
+                                                        if (sessionTokenSigMetaData != null && sessionTokenSigMetaData[0] != null && sessionTokenSigMetaData[0].getEphemPublicKey() != null) {
+                                                            try {
+                                                                /*AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenSigMetaData[0].getEphemPublicKey(),sessionTokenSigMetaData[0].getIv());
+                                                                byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokenSigs()[0], 16));
+                                                                sessionTokenSigPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));*/
+                                                                byte[] decrypted = AES_256_CBC.decryptNodeData(sessionTokenSigMetaData[0], currentShareResponse.getSessionTokenSigs()[0], sessionAuthKey.getPrivateKey().toString(16));
+                                                                sessionTokenSigPromises.add(CompletableFuture.completedFuture(decrypted));
+                                                            } catch (Exception ex) {
+                                                                System.out.println("session token sig decryption" + ex);
+                                                                return null;
                                                             }
                                                         } else {
-                                                            sessionTokenSigPromises.add(CompletableFuture.completedFuture(null));
+                                                            sessionTokenSigPromises.add(CompletableFuture.completedFuture(currentShareResponse.getSessionTokenSigs()[0].getBytes(StandardCharsets.UTF_8)));
                                                         }
+                                                    } else {
+                                                        sessionTokenSigPromises.add(CompletableFuture.completedFuture(null));
+                                                    }
 
-                                                        if (currentShareResponse.getSessionTokens() != null && currentShareResponse.getSessionTokens().length > 0) {
-                                                            // Decrypt sessionToken if enc metadata is sent
-                                                            Ecies[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
-                                                            if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
-                                                                    currentShareResponse.getSessionTokenMetadata()[0].getEphemPublicKey() != null) {
-                                                                try {
-                                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenMetaData[0].getEphemPublicKey(),
-                                                                            sessionTokenMetaData[0].getIv());
-                                                                    byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokens()[0], 16));
-                                                                    sessionTokenPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));
-                                                                } catch (Exception ex) {
-                                                                    System.out.println("share decryption" + ex);
-                                                                    return null;
-                                                                }
-                                                            } else {
-                                                                sessionTokenPromises.add(CompletableFuture.completedFuture(currentShareResponse.getSessionTokens()[0].getBytes(StandardCharsets.UTF_8)));
+                                                    if (currentShareResponse.getSessionTokens() != null && currentShareResponse.getSessionTokens().length > 0) {
+                                                        // Decrypt sessionToken if enc metadata is sent
+                                                        EciesHexOmitCipherText[] sessionTokenMetaData = currentShareResponse.getSessionTokenMetadata();
+                                                        if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
+                                                                currentShareResponse.getSessionTokenMetadata()[0].getEphemPublicKey() != null) {
+                                                            try {
+                                                                /*AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), sessionTokenMetaData[0].getEphemPublicKey(),
+                                                                        sessionTokenMetaData[0].getIv());
+                                                                byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(currentShareResponse.getSessionTokens()[0], 16));
+                                                                sessionTokenPromises.add(CompletableFuture.completedFuture(aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes))));*/
+                                                                byte[] decrypted = AES_256_CBC.decryptNodeData(sessionTokenMetaData[0], currentShareResponse.getSessionTokens()[0], sessionAuthKey.getPrivateKey().toString(16));
+                                                                sessionTokenSigPromises.add(CompletableFuture.completedFuture(decrypted));
+                                                            } catch (Exception ex) {
+                                                                System.out.println("share decryption" + ex);
+                                                                return null;
                                                             }
                                                         } else {
-                                                            sessionTokenPromises.add(CompletableFuture.completedFuture(null));
+                                                            sessionTokenPromises.add(CompletableFuture.completedFuture(currentShareResponse.getSessionTokens()[0].getBytes(StandardCharsets.UTF_8)));
                                                         }
+                                                    } else {
+                                                        sessionTokenPromises.add(CompletableFuture.completedFuture(null));
+                                                    }
 
-                                                        if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
-                                                            KeyAssignment firstKey = currentShareResponse.getKeys()[0];
-                                                            if (firstKey.getNodeIndex() != null) {
-                                                                nodeIndexs.add(new BigInteger(firstKey.getNodeIndex()));
+                                                    if (currentShareResponse.getKeys() != null && currentShareResponse.getKeys().length > 0) {
+                                                        KeyAssignment firstKey = currentShareResponse.getKeys()[0];
+                                                        if (firstKey.getNodeIndex() != null) {
+                                                            nodeIndexs.add(new BigInteger(firstKey.getNodeIndex()));
+                                                        }
+                                                        if (firstKey.getShareMetadata() != null) {
+                                                            try {
+                                                                AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
+                                                                // Implementation specific oddity - hex string actually gets passed as a base64 string
+                                                                String cipherData = firstKey.getShare();
+                                                                String cipherTextHex = new String(Base64.decode(cipherData), StandardCharsets.UTF_8);
+                                                                //byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
+                                                                byte[] decrypted = AES_256_CBC.decryptNodeData(firstKey.getShareMetadata(), cipherTextHex, sessionAuthKey.getPrivateKey().toString(16));
+                                                                BigInteger share = new BigInteger(1, decrypted);
+                                                                decryptedShares.add(new DecryptedShare(indexes[i], share));
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
                                                             }
-                                                            if (firstKey.getShareMetadata() != null) {
-                                                                try {
-                                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
-                                                                    // Implementation specific oddity - hex string actually gets passed as a base64 string
-                                                                    String hexUTF8AsBase64 = firstKey.getShare();
-                                                                    String hexUTF8 = new String(Base64.decode(hexUTF8AsBase64), StandardCharsets.UTF_8);
-                                                                    byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
-                                                                    BigInteger share = new BigInteger(1, aes256cbc.decrypt(Base64.encodeBytes(encryptedShareBytes)));
-                                                                    decryptedShares.add(new DecryptedShare(indexes[i], share));
-                                                                } catch (Exception e) {
-                                                                    e.printStackTrace();
-                                                                }
-                                                            } else {
-                                                                nodeIndexs.add(null);
-                                                                sharePromises.add(CompletableFuture.completedFuture(null));
-                                                            }
+                                                        } else {
+                                                            nodeIndexs.add(null);
+                                                            sharePromises.add(CompletableFuture.completedFuture(null));
                                                         }
                                                     }
-                                                } catch (JsonSyntaxException e) {
-                                                    continue;
                                                 }
+                                            } catch (JsonSyntaxException e) {
+                                                continue;
                                             }
                                         }
                                     }

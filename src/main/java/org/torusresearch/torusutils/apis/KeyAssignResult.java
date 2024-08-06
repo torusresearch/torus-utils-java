@@ -3,9 +3,9 @@ package org.torusresearch.torusutils.apis;
 public class KeyAssignResult {
     private KeyAssignment[] keys;
     private String[] session_tokens;
-    private Ecies[] session_token_metadata; // This is omitciphertexthex
+    private EciesHexOmitCipherText[] session_token_metadata; // This is omitciphertexthex
     private String[] session_token_sigs; // this is the ciphertext
-    private Ecies[] session_token_sig_metadata; // This is omitciphertexthex
+    private EciesHexOmitCipherText[] session_token_sig_metadata; // This is omitciphertexthex
     private String node_pubx;
     private String node_puby;
     private String is_new_key;
@@ -16,11 +16,11 @@ public class KeyAssignResult {
         return keys;
     }
 
-    public Ecies[] getSessionTokenMetadata() {
+    public EciesHexOmitCipherText[] getSessionTokenMetadata() {
         return session_token_metadata;
     }
 
-    public Ecies[] getSessionTokenSigMetadata() {
+    public EciesHexOmitCipherText[] getSessionTokenSigMetadata() {
         return session_token_sig_metadata;
     }
 
