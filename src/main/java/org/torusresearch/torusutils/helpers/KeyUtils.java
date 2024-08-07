@@ -272,8 +272,8 @@ public class KeyUtils {
             // omit ciphertext for encrypted_metadata.
 
             //AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, nodePub, iv);
-            String encryptedMsg = AES_256_CBC.encryptAndHex(nodePub, AES_256_CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
             //String encryptedMsg = aes256cbc.encryptAndHex(AES256CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
+            String encryptedMsg = AES_256_CBC.encryptAndHex(nodePub, AES_256_CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
             String mac = AES_256_CBC.macKey;
             Ecies encrypted = new Ecies(AES_256_CBC.ivKey, nodePub, encryptedMsg, mac);
             encShares.add(encrypted);

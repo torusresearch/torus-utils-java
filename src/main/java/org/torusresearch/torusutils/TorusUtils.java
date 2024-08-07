@@ -142,17 +142,13 @@ public class TorusUtils {
         return torusKey.oAuthKeyData.privKey;
     }
 
-    public CompletableFuture<TorusKey> retrieveOrImportShare(String[] endpoints, BigInteger[] indexes, String verifier, VerifierParams verifierParams,
+    public CompletableFuture<TorusKey> retrieveOrImportShare(String[] endpoints, String verifier, VerifierParams verifierParams,
                                                              String idToken, TorusUtilsExtraParams extraParams, String network,
                                                              @Nullable ImportedShare[] importedShares) { // TODO: Rename to retrieveOrImportShare: Done
         try {
 
-            if (endpoints.length != indexes.length) { // TODO: Fix params for this function, indexes are no longer needed here, other params are missing.
-                throw new IllegalArgumentException("Length of endpoints must be the same as length of nodeIndexes");
-            }
-
             APIUtils.get(this.options.getAllowHost(), new Header[]{new Header("Origin", this.options.getOrigin()), new Header("verifier", verifier), new Header("verifierid", verifierParams.getVerifierId()), new Header("network", network),
-                    new Header("clientid", this.options.getClientId()), new Header("enablegating", "true")}, true).get(); // TODO: Check these headers
+                    new Header("clientid", this.options.getClientId()), new Header("enablegating", "true")}, true).get(); // TODO: Check these headers: Done
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             Set<SessionToken> sessionTokenData = new HashSet<>();
             Set<BigInteger> nodeIndexs = new HashSet<>();
@@ -463,7 +459,7 @@ public class TorusUtils {
                                             }
                                             if (firstKey.getShareMetadata() != null) {
                                                 try {
-                                                    AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
+                                                    //AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
                                                     // Implementation specific oddity - hex string actually gets passed as a base64 string
 
                                                     //String base64 = firstKey.getShare();
@@ -473,7 +469,6 @@ public class TorusUtils {
 
                                                     String cipherData = firstKey.getShare();
                                                     String cipherTextHex = new String(Base64.decode(cipherData), StandardCharsets.UTF_8);
-                                                    //byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
                                                     byte[] decrypted = AES_256_CBC.decryptNodeData(firstKey.getShareMetadata(), cipherTextHex, sessionAuthKey.getPrivateKey().toString(16));
                                                     shares.add(Utils.convertByteToHexadecimal(decrypted));
 
@@ -600,6 +595,7 @@ public class TorusUtils {
                                 if (completedResponses.size() >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.getExtendedVerifierId() != null ||
                                         LEGACY_NETWORKS_ROUTE_MAP.containsKey(network))) {
                                     List<DecryptedShare> decryptedShares = new ArrayList<>();
+                                    List<BigInteger> shares = new ArrayList<>();
                                     List<CompletableFuture<byte[]>> sharePromises = new ArrayList<>();
                                     List<CompletableFuture<byte[]>> sessionTokenSigPromises = new ArrayList<>();
                                     List<CompletableFuture<byte[]>> sessionTokenPromises = new ArrayList<>();
@@ -671,14 +667,13 @@ public class TorusUtils {
                                                         }
                                                         if (firstKey.getShareMetadata() != null) {
                                                             try {
-                                                                AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
+                                                                //AES256CBC aes256cbc = new AES256CBC(sessionAuthKey.getPrivateKey().toString(16), firstKey.getShareMetadata().getEphemPublicKey(), firstKey.getShareMetadata().getIv());
                                                                 // Implementation specific oddity - hex string actually gets passed as a base64 string
                                                                 String cipherData = firstKey.getShare();
                                                                 String cipherTextHex = new String(Base64.decode(cipherData), StandardCharsets.UTF_8);
-                                                                //byte[] encryptedShareBytes = AES256CBC.toByteArray(new BigInteger(hexUTF8, 16));
                                                                 byte[] decrypted = AES_256_CBC.decryptNodeData(firstKey.getShareMetadata(), cipherTextHex, sessionAuthKey.getPrivateKey().toString(16));
                                                                 BigInteger share = new BigInteger(1, decrypted);
-                                                                decryptedShares.add(new DecryptedShare(indexes[i], share));
+                                                                shares.add(share);
                                                             } catch (Exception e) {
                                                                 e.printStackTrace();
                                                             }
@@ -765,8 +760,8 @@ public class TorusUtils {
                                     if (predicateResolved.get()) return null;
 
                                     List<BigInteger> _nodeIndexs = new ArrayList<>(nodeIndexs);
-                                    for (int index = 0; index < sharesResolved.size(); index++) {
-                                        Object curr = sharesResolved.get(index);
+                                    for (int index = 0; index < shares.size(); index++) {
+                                        Object curr = shares.get(index);
                                         if (curr != null) {
                                             decryptedShares.add(new DecryptedShare(_nodeIndexs.get(index), new BigInteger(curr.toString())));
                                         }
@@ -927,12 +922,12 @@ public class TorusUtils {
         }
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, VerifierParams verifierParams, String idToken, @Nullable ImportedShare[] importedShares, TorusUtilsExtraParams extraParams) {
-        return this.retrieveOrImportShare(endpoints, indexes, verifier, verifierParams, idToken, extraParams, this.options.getNetwork().toString(), importedShares); // TODO: extraParams should be passed here and not ignored
+    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, String verifier, VerifierParams verifierParams, String idToken, @Nullable ImportedShare[] importedShares, TorusUtilsExtraParams extraParams) {
+        return this.retrieveOrImportShare(endpoints, verifier, verifierParams, idToken, extraParams, this.options.getNetwork().toString(), importedShares); // TODO: extraParams should be passed here and not ignored
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, BigInteger[] indexes, String verifier, VerifierParams verifierParams, String idToken, TorusUtilsExtraParams extraParams) {
-        return this.retrieveOrImportShare(endpoints, indexes, verifier, verifierParams, idToken, extraParams, this.options.getNetwork().toString(), new ImportedShare[]{}); // TODO: extraParams should be passed here and not ignored
+    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, String verifier, VerifierParams verifierParams, String idToken, TorusUtilsExtraParams extraParams) {
+        return this.retrieveOrImportShare(endpoints, verifier, verifierParams, idToken, extraParams, this.options.getNetwork().toString(), new ImportedShare[]{}); // TODO: extraParams should be passed here and not ignored
     }
 
     public CompletableFuture<BigInteger> getMetadata(MetadataPubKey data) {
@@ -1232,7 +1227,6 @@ public class TorusUtils {
 
         return this.retrieveShares(
                 endpoints,
-                nodeIndexes,
                 verifier,
                 verifierParams,
                 idToken,

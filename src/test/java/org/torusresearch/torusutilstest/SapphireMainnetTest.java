@@ -213,7 +213,7 @@ public class SapphireMainnetTest {
         VerifierParams verifierParams = new VerifierParams();
         verifierParams.setVerifierId(TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(HashEnabledVerifier, TORUS_TEST_EMAIL).get();
-        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), HashEnabledVerifier,
+        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), HashEnabledVerifier,
                 verifierParams, idToken, null).get();
         assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("13941ecd812b08d8a33a20bc975f0cd1c3f82de25b20c0c863ba5f21580b65f6"));
@@ -242,7 +242,7 @@ public class SapphireMainnetTest {
         VerifierParams verifierParams = new VerifierParams();
         verifierParams.setVerifierId(TORUS_TEST_EMAIL);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
-        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER,
+        TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER,
                 verifierParams, token, null).get();
         assert (torusKey.getFinalKeyData().getPrivKey().equals("dfb39b84e0c64b8c44605151bf8670ae6eda232056265434729b6a8a50fa3419"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
@@ -274,7 +274,7 @@ public class SapphireMainnetTest {
         verifierParams.setSubVerifierIds(new String[]{TORUS_TEST_VERIFIER});
         verifierParams.setVerifyParams(new VerifyParams[]{new VerifyParams(idToken, email)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, email).get();
-        TorusKey result = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), nodeDetails.getTorusIndexes(), TORUS_TEST_AGGREGATE_VERIFIER,
+        TorusKey result = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null).get();
         assertNotNull(result.finalKeyData.walletAddress);
         assertNotNull(result.oAuthKeyData.walletAddress);
@@ -315,7 +315,7 @@ public class SapphireMainnetTest {
 
         int customSessionTime = 3600;
         TorusUtils.setSessionTime(customSessionTime);
-        TorusKey torusKey = torusUtils.retrieveShares(torusNodeEndpoints, nodeDetails.getTorusIndexes(), TORUS_TEST_VERIFIER,
+        TorusKey torusKey = torusUtils.retrieveShares(torusNodeEndpoints, TORUS_TEST_VERIFIER,
                 verifierParams, idToken, null).get();
 
         List<Map<String, String>> signatures = new ArrayList<>();
