@@ -1,61 +1,47 @@
 package org.torusresearch.torusutils.types;
 
-import org.jetbrains.annotations.Nullable;
-import org.torusresearch.fetchnodedetails.types.TorusNodePub;
+import java.util.Objects;
 
-import java.math.BigInteger;
+public class TorusPublicKey {
 
-public class TorusPublicKey extends TorusNodePub {
-    private final String address;
-    private TypeOfUser typeOfUser;
-    private BigInteger metadataNonce;
-    @Nullable
-    private GetOrSetNonceResult.PubNonce pubNonce;
-    private boolean upgraded;
+    public OAuthPubKeyData oAuthKeyData;
+    public FinalPubKeyData finalKeyData;
+    public Metadata metadata;
+    public NodesData nodesData;
 
-    public TorusPublicKey(String _X, String _Y, String _address) {
-        super(_X, _Y);
-        address = _address;
+    public TorusPublicKey(OAuthPubKeyData oAuthKeyData, FinalPubKeyData finalKeyData, Metadata metadata, NodesData nodesData) {
+        this.oAuthKeyData = oAuthKeyData;
+        this.finalKeyData = finalKeyData;
+        this.metadata = metadata;
+        this.nodesData = nodesData;
     }
 
-    public TorusPublicKey(String _address) {
-        super(null, null);
-        address = _address;
+    public OAuthPubKeyData getoAuthKeyData() {
+        return oAuthKeyData;
     }
 
-    public String getAddress() {
-        return address;
+    public FinalPubKeyData getFinalKeyData() {
+        return finalKeyData;
     }
 
-    public TypeOfUser getTypeOfUser() {
-        return typeOfUser;
+    public Metadata getMetadata() {
+        return metadata;
     }
 
-    public void setTypeOfUser(TypeOfUser typeOfUser) {
-        this.typeOfUser = typeOfUser;
+    public NodesData getNodesData() {
+        return nodesData;
     }
 
-    public BigInteger getMetadataNonce() {
-        return metadataNonce;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TorusPublicKey)) return false;
+        TorusPublicKey that = (TorusPublicKey) o;
+        return getoAuthKeyData().equals(that.getoAuthKeyData()) && getFinalKeyData().equals(that.getFinalKeyData()) && getMetadata().equals(that.getMetadata()) && getNodesData().equals(that.getNodesData());
     }
 
-    public void setMetadataNonce(BigInteger metadataNonce) {
-        this.metadataNonce = metadataNonce;
-    }
-
-    public GetOrSetNonceResult.PubNonce getPubNonce() {
-        return pubNonce;
-    }
-
-    public void setPubNonce(GetOrSetNonceResult.PubNonce pubNonce) {
-        this.pubNonce = pubNonce;
-    }
-
-    public boolean getUpgraded() {
-        return upgraded;
-    }
-
-    public void setUpgraded(boolean upgraded) {
-        this.upgraded = upgraded;
+    @Override
+    public int hashCode() {
+        return Objects.hash(getoAuthKeyData(), getFinalKeyData(), getMetadata(), getNodesData());
     }
 }

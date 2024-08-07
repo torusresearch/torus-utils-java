@@ -1,15 +1,15 @@
 package org.torusresearch.torusutils.types;
 
-
 import org.jetbrains.annotations.Nullable;
 
 public class GetOrSetNonceResult {
-    private final TypeOfUser typeOfUser;
+    private String ipfs;
     @Nullable
     private String nonce;
     @Nullable
     private PubNonce pubNonce;
     private boolean upgraded;
+    private final TypeOfUser typeOfUser;
 
     public GetOrSetNonceResult(TypeOfUser typeOfUser) {
         this.typeOfUser = typeOfUser;
@@ -41,10 +41,17 @@ public class GetOrSetNonceResult {
         this.upgraded = upgraded;
     }
 
+    public String getIpfs() {
+        return ipfs;
+    }
+
+    public void setIpfs(String ipfs) {
+        this.ipfs = ipfs;
+    }
+
     public TypeOfUser getTypeOfUser() {
         return typeOfUser;
     }
-
 
     public static class PubNonce {
         private final String x;

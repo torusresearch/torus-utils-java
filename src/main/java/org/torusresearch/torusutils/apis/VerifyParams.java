@@ -1,4 +1,4 @@
-package org.torusresearch.torusutilstest.utils;
+package org.torusresearch.torusutils.apis;
 
 public class VerifyParams {
     private final String idtoken;

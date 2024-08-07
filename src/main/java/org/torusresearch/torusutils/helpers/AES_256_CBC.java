@@ -1,11 +1,11 @@
 package org.torusresearch.torusutils.helpers;
 
+import org.torusresearch.torusutils.apis.Ecies;
+import org.torusresearch.torusutils.apis.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.types.TorusException;
 
 import java.math.BigInteger;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECFieldFp;
 import java.security.spec.EllipticCurve;
 import java.util.Arrays;
@@ -14,18 +14,10 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-// TODO: Clean this up to match swift implementation, encrypt(), decrypt(), decryptNodeData(), will be much easier to debug.
-public class AES256CBC {
+public class AES_256_CBC {
     private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
-    private final byte[] AES_ENCRYPTION_KEY;
-    private final byte[] ENCRYPTION_IV;
-
-    public AES256CBC(String privateKeyHex, String ephemPublicKeyHex, String encryptionIvHex) throws NoSuchAlgorithmException {
-        byte[] hash = SHA512.digest(toByteArray(ecdh(privateKeyHex, ephemPublicKeyHex)));
-        byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
-        AES_ENCRYPTION_KEY = encKeyBytes;
-        ENCRYPTION_IV = toByteArray(encryptionIvHex);
-    }
+    public static String ivKey = "";
+    public static String macKey = "";
 
     /**
      * Utility method to convert a BigInteger to a byte array in unsigned
@@ -49,16 +41,24 @@ public class AES256CBC {
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i+1), 16));
+                    + Character.digit(s.charAt(i + 1), 16));
         }
         return data;
     }
 
-    public String encrypt(byte[] src) throws TorusException {
+    public static String encrypt(String publicKeyHex, byte[] src) throws TorusException {
         Cipher cipher;
         try {
+            String privateKeyHex = KeyUtils.generateSecret();
+            String encryptionIvHex = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));
+            byte[] hash = SHA512.digest(toByteArray(ecdh(privateKeyHex, publicKeyHex)));
+            byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
+            /*AES_ENCRYPTION_KEY = encKeyBytes;
+            ENCRYPTION_IV = toByteArray(encryptionIvHex);*/
+            Key keySpec = new SecretKeySpec(encKeyBytes, "AES");
+            IvParameterSpec ivSpec = new IvParameterSpec(toByteArray(encryptionIvHex));
             cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, makeKey(), makeIv());
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
             return Base64.encodeBytes(cipher.doFinal(src));
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,11 +66,19 @@ public class AES256CBC {
         }
     }
 
-    public String encryptAndHex(byte[] src) throws TorusException {
+    public static String encryptAndHex(String publicKeyHex, byte[] src) throws TorusException {
         Cipher cipher;
         try {
+            String privateKeyHex = KeyUtils.generateSecret();
+            String encryptionIvHex = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));
+            byte[] hash = SHA512.digest(toByteArray(ecdh(privateKeyHex, publicKeyHex)));
+            byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
+            ivKey = encryptionIvHex;
+            macKey = Utils.bytesToHex(encKeyBytes);
+            Key keySpec = new SecretKeySpec(encKeyBytes, "AES");
+            IvParameterSpec ivSpec = new IvParameterSpec(toByteArray(encryptionIvHex));
             cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, makeKey(), makeIv());
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
             return Utils.convertByteToHexadecimal(cipher.doFinal(src));
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,19 +86,35 @@ public class AES256CBC {
         }
     }
 
-    public byte[] decrypt(String src) throws TorusException {
+    public static byte[] decryptNodeData(EciesHexOmitCipherText eciesData, String ciphertextHex, String privKey) throws Exception {
+        Ecies eciesOpts = new Ecies(
+                eciesData.getIv(),
+                eciesData.getEphemPublicKey(),
+                ciphertextHex,
+                eciesData.getMac()
+        );
+
+        byte[] decryptedSigBuffer = decrypt(privKey, eciesOpts);
+        return decryptedSigBuffer;
+    }
+
+    public static byte[] decrypt(String privateKeyHex, Ecies ecies) throws TorusException {
         Cipher cipher;
         try {
+            byte[] hash = SHA512.digest(toByteArray(ecdh(privateKeyHex, ecies.getEphemPublicKey())));
+            byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
+            Key keySpec = new SecretKeySpec(encKeyBytes, "AES");
+            IvParameterSpec ivSpec = new IvParameterSpec(toByteArray(ecies.getIv()));
             cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.DECRYPT_MODE, makeKey(), makeIv());
-            return cipher.doFinal(Base64.decode(src));
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+            return cipher.doFinal(Base64.decode(Base64.encodeBytes(toByteArray(new BigInteger(ecies.getCiphertext(), 16)))));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TorusException("Torus Internal Error", e);
         }
     }
 
-    public byte[] decryptHex(String src) throws TorusException {
+    /*public byte[] decryptHex(String src) throws TorusException {
         Cipher cipher;
         try {
             cipher = Cipher.getInstance(TRANSFORMATION);
@@ -100,10 +124,9 @@ public class AES256CBC {
             e.printStackTrace();
             throw new TorusException("Torus Internal Error", e);
         }
-    }
+    }*/
 
-
-    private BigInteger ecdh(String privateKeyHex, String ephemPublicKeyHex) {
+    private static BigInteger ecdh(String privateKeyHex, String ephemPublicKeyHex) {
         String affineX = ephemPublicKeyHex.substring(2, 66);
         String affineY = ephemPublicKeyHex.substring(66);
 
@@ -112,17 +135,5 @@ public class AES256CBC {
                 new BigInteger("0"),
                 new BigInteger("7")), new BigInteger(affineX, 16), new BigInteger(affineY, 16), null);
         return ecPoint.multiply(new BigInteger(privateKeyHex, 16)).getX();
-    }
-
-    private Key makeKey() {
-        return new SecretKeySpec(AES_ENCRYPTION_KEY, "AES");
-    }
-
-    private AlgorithmParameterSpec makeIv() {
-        return new IvParameterSpec(ENCRYPTION_IV);
-    }
-
-    public String getMacKey() {
-        return Utils.bytesToHex(AES_ENCRYPTION_KEY);
     }
 }
