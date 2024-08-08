@@ -297,7 +297,7 @@ public class Utils {
         byte[] hashedData = Hash.sha3(data.getBytes(StandardCharsets.UTF_8));
         ECDSASignature signature = derivedECKeyPair.sign(hashedData);
         String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
-        byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
+        byte[] sigBytes = Utils.toByteArray(new BigInteger(sig, 16));
         String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
         return finalSig;
     }
@@ -613,6 +613,25 @@ public class Utils {
         String hashedVerifierId = Hash.sha3(verifierIdString).replace("0x", "");
         BigInteger proxyEndPointNum = new BigInteger(hashedVerifierId, 16).mod(BigInteger.valueOf(endpoints.length));
         return proxyEndPointNum.intValue();
+    }
+
+    public static byte[] toByteArray(BigInteger bi) {
+        byte[] b = bi.toByteArray();
+        if (b.length > 1 && b[0] == 0) {
+            int n = b.length - 1;
+            byte[] newArray = new byte[n];
+            System.arraycopy(b, 1, newArray, 0, n);
+            b = newArray;
+        }
+        return b;
+    }
+    public static byte[] toByteArray(String s) {
+        byte[] data = new byte[s.length() / 2];
+        for (int i = 0; i < s.length(); i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 
 }

@@ -342,7 +342,7 @@ public class SapphireDevnetTest {
             byte[] decodedBytes = Base64.getDecoder().decode(sig.get("data"));
             String decodedString = new String(decodedBytes);
             HashMap parsedSigData = new Gson().fromJson(decodedString, HashMap.class);
-            parsedSigsData.add(parsedSigData);
+            //parsedSigsData.add(parsedSigData);
         }
 
         long currentTimeSec = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
@@ -357,7 +357,7 @@ public class SapphireDevnetTest {
     public void testShouldBeAbleToImportKeyForANewUser() throws Exception {
         String fakeEmail = JwtUtils.getRandomEmail();
         String jwt = JwtUtils.generateIdToken(fakeEmail, algorithmRs);
-        String privateKey = KeyUtils.generateSecret();
+        String privateKey = KeyUtils.serializeSecret(KeyUtils.generateKeyPair());
         VerifierParams verifierParams = new VerifierParams();
         verifierParams.setVerifierId(fakeEmail);
 

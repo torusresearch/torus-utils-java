@@ -2,6 +2,7 @@ package org.torusresearch.torusutils.helpers;
 
 import static org.torusresearch.torusutils.helpers.Utils.addLeading0sForLength64;
 import static org.torusresearch.torusutils.helpers.Utils.getRandomBytes;
+import static org.torusresearch.torusutils.helpers.Utils.padLeft;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
@@ -20,6 +21,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.Ecies;
 import org.torusresearch.torusutils.apis.EciesHexOmitCipherText;
+import org.torusresearch.torusutils.helpers.Encryption.Encryption;
 import org.torusresearch.torusutils.types.ImportedShare;
 import org.torusresearch.torusutils.types.KeyType;
 import org.torusresearch.torusutils.types.NonceMetadataParams;
@@ -37,12 +39,15 @@ import org.web3j.utils.Numeric;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.bouncycastle.util.encoders.Hex;
 
 public class KeyUtils {
     private static final ECDomainParameters curve;
@@ -77,21 +82,22 @@ public class KeyUtils {
     }
 
     public static String randomNonce() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        return generateSecret();
+        ECKeyPair keyPair = generateKeyPair();
+        return serializeSecret(keyPair);
     }
 
-    /*public static String generateSecret() {
-        SecureRandom random = new SecureRandom();
-        byte[] secret = new byte[32];
-        random.nextBytes(secret);
-        return Hex.toHexString(secret);
-    }*/
-
-    public static String generateSecret() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        ECKeyPair keyPair = Keys.createEcKeyPair();
-        String privateKeyHex = Numeric.toHexStringNoPrefixZeroPadded(keyPair.getPrivateKey(), 64);
-        return privateKeyHex;
+    public static ECKeyPair generateKeyPair() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        return Keys.createEcKeyPair();
     }
+
+    public static String serializeSecret(ECKeyPair keyPair)  {
+        return Utils.padLeft(keyPair.getPrivateKey().toString(16), '0', 64);
+    }
+
+    public static String serializePublic(ECKeyPair keyPair)  {
+        return "04" + Utils.padLeft(keyPair.getPublicKey().toString(16), '0', 128);
+    }
+
 
     public static BigInteger getOrderOfCurve() {
         //X9ECParameters curve = CustomNamedCurves.getByName("secp256k1");
@@ -219,7 +225,7 @@ public class KeyUtils {
                 Utils.padLeft("", '0', 2); // Assuming padding to ensure consistent length
 
         // Convert the hexadecimal signature string to bytes
-        byte[] sigBytes = AES256CBC.toByteArray(new BigInteger(sig, 16));
+        byte[] sigBytes = Utils.toByteArray(new BigInteger(sig, 16));
 
         // Encode the signature bytes to Base64
         String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
@@ -273,10 +279,8 @@ public class KeyUtils {
 
             //AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, nodePub, iv);
             //String encryptedMsg = aes256cbc.encryptAndHex(AES256CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
-            String encryptedMsg = AES_256_CBC.encryptAndHex(nodePub, AES_256_CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
-            String mac = AES_256_CBC.macKey;
-            Ecies encrypted = new Ecies(AES_256_CBC.ivKey, nodePub, encryptedMsg, mac);
-            encShares.add(encrypted);
+            Ecies encryptedMsg = Encryption.encrypt(Encryption.savePublicKey(Encryption.loadPublicKey(nodePub.getBytes())), Utils.padLeft(shareInfo.getShare().toString(16), '0', 64));
+            encShares.add(encryptedMsg);
         }
 
         List<ImportedShare> sharesData = new ArrayList<>();

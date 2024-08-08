@@ -43,4 +43,10 @@ public class Ecies {
     public String getCiphertext() {
         return ciphertext;
     }
+
+    public EciesHexOmitCipherText omitCipherText() {
+        return new EciesHexOmitCipherText(iv, ephemPublicKey, mac, mode);
+    }
+
+
 }

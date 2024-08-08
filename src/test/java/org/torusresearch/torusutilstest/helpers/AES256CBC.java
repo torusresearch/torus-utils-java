@@ -1,33 +1,33 @@
 package org.torusresearch.torusutilstest.helpers;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
+import org.torusresearch.torusutils.apis.Ecies;
+import org.torusresearch.torusutils.helpers.Encryption.Encryption;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.security.KeyPair;
+
 public class AES256CBC {
-
     @Test
-    public void testLeadingZeroes() {
-        // This combination of private and public keys resuts in an SHA512 hash with a leading zero
-        String privateKey = "dec95a4ffa406daedd079956f1e43fb91baefdad00990699642474eeb09a5a90";
-        String publicKey  = "a6262a5650a9666195098c2e15e8eb451a755eb59ea2d1b437d11d9113f4d356bd479f01d29850b77fa6357628d2ed0fa0d8230620472b91f21db1c2c6e7def";
+    public void testECDH() throws Exception {
+        KeyPair secret = Encryption.generateKeyPair();
+        KeyPair secret2 = Encryption.generateKeyPair();
 
-        // Leading zeroes in IV
-        String iv = "0023456789ABCDEF0123456789ABCDEF";
+        byte[] shared = Encryption.ecdh(Encryption.savePrivateKey(secret.getPrivate()), (Encryption.savePublicKey(secret2.getPublic())));
+        byte[] shared2 = Encryption.ecdh(Encryption.savePrivateKey(secret2.getPrivate()), (Encryption.savePublicKey(secret.getPublic())));
+        assertArrayEquals(shared, shared2);
+}
+    @Test
+    public void testEncryption() throws Exception {
+        KeyPair keypair = Encryption.generateKeyPair();
+        String payload =  "Hello World";
 
-        byte[] payload = "Hello World".getBytes(StandardCharsets.UTF_8);
+        Ecies encrypted = Encryption.encrypt(Encryption.savePublicKey(keypair.getPublic()), payload);
+        String decrypted = Encryption.decrypt(Hex.toHexString(Encryption.savePrivateKey(keypair.getPrivate())), encrypted);
 
-        try {
-            org.torusresearch.torusutils.helpers.AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, publicKey, iv);
-            String encrypted = aes256cbc.encrypt(payload);
-            byte[] decrypted = aes256cbc.decrypt(encrypted);
-
-            assertArrayEquals(payload, decrypted);
-        } catch (Exception e) {
-            assertFalse(true);
-        }
+        assertEquals(payload, decrypted);
     }
 
 
