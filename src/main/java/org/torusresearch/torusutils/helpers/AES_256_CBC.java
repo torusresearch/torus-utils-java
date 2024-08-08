@@ -46,25 +46,25 @@ public class AES_256_CBC {
         return data;
     }
 
-    public static String encrypt(String publicKeyHex, byte[] src) throws TorusException {
+    /*public static String encrypt(String publicKeyHex, byte[] src) throws TorusException {
         Cipher cipher;
         try {
             String privateKeyHex = KeyUtils.generateSecret();
             String encryptionIvHex = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));
             byte[] hash = SHA512.digest(toByteArray(ecdh(privateKeyHex, publicKeyHex)));
             byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
-            /*AES_ENCRYPTION_KEY = encKeyBytes;
-            ENCRYPTION_IV = toByteArray(encryptionIvHex);*/
-            Key keySpec = new SecretKeySpec(encKeyBytes, "AES");
+            *//*AES_ENCRYPTION_KEY = encKeyBytes;
+            ENCRYPTION_IV = toByteArray(encryptionIvHex);*//*
+            Key secretKeySpec = new SecretKeySpec(encKeyBytes, "AES");
             IvParameterSpec ivSpec = new IvParameterSpec(toByteArray(encryptionIvHex));
             cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivSpec);
             return Base64.encodeBytes(cipher.doFinal(src));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TorusException("Torus Internal Error", e);
         }
-    }
+    }*/
 
     public static String encryptAndHex(String publicKeyHex, byte[] src) throws TorusException {
         Cipher cipher;
@@ -75,10 +75,10 @@ public class AES_256_CBC {
             byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
             ivKey = encryptionIvHex;
             macKey = Utils.bytesToHex(encKeyBytes);
-            Key keySpec = new SecretKeySpec(encKeyBytes, "AES");
+            Key secretKeySpec = new SecretKeySpec(encKeyBytes, "AES");
             IvParameterSpec ivSpec = new IvParameterSpec(toByteArray(encryptionIvHex));
             cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivSpec);
             return Utils.convertByteToHexadecimal(cipher.doFinal(src));
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,10 +103,10 @@ public class AES_256_CBC {
         try {
             byte[] hash = SHA512.digest(toByteArray(ecdh(privateKeyHex, ecies.getEphemPublicKey())));
             byte[] encKeyBytes = Arrays.copyOfRange(hash, 0, 32);
-            Key keySpec = new SecretKeySpec(encKeyBytes, "AES");
+            Key secretKeySpec = new SecretKeySpec(encKeyBytes, "AES");
             IvParameterSpec ivSpec = new IvParameterSpec(toByteArray(ecies.getIv()));
             cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivSpec);
             return cipher.doFinal(Base64.decode(Base64.encodeBytes(toByteArray(new BigInteger(ecies.getCiphertext(), 16)))));
         } catch (Exception e) {
             e.printStackTrace();
