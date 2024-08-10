@@ -5,7 +5,6 @@ package org.torusresearch.torusutils;
 
 import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;
 import static org.torusresearch.torusutils.helpers.Utils.calculateMedian;
-import static org.torusresearch.torusutils.helpers.Utils.padLeft;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -67,11 +66,13 @@ import org.torusresearch.torusutils.types.VerifierParams;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
-import org.web3j.crypto.Keys;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.Provider;
+import java.security.PublicKey;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,9 +95,8 @@ public class TorusUtils {
 
     public final TorusCtorOptions options;
     private static int sessionTime = 86400;
-    private KeyType keyType = KeyType.secp256k1;
+    private final KeyType keyType;
     public static final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
-    ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
 
     {
         setupBouncyCastle();
@@ -154,16 +154,16 @@ public class TorusUtils {
             Set<SessionToken> sessionTokenData = new HashSet<>();
             Set<BigInteger> nodeIndexs = new HashSet<>();
             // generate temporary private and public key that is used to secure receive shares
-            ECKeyPair sessionAuthKey = Keys.createEcKeyPair();
-            String pubKey = Utils.padLeft(sessionAuthKey.getPublicKey().toString(16), '0', 128);
-            String pubKeyX = pubKey.substring(0, pubKey.length() / 2);
-            String pubKeyY = pubKey.substring(pubKey.length() / 2);
+            KeyPair sessionAuthKey = KeyUtils.generateKeyPair();
+            String pubKey = Hex.toHexString(KeyUtils.serializePublicKey(sessionAuthKey.getPublic(), false));
+            String[] pubKeyCoords = KeyUtils.getPublicKeyCoords(pubKey);
+            String pubKeyX = pubKeyCoords[0];
+            String pubKeyY = pubKeyCoords[1];
 
             String tokenCommitment = Hash.sha3String(idToken);
 
             int minRequiredCommitmments = (endpoints.length * 3 / 4) + 1;
             int threshold = (endpoints.length / 2) + 1;
-            ;
 
             boolean isImportShareReq = false;
             if (importedShares != null && importedShares.length > 0) {
@@ -304,7 +304,7 @@ public class TorusUtils {
                             List<String> completedResponsesPubKeys = new ArrayList<>();
                             GetOrSetNonceResult thresholdNonceData = null;
                             ArrayList<String> isNewKeyArr = new ArrayList<>();
-                            Integer shareResponseSize = 0;
+                            int shareResponseSize = 0;
 
                             for (CompletableFuture<String> shareResponse : promiseArrRequests) {
                                 if (shareResponse.get() != null && !shareResponse.get().equals("")) {
@@ -397,7 +397,6 @@ public class TorusUtils {
                                 List<String> shares = new ArrayList<>();
                                 List<String> sessionTokenSigs = new ArrayList<>();
                                 List<String> sessionTokens = new ArrayList<>();
-                                List<Integer> nodeIndexes = new ArrayList<>();
                                 List<SessionToken> sessionTokenDatas = new ArrayList<>();
                                 List<BigInteger> serverTimeOffsetResponses = new ArrayList<>();
                                 KeyAssignResult currentShareResponse;
@@ -416,7 +415,7 @@ public class TorusUtils {
                                             EciesHexOmitCipherText[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
                                             if (sessionTokenSigMetaData != null && sessionTokenSigMetaData[0] != null && sessionTokenSigMetaData[0].getEphemPublicKey() != null) {
                                                 try {
-                                                    String decrypted = Encryption.decryptNodeData(sessionTokenSigMetaData[0], currentShareResponse.getSessionTokenSigs()[0], padLeft(sessionAuthKey.getPrivateKey().toString(16), '0', 64));
+                                                    String decrypted = Encryption.decryptNodeData(sessionTokenSigMetaData[0], currentShareResponse.getSessionTokenSigs()[0], Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate())));
                                                     sessionTokenSigs.add(decrypted);
                                                 } catch (Exception ex) {
                                                     System.out.println("session token sig decryption" + ex);
@@ -435,7 +434,7 @@ public class TorusUtils {
                                             if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
                                                     currentShareResponse.getSessionTokenMetadata()[0].getEphemPublicKey() != null) {
                                                 try {
-                                                    String decrypted = Encryption.decryptNodeData(sessionTokenMetaData[0], currentShareResponse.getSessionTokens()[0], padLeft(sessionAuthKey.getPrivateKey().toString(16), '0', 64));
+                                                    String decrypted = Encryption.decryptNodeData(sessionTokenMetaData[0], currentShareResponse.getSessionTokens()[0], Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate())));
                                                     sessionTokens.add(decrypted);
                                                 } catch (Exception ex) {
                                                     System.out.println("share decryption" + ex);
@@ -456,7 +455,7 @@ public class TorusUtils {
                                             if (firstKey.getShareMetadata() != null) {
                                                 try {
                                                     String cipherTextHex = new String(Base64.decode(firstKey.getShare()), StandardCharsets.UTF_8);
-                                                    String decrypted = Encryption.decryptNodeData(firstKey.getShareMetadata(), cipherTextHex, padLeft(sessionAuthKey.getPrivateKey().toString(16), '0', 64));
+                                                    String decrypted = Encryption.decryptNodeData(firstKey.getShareMetadata(), cipherTextHex, Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate())));
                                                     shares.add(decrypted);
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -503,7 +502,7 @@ public class TorusUtils {
                                 for (int i = 0; i < shares.size(); i++) {
                                     String item = shares.get(i);
                                     if (item != null && !item.isEmpty()) {
-                                        decryptedShares.put(nodeIndexes.get(i), item);
+                                        decryptedShares.put(i, item);
                                     }
                                 }
 
@@ -519,11 +518,19 @@ public class TorusUtils {
                                             .filter(e -> currentCombi.contains(e.getKey()))
                                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                                     List<String> sharesList = new ArrayList<>(currentCombiShares.values());
+                                    List<BigInteger> shareListBigInteger = new ArrayList<>();
+                                    for (String share: sharesList) {
+                                        shareListBigInteger.add(new BigInteger(share, 16));
+                                    }
                                     List<Integer> indices = new ArrayList<>(currentCombiShares.keySet());
-                                    BigInteger derivedPrivateKey = Lagrange.lagrangeInterpolation(sharesList.toArray(new BigInteger[0]), indices.toArray(new BigInteger[0]));
+                                    List<BigInteger> indicesBigInteger = new ArrayList<>();
+                                    for (Integer index: indices) {
+                                        indicesBigInteger.add(BigInteger.valueOf(index.intValue()));
+                                    }
+                                    BigInteger derivedPrivateKey = Lagrange.lagrangeInterpolation(shareListBigInteger.toArray(new BigInteger[0]), indicesBigInteger.toArray(new BigInteger[0]));
                                     assert derivedPrivateKey != null;
-                                    ECKeyPair derivedECKeyPair = ECKeyPair.create(derivedPrivateKey);
-                                    String derivedPubKeyString = Utils.padLeft(derivedECKeyPair.getPublicKey().toString(16), '0', 128);
+                                    PublicKey derivedECKeyPair = KeyUtils.privateToPublic(KeyUtils.deserializePrivateKey(Hex.decode(derivedPrivateKey.toString(16))));
+                                    String derivedPubKeyString = Hex.toHexString(KeyUtils.serializePublicKey(derivedECKeyPair, false)).substring(2);
                                     String derivedPubKeyX = derivedPubKeyString.substring(0, derivedPubKeyString.length() / 2); // this will be padded
                                     String derivedPubKeyY = derivedPubKeyString.substring(derivedPubKeyString.length() / 2);  // this will be padded
                                     if (new BigInteger(derivedPubKeyX, 16).compareTo(new BigInteger(thresholdPubKey.getX(), 16)) == 0 && new BigInteger(derivedPubKeyY, 16).compareTo(new BigInteger(thresholdPubKey.getY(), 16)) == 0) {
@@ -603,7 +610,7 @@ public class TorusUtils {
                                                         EciesHexOmitCipherText[] sessionTokenSigMetaData = currentShareResponse.getSessionTokenSigMetadata();
                                                         if (sessionTokenSigMetaData != null && sessionTokenSigMetaData[0] != null && sessionTokenSigMetaData[0].getEphemPublicKey() != null) {
                                                             try {
-                                                                String decrypted = Encryption.decryptNodeData(sessionTokenSigMetaData[0], currentShareResponse.getSessionTokenSigs()[0], Utils.padLeft(sessionAuthKey.getPrivateKey().toString(16),'0',64));
+                                                                String decrypted = Encryption.decryptNodeData(sessionTokenSigMetaData[0], currentShareResponse.getSessionTokenSigs()[0], Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate())));
                                                                 sessionTokenSigPromises.add(CompletableFuture.completedFuture(decrypted));
                                                             } catch (Exception ex) {
                                                                 System.out.println("session token sig decryption" + ex);
@@ -622,7 +629,7 @@ public class TorusUtils {
                                                         if (sessionTokenMetaData != null && sessionTokenMetaData[0] != null &&
                                                                 currentShareResponse.getSessionTokenMetadata()[0].getEphemPublicKey() != null) {
                                                             try {
-                                                                String decrypted = Encryption.decryptNodeData(sessionTokenMetaData[0], currentShareResponse.getSessionTokens()[0], Utils.padLeft(sessionAuthKey.getPrivateKey().toString(16),'0', 64));
+                                                                String decrypted = Encryption.decryptNodeData(sessionTokenMetaData[0], currentShareResponse.getSessionTokens()[0], Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate())));
                                                                 sessionTokenSigPromises.add(CompletableFuture.completedFuture(decrypted));
                                                             } catch (Exception ex) {
                                                                 System.out.println("share decryption" + ex);
@@ -643,7 +650,7 @@ public class TorusUtils {
                                                         if (firstKey.getShareMetadata() != null) {
                                                             try {
                                                                 String cipherTextHex = new String(Base64.decode(firstKey.getShare()), StandardCharsets.UTF_8);
-                                                                String decrypted = Encryption.decryptNodeData(firstKey.getShareMetadata(), cipherTextHex, padLeft(sessionAuthKey.getPrivateKey().toString(16), '0', 64));
+                                                                String decrypted = Encryption.decryptNodeData(firstKey.getShareMetadata(), cipherTextHex, Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate())));
                                                                 shares.add(decrypted);
                                                             } catch (Exception e) {
                                                                 e.printStackTrace();
@@ -874,7 +881,7 @@ public class TorusUtils {
                             finalPubKey != null ? finalPubKey.normalize().getAffineYCoord().toString() : null,
                             finalPrivKey),
                             new OAuthKeyData(oAuthKeyAddress, oAuthPubkeyX, oAuthPubkeyY, privateKey.toString(16)),
-                            new SessionData(sessionTokens, sessionAuthKey.getPrivateKey().toString(16)),
+                            new SessionData(sessionTokens, Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate()))),
                             new Metadata(pubNonce, metadataNonce, typeOfUser, isUpgraded, serverTimeOffsetResponse),
                             new NodesData(nodeIndexes)
                     ));
