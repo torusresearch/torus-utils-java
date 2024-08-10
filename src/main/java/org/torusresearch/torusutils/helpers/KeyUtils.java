@@ -249,7 +249,7 @@ public class KeyUtils {
             String indexHex = String.format("%064x", nodeIndexes.get(i));
             Share shareInfo = shares.get(indexHex);
             String nodePub = KeyUtils.getPublicKeyFromCoords(nodePubKeys.get(i).getX(), nodePubKeys.get(i).getY(), true);
-            Ecies encryptedMsg = Encryption.encrypt(nodePub.getBytes(), Utils.padLeft(shareInfo.getShare().toString(16), '0', 64));
+            Ecies encryptedMsg = Encryption.encrypt(Hex.decode(nodePub), Utils.padLeft(shareInfo.getShare().toString(16), '0', 64));
             encShares.add(encryptedMsg);
         }
 
