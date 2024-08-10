@@ -40,12 +40,12 @@ public class Encryption {
             return kpgen.generateKeyPair();
     }
 
-    public static byte [] savePublicKey (PublicKey key, Boolean compressed) {
+    public static byte [] serializePublicKey (PublicKey key, Boolean compressed) {
             org.bouncycastle.jce.interfaces.ECPublicKey eckey = (ECPublicKey)key;
             return eckey.getQ().getEncoded(compressed);
     }
 
-    public static PublicKey loadPublicKey (byte [] data) throws Exception
+    public static PublicKey deserializePublicKey (byte [] data) throws Exception
     {
             org.bouncycastle.jce.spec.ECParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
             org.bouncycastle.jce.spec.ECPublicKeySpec pubKey = new org.bouncycastle.jce.spec.ECPublicKeySpec(
@@ -54,11 +54,11 @@ public class Encryption {
             return kf.generatePublic(pubKey);
     }
 
-    public static byte [] savePrivateKey (PrivateKey key) {
+    public static byte [] serializePrivateKey (PrivateKey key) {
             ECPrivateKey eckey = (ECPrivateKey)key;
             return eckey.getD().toByteArray();
     }
-    public static PrivateKey loadPrivateKey (byte [] data) throws Exception {
+    public static PrivateKey deserializePrivateKey (byte [] data) throws Exception {
             ECParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
             org.bouncycastle.jce.spec.ECPrivateKeySpec prvkey = new org.bouncycastle.jce.spec.ECPrivateKeySpec(new BigInteger(data), params);
             KeyFactory kf = KeyFactory.getInstance("ECDH", provider);
@@ -68,8 +68,8 @@ public class Encryption {
     public static byte[] ecdh (byte[] dataPrv, byte[] dataPub) throws Exception
     {
         KeyAgreement ka = KeyAgreement.getInstance("ECDH", provider);
-        ka.init(loadPrivateKey(dataPrv));
-        ka.doPhase(loadPublicKey(dataPub), true);
+        ka.init(deserializePrivateKey(dataPrv));
+        ka.doPhase(deserializePublicKey(dataPub), true);
         return ka.generateSecret();
     }
 
@@ -81,7 +81,7 @@ public class Encryption {
         byte[] iv = new byte[16];
         random.nextBytes(iv);
 
-        byte[] shared = ecdh(savePrivateKey(ephemeral.getPrivate()), savePublicKey(loadPublicKey(publicKey),false));
+        byte[] shared = ecdh(serializePrivateKey(ephemeral.getPrivate()), publicKey);
         byte[] hash = SHA512.digest(shared);
         byte[] aesKey = new byte[32];
         System.arraycopy(hash, 0, aesKey, 0, 32);
@@ -93,7 +93,7 @@ public class Encryption {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(iv); // 16 bytes
-        outputStream.write(savePublicKey(loadPublicKey(publicKey), false)); // 65 bytes
+        outputStream.write(publicKey); // 65 bytes
         outputStream.write(cipherText);
 
         byte[] dataToMac = outputStream.toByteArray();
@@ -103,11 +103,11 @@ public class Encryption {
         byte[] finalMac = new byte[hmac.getMacSize()];
         hmac.update(dataToMac, 0, dataToMac.length);
         hmac.doFinal(finalMac, 0);
-        return new Ecies(Hex.toHexString(iv), Hex.toHexString(savePublicKey(ephemeral.getPublic(),false)),Hex.toHexString(cipherText), Hex.toHexString(finalMac));
+        return new Ecies(Hex.toHexString(iv), Hex.toHexString(serializePublicKey(ephemeral.getPublic(),false)),Hex.toHexString(cipherText), Hex.toHexString(finalMac));
     }
 
     public static String decrypt(String privateKeyHex, Ecies ecies) throws Exception {
-        byte[] shared = ecdh(savePrivateKey(loadPrivateKey(Hex.decode(privateKeyHex))), savePublicKey(loadPublicKey(Hex.decode(ecies.getEphemPublicKey())), false));
+        byte[] shared = ecdh(Hex.decode(privateKeyHex), Hex.decode(ecies.getEphemPublicKey()));
         byte[] sha512hash = SHA512.digest(shared);
         SecretKeySpec aesKey = new SecretKeySpec(Arrays.copyOf(sha512hash, 32), "AES");
 
