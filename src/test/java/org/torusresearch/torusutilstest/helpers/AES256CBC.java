@@ -2,13 +2,12 @@ package org.torusresearch.torusutilstest.helpers;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
-import org.torusresearch.torusutils.apis.Ecies;
+import org.torusresearch.torusutils.apis.ecies.Ecies;
 import org.torusresearch.torusutils.helpers.Encryption.Encryption;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigInteger;
 import java.security.KeyPair;
 
 public class AES256CBC {

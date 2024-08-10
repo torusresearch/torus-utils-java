@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.apis;
+package org.torusresearch.torusutils.apis.ecies;
 
 public class Ecies {
 

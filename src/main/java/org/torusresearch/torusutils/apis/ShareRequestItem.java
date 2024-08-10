@@ -1,5 +1,6 @@
 package org.torusresearch.torusutils.apis;
 
+import org.torusresearch.torusutils.apis.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.types.KeyType;
 
 import java.util.List;

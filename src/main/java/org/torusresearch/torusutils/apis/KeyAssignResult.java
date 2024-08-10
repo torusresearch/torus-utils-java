@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.apis;
 
+import org.torusresearch.torusutils.apis.ecies.EciesHexOmitCipherText;
+
 public class KeyAssignResult {
     private KeyAssignment[] keys;
     private String[] session_tokens;

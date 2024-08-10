@@ -1,6 +1,6 @@
 package org.torusresearch.torusutils.types;
 
-import org.torusresearch.torusutils.apis.EciesHexOmitCipherText;
+import org.torusresearch.torusutils.apis.ecies.EciesHexOmitCipherText;
 
 public class ImportedShare {
 

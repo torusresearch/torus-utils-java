@@ -1,6 +1,6 @@
 package org.torusresearch.torusutils.types;
 
-import org.torusresearch.torusutils.apis.Ecies;
+import org.torusresearch.torusutils.apis.ecies.Ecies;
 
 public class EncryptedSeed {
     private String encText;
