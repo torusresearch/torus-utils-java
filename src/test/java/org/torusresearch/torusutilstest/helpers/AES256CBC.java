@@ -39,7 +39,9 @@ public class AES256CBC {
 
         Ecies encrypted = Encryption.encrypt(KeyUtils.serializePublicKey(keypair.getPublic(), false), payload);
         String decrypted = Encryption.decrypt(Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())), encrypted);
+        String decryptedNodeData = Encryption.decryptNodeData(encrypted.omitCipherText(), encrypted.getCiphertext(), Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())));
 
         assertEquals(payload, decrypted);
+        assertEquals(payload, decryptedNodeData);
     }
 }
