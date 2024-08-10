@@ -4,16 +4,13 @@ import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
 
 import com.google.gson.Gson;
 
-import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.torusresearch.torusutils.apis.APIUtils;
-import org.torusresearch.torusutils.apis.Ecies;
 import org.torusresearch.torusutils.apis.GetPubKeyOrKeyAssignRequestParams;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.KeyLookupResult;
@@ -24,28 +21,19 @@ import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
 import org.torusresearch.torusutils.types.Share;
 import org.torusresearch.torusutils.types.VerifierLookupResponse;
-import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.SecureRandom;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -167,8 +155,9 @@ public class Utils {
                             JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
                             VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
                             String pubNonceX = null;
-                            if (verifierLookupResponse.getKeys().get(0).getNonceData() != null && !verifierLookupResponse.getKeys().get(0).getNonceData().equals("")) {
-                                pubNonceX = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce().getX();
+                            GetOrSetNonceResult.PubNonce pubNonce = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce();
+                            if (pubNonce != null) {
+                                pubNonceX = pubNonce.getX();
                             }
                             if (pubNonceX != null) {
                                 nonceResult = verifierLookupResponse.getKeys().get(0).getNonceData();
@@ -188,6 +177,7 @@ public class Utils {
                             JsonRPCResponse response = gson.fromJson(x1, JsonRPCResponse.class);
                             VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
                             String currentNodePubKey = verifierLookupResponse.getKeys().get(0).getPubKeyX().toLowerCase();
+                            // Possible NullPointerException here
                             String pubNonceX = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce().getX();
                             String thresholdPubKey = null;
                             for (String x : keyResults) {
@@ -248,14 +238,6 @@ public class Utils {
         return sb.toString();
     }
 
-    public static String stripPaddingLeft(String inputString, Character padChar) {
-        StringBuilder sb = new StringBuilder(inputString);
-        while (sb.length() > 1 && sb.charAt(0) == padChar) {
-            sb.deleteCharAt(0);
-        }
-        return sb.toString();
-    }
-
     public static String convertToJsonObject(Object obj) {
         Gson gson = new Gson();
         return obj == null ? "" : gson.toJson(obj);
@@ -268,53 +250,8 @@ public class Utils {
         return curve.getCurve().createPoint(x, y);
     }
 
-    public static String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02X", b));
-        }
-        return sb.toString().toLowerCase(Locale.ROOT);
-    }
-
     public static boolean isSapphireNetwork(String network) {
         return network.contains("sapphire");
-    }
-
-    public static String getJsonRPCObjectMethodName(String network) {
-        if (isSapphireNetwork(network)) {
-            return "GetShareOrKeyAssign";
-        } else {
-            return "ShareRequest";
-        }
-    }
-
-    private static final char[] DIGITS
-            = {'0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-    public static String getECDSASignature(BigInteger privateKey, String data) throws IOException {
-        ECKeyPair derivedECKeyPair = ECKeyPair.create(privateKey);
-        byte[] hashedData = Hash.sha3(data.getBytes(StandardCharsets.UTF_8));
-        ECDSASignature signature = derivedECKeyPair.sign(hashedData);
-        String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
-        byte[] sigBytes = Utils.toByteArray(new BigInteger(sig, 16));
-        String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
-        return finalSig;
-    }
-
-    public static String randomString(int len) {
-        String charSet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        SecureRandom rnd = new SecureRandom();
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
-            sb.append(charSet.charAt(rnd.nextInt(charSet.length())));
-        }
-        return sb.toString();
-    }
-
-    public static String getPubKey(String sessionId) {
-        ECKeyPair derivedECKeyPair = ECKeyPair.create(new BigInteger(sessionId, 16));
-        return derivedECKeyPair.getPublicKey().toString(16);
     }
 
     public static String getPrivKey(String sessionId) {
@@ -452,49 +389,6 @@ public class Utils {
         return key;
     }
 
-    public static byte[] convertToByteArray(Object object) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(object);
-        oos.flush();
-        return bos.toByteArray();
-    }
-
-    public static Ecies encParamsBufToHex(Ecies encParams) {
-        return new Ecies(
-                bytesToHex(encParams.getIv().getBytes(StandardCharsets.UTF_8)),
-                bytesToHex(encParams.getEphemPublicKey().getBytes(StandardCharsets.UTF_8)),
-                bytesToHex(encParams.getCiphertext().getBytes(StandardCharsets.UTF_8)),
-                bytesToHex(encParams.getMac().getBytes(StandardCharsets.UTF_8)),
-                "AES256"
-        );
-    }
-
-    public static String toHex(byte[] data) {
-        final StringBuilder sb = new StringBuilder(data.length * 2);
-        for (byte datum : data) {
-            sb.append(DIGITS[(datum >>> 4) & 0x0F]);
-            sb.append(DIGITS[datum & 0x0F]);
-        }
-        return sb.toString();
-    }
-
-    public static String convertBase64ToHex(String base64String) throws IOException {
-        byte[] decodedBytes = Base64.decode(base64String);
-        return bytesToHex(decodedBytes);
-    }
-
-    public static byte[] fromHexString(final String encoded) {
-        final byte[] result = new byte[encoded.length() / 2];
-        final char[] enc = encoded.toCharArray();
-        for (int i = 0; i < enc.length; i += 2) {
-            StringBuilder curr = new StringBuilder(2);
-            curr.append(enc[i]).append(enc[i + 1]);
-            result[i / 2] = (byte) Integer.parseInt(curr.toString(), 16);
-        }
-        return result;
-    }
-
     public static BigInteger calculateMedian(List<BigInteger> arr) {
         int arrSize = arr.size();
 
@@ -513,41 +407,6 @@ public class Utils {
         return (mid1.add(mid2)).divide(BigInteger.valueOf(2));
     }
 
-    public static ECParameterSpec getKeyCurve(KeyType keyType) {
-        switch (keyType) {
-            case ed25519:
-                return getCurveParams("Ed25519");
-            case secp256k1:
-                return getCurveParams("secp256k1");
-            default:
-                throw new IllegalArgumentException("Invalid keyType: " + keyType);
-        }
-    }
-
-    private static ECParameterSpec getCurveParams(String curveName) {
-        Provider bcProvider = Security.getProvider("BC");
-        if (bcProvider == null) {
-            throw new IllegalStateException("BouncyCastle provider not found");
-        }
-        ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec(curveName);
-        if (spec == null) {
-            throw new IllegalArgumentException("Unsupported curve: " + curveName);
-        }
-        return new ECParameterSpec(spec.getCurve(), spec.getG(), spec.getN(), spec.getH(), spec.getSeed());
-    }
-
-    private static byte[] keccak256(byte[] input) {
-        Keccak.Digest256 digest = new Keccak.Digest256();
-        return digest.digest(input);
-    }
-
-    public static byte[] getRandomBytes(int length) {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] bytes = new byte[length];
-        secureRandom.nextBytes(bytes);
-        return bytes;
-    }
-
     public static String addLeading0sForLength64(String input) {
         StringBuilder inputBuilder = new StringBuilder(input);
         while (inputBuilder.length() < 64) {
@@ -555,16 +414,6 @@ public class Utils {
         }
         input = inputBuilder.toString();
         return input;
-    }
-
-    public static String stripLeadingZeros(String hexString) {
-        int len = hexString.length();
-        int firstNonZero = 0;
-        // Find the first non-zero character index
-        while (firstNonZero < len - 1 && hexString.charAt(firstNonZero) == '0') {
-            firstNonZero++;
-        }
-        return hexString.substring(firstNonZero);
     }
 
     public static String addLeadingZerosForLength64(String input) {
@@ -599,15 +448,6 @@ public class Utils {
         return pubKey;
     }
 
-    public static String convertByteToHexadecimal(byte[] byteArray) {
-        StringBuilder hex = new StringBuilder();
-        // Iterating through each byte in the array
-        for (byte b : byteArray) {
-            hex.append(String.format("%02X", b));
-        }
-        return hex.toString().toLowerCase(Locale.ROOT);
-    }
-
     public static int getProxyCoordinatorEndpointIndex(String[] endpoints, String verifier, String verifierId) {
         String verifierIdString = verifier + verifierId;
         String hashedVerifierId = Hash.sha3(verifierIdString).replace("0x", "");
@@ -625,13 +465,4 @@ public class Utils {
         }
         return b;
     }
-    public static byte[] toByteArray(String s) {
-        byte[] data = new byte[s.length() / 2];
-        for (int i = 0; i < s.length(); i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i+1), 16));
-        }
-        return data;
-    }
-
 }
