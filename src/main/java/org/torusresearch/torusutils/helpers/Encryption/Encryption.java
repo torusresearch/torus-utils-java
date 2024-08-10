@@ -12,6 +12,7 @@ import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Hex;
 import org.torusresearch.torusutils.apis.Ecies;
 import org.torusresearch.torusutils.apis.EciesHexOmitCipherText;
+import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.SHA512;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -34,54 +35,23 @@ import javax.crypto.spec.SecretKeySpec;
 public class Encryption {
     static final protected Provider provider  = new BouncyCastleProvider();
 
-    public static KeyPair generateKeyPair() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-            KeyPairGenerator kpgen = KeyPairGenerator.getInstance("ECDH", provider);
-            kpgen.initialize(new ECGenParameterSpec("secp256k1"), new SecureRandom());
-            return kpgen.generateKeyPair();
-    }
-
-    public static byte [] serializePublicKey (PublicKey key, Boolean compressed) {
-            org.bouncycastle.jce.interfaces.ECPublicKey eckey = (ECPublicKey)key;
-            return eckey.getQ().getEncoded(compressed);
-    }
-
-    public static PublicKey deserializePublicKey (byte [] data) throws Exception
-    {
-            org.bouncycastle.jce.spec.ECParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
-            org.bouncycastle.jce.spec.ECPublicKeySpec pubKey = new org.bouncycastle.jce.spec.ECPublicKeySpec(
-                    params.getCurve().decodePoint(data), params);
-            KeyFactory kf = KeyFactory.getInstance("ECDH", provider);
-            return kf.generatePublic(pubKey);
-    }
-
-    public static byte [] serializePrivateKey (PrivateKey key) {
-            ECPrivateKey eckey = (ECPrivateKey)key;
-            return eckey.getD().toByteArray();
-    }
-    public static PrivateKey deserializePrivateKey (byte [] data) throws Exception {
-            ECParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
-            org.bouncycastle.jce.spec.ECPrivateKeySpec prvkey = new org.bouncycastle.jce.spec.ECPrivateKeySpec(new BigInteger(data), params);
-            KeyFactory kf = KeyFactory.getInstance("ECDH", provider);
-            return kf.generatePrivate(prvkey);
-    }
-
     public static byte[] ecdh (byte[] dataPrv, byte[] dataPub) throws Exception
     {
         KeyAgreement ka = KeyAgreement.getInstance("ECDH", provider);
-        ka.init(deserializePrivateKey(dataPrv));
-        ka.doPhase(deserializePublicKey(dataPub), true);
+        ka.init(KeyUtils.deserializePrivateKey(dataPrv));
+        ka.doPhase(KeyUtils.deserializePublicKey(dataPub), true);
         return ka.generateSecret();
     }
 
     public static Ecies encrypt(byte[] publicKey, String plaintext) throws Exception {
-        KeyPair ephemeral = Encryption.generateKeyPair();
+        KeyPair ephemeral = KeyUtils.generateKeyPair();
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", provider);
 
         SecureRandom random = new SecureRandom();
         byte[] iv = new byte[16];
         random.nextBytes(iv);
 
-        byte[] shared = ecdh(serializePrivateKey(ephemeral.getPrivate()), publicKey);
+        byte[] shared = ecdh(KeyUtils.serializePrivateKey(ephemeral.getPrivate()), publicKey);
         byte[] hash = SHA512.digest(shared);
         byte[] aesKey = new byte[32];
         System.arraycopy(hash, 0, aesKey, 0, 32);
@@ -103,7 +73,7 @@ public class Encryption {
         byte[] finalMac = new byte[hmac.getMacSize()];
         hmac.update(dataToMac, 0, dataToMac.length);
         hmac.doFinal(finalMac, 0);
-        return new Ecies(Hex.toHexString(iv), Hex.toHexString(serializePublicKey(ephemeral.getPublic(),false)),Hex.toHexString(cipherText), Hex.toHexString(finalMac));
+        return new Ecies(Hex.toHexString(iv), Hex.toHexString(KeyUtils.serializePublicKey(ephemeral.getPublic(),false)),Hex.toHexString(cipherText), Hex.toHexString(finalMac));
     }
 
     public static String decrypt(String privateKeyHex, Ecies ecies) throws Exception {

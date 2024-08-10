@@ -2,11 +2,7 @@ package org.torusresearch.torusutils.helpers;
 
 import static org.torusresearch.torusutils.helpers.Utils.addLeading0sForLength64;
 import static org.torusresearch.torusutils.helpers.Utils.getRandomBytes;
-import static org.torusresearch.torusutils.helpers.Utils.padLeft;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
-
 import org.bouncycastle.asn1.x9.ECNamedCurveTable;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.digests.KeccakDigest;
@@ -14,8 +10,11 @@ import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
@@ -34,42 +33,29 @@ import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
-import org.web3j.utils.Numeric;
-
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Security;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.bouncycastle.util.encoders.Hex;
-
 public class KeyUtils {
-    private static final ECDomainParameters curve;
-
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-        X9ECParameters params = ECNamedCurveTable.getByName("secp256k1");
-        curve = new ECDomainParameters(
-                params.getCurve(),
-                params.getG(),
-                params.getN(),
-                params.getH(),
-                params.getSeed()
-        );
-    }
+    static final protected Provider provider  = new BouncyCastleProvider();
+    static final protected X9ECParameters curveParams = ECNamedCurveTable.getByName("secp256k1");
 
     public static String keccak256(String input) {
         byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
-        KeccakDigest digest = new KeccakDigest(256);
-        digest.update(inputBytes, 0, inputBytes.length);
-        byte[] hash = new byte[digest.getDigestSize()];
-        digest.doFinal(hash, 0);
+        byte[] hash = keccak256(inputBytes);
         return Hex.toHexString(hash);
     }
 
@@ -81,39 +67,57 @@ public class KeyUtils {
         return hash;
     }
 
-    public static String randomNonce() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        ECKeyPair keyPair = generateKeyPair();
-        return serializeSecret(keyPair);
+
+    public static KeyPair generateKeyPair() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+        KeyPairGenerator kpgen = KeyPairGenerator.getInstance("ECDH", provider);
+        kpgen.initialize(new ECGenParameterSpec("secp256k1"), new SecureRandom());
+        return kpgen.generateKeyPair();
     }
 
-    public static ECKeyPair generateKeyPair() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        return Keys.createEcKeyPair();
+    public static byte [] serializePublicKey (PublicKey key, Boolean compressed) {
+        org.bouncycastle.jce.interfaces.ECPublicKey eckey = (ECPublicKey)key;
+        return eckey.getQ().getEncoded(compressed);
     }
 
-    public static String serializeSecret(ECKeyPair keyPair)  {
-        return Utils.padLeft(keyPair.getPrivateKey().toString(16), '0', 64);
+    public static PublicKey deserializePublicKey (byte [] data) throws Exception
+    {
+        org.bouncycastle.jce.spec.ECParameterSpec params = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
+        org.bouncycastle.jce.spec.ECPublicKeySpec pubKey = new org.bouncycastle.jce.spec.ECPublicKeySpec(
+                params.getCurve().decodePoint(data), params);
+        KeyFactory kf = KeyFactory.getInstance("ECDH", provider);
+        return kf.generatePublic(pubKey);
     }
 
-    public static String serializePublic(ECKeyPair keyPair)  {
-        return "04" + Utils.padLeft(keyPair.getPublicKey().toString(16), '0', 128);
+    public static byte [] serializePrivateKey (PrivateKey key) {
+        ECPrivateKey eckey = (ECPrivateKey)key;
+        return eckey.getD().toByteArray();
+    }
+    public static PrivateKey deserializePrivateKey (byte [] data) throws Exception {
+        ECParameterSpec params = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
+        org.bouncycastle.jce.spec.ECPrivateKeySpec prvkey = new org.bouncycastle.jce.spec.ECPrivateKeySpec(new BigInteger(data), params);
+        KeyFactory kf = KeyFactory.getInstance("ECDH", provider);
+        return kf.generatePrivate(prvkey);
     }
 
+    public static String randomNonce() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+        KeyPair keyPair = generateKeyPair();
+        return Hex.toHexString(serializePrivateKey(keyPair.getPrivate()));
+    }
 
     public static BigInteger getOrderOfCurve() {
-        //X9ECParameters curve = CustomNamedCurves.getByName("secp256k1");
-        return curve.getN();
+        return curveParams.getN();
     }
 
-    public static String generateAddressFromPrivKey(String privateKey) {
-        BigInteger privKey = new BigInteger(privateKey, 16);
-        return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.toByteArray())));
+    public static String generateAddressFromPrivKey(String privateKey) throws Exception {
+        PrivateKey privKey = deserializePrivateKey(Hex.decode(privateKey));
+        return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.getEncoded())));
     }
 
     public static String generateAddressFromPubKey(BigInteger pubKeyX, BigInteger pubKeyY) {
         ECNamedCurveParameterSpec curve = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
         ECPoint rawPoint = curve.getCurve().createPoint(pubKeyX, pubKeyY);
         String finalPubKey = Utils.padLeft(rawPoint.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(rawPoint.getAffineYCoord().toString(), '0', 64);
-        return Keys.toChecksumAddress(Hash.sha3(finalPubKey).substring(64 - 38));
+        return Keys.toChecksumAddress(keccak256(finalPubKey).substring(64 - 38));
     }
 
     public static String[] getPublicKeyCoords(String pubKey) throws TorusUtilError {
@@ -169,14 +173,15 @@ public class KeyUtils {
         BigInteger randomNonce = new BigInteger(1, getRandomBytes(32));
         randomNonce = new BigInteger(addLeading0sForLength64(randomNonce.toString(16)), 16);
 
-        BigInteger oAuthKey = scalar.subtract(randomNonce).mod(curve.getN());
-        ECPrivateKeyParameters oAuthPrivKey = new ECPrivateKeyParameters(oAuthKey, curve);
-        ECPoint oAuthPubPoint = curve.getG().multiply(oAuthPrivKey.getD());
-        ECPublicKeyParameters oAuthPubKey = new ECPublicKeyParameters(oAuthPubPoint, curve);
+        ECDomainParameters params = new ECDomainParameters(curveParams);
+        BigInteger oAuthKey = scalar.subtract(randomNonce).mod(curveParams.getN());
+        ECPrivateKeyParameters oAuthPrivKey = new ECPrivateKeyParameters(oAuthKey, params);
+        ECPoint oAuthPubPoint = curveParams.getG().multiply(oAuthPrivKey.getD());
+        ECPublicKeyParameters oAuthPubKey = new ECPublicKeyParameters(oAuthPubPoint, params);
 
-        ECPrivateKeyParameters finalPrivKey = new ECPrivateKeyParameters(scalar, curve);
-        ECPoint finalPubPoint = curve.getG().multiply(finalPrivKey.getD());
-        ECPublicKeyParameters finalPubKey = new ECPublicKeyParameters(finalPubPoint, curve);
+        ECPrivateKeyParameters finalPrivKey = new ECPrivateKeyParameters(scalar, params);
+        ECPoint finalPubPoint = curveParams.getG().multiply(finalPrivKey.getD());
+        ECPublicKeyParameters finalPubKey = new ECPublicKeyParameters(finalPubPoint,params);
 
         return new PrivateKeyData(
                 oAuthKey.toString(16),
@@ -189,7 +194,7 @@ public class KeyUtils {
         );
     }
 
-    public static NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce, BigInteger serverTimeOffset) throws JsonProcessingException {
+    public static NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce, BigInteger serverTimeOffset) {
         long timeSeconds = System.currentTimeMillis() / 1000L;
         BigInteger timestamp = serverTimeOffset.add(BigInteger.valueOf(timeSeconds));
 
@@ -258,27 +263,7 @@ public class KeyUtils {
         for (int i = 0; i < nodePubKeys.size(); i++) {
             String indexHex = String.format("%064x", nodeIndexes.get(i));
             Share shareInfo = shares.get(indexHex);
-
-            //String iv = Utils.convertByteToHexadecimal(Utils.getRandomBytes(16));
             String nodePub = KeyUtils.getPublicKeyFromCoords(nodePubKeys.get(i).getX(), nodePubKeys.get(i).getY(), true);
-            // TODO: Fix this, the privateKey here is a ephemeral private key per iteration and not the imported key.
-            // This ephemeral key is randomly generated, then ecdh is done with the public key, then hashed with sha512 to get:
-            // (aes_key, mac_key) = ephemeral.split(hash_size)
-            // (iv) is randomly generated bytes
-            // then encrypted becomes: aes_ecrypt(msg, aes_key, iv)
-
-            // Final ECIES:
-            // ciphertext = hex::encoded(encrypted_bytes)
-            // iv = hex:encode(iv_bytes)
-            // mac = hex:encode(mac_key_bytes)
-            // mode = "AES256"
-
-            // for node submission
-            // ciphertext is submitted as encrypted_share
-            // omit ciphertext for encrypted_metadata.
-
-            //AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, nodePub, iv);
-            //String encryptedMsg = aes256cbc.encryptAndHex(AES256CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
             Ecies encryptedMsg = Encryption.encrypt(nodePub.getBytes(), Utils.padLeft(shareInfo.getShare().toString(16), '0', 64));
             encShares.add(encryptedMsg);
         }

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.gson.Gson;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -357,7 +358,7 @@ public class SapphireDevnetTest {
     public void testShouldBeAbleToImportKeyForANewUser() throws Exception {
         String fakeEmail = JwtUtils.getRandomEmail();
         String jwt = JwtUtils.generateIdToken(fakeEmail, algorithmRs);
-        String privateKey = KeyUtils.serializeSecret(KeyUtils.generateKeyPair());
+        String privateKey = Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate()));
         VerifierParams verifierParams = new VerifierParams();
         verifierParams.setVerifierId(fakeEmail);
 
