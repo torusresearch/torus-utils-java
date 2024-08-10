@@ -10,6 +10,8 @@ import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.jcajce.provider.digest.Keccak;
+import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -52,21 +54,6 @@ import java.util.Map;
 public class KeyUtils {
     static final protected Provider provider  = new BouncyCastleProvider();
     static final protected X9ECParameters curveParams = ECNamedCurveTable.getByName("secp256k1");
-
-    public static String keccak256(String input) {
-        byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
-        byte[] hash = keccak256(inputBytes);
-        return Hex.toHexString(hash);
-    }
-
-    public static byte[] keccak256(byte[] input) {
-        KeccakDigest digest = new KeccakDigest(256);
-        digest.update(input, 0, input.length);
-        byte[] hash = new byte[digest.getDigestSize()];
-        digest.doFinal(hash, 0);
-        return hash;
-    }
-
 
     public static KeyPair generateKeyPair() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         KeyPairGenerator kpgen = KeyPairGenerator.getInstance("ECDH", provider);
@@ -113,11 +100,9 @@ public class KeyUtils {
         return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.getEncoded())));
     }
 
-    public static String generateAddressFromPubKey(BigInteger pubKeyX, BigInteger pubKeyY) {
-        ECNamedCurveParameterSpec curve = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
-        ECPoint rawPoint = curve.getCurve().createPoint(pubKeyX, pubKeyY);
-        String finalPubKey = Utils.padLeft(rawPoint.getAffineXCoord().toString(), '0', 64) + Utils.padLeft(rawPoint.getAffineYCoord().toString(), '0', 64);
-        return Keys.toChecksumAddress(keccak256(finalPubKey).substring(64 - 38));
+    public static String generateAddressFromPubKey(String publicKeyX, String publicKeyY) throws Exception {
+        String finalPublicKey = publicKeyX + publicKeyY;
+        return Keys.toChecksumAddress(Keys.getAddress(finalPublicKey));
     }
 
     public static String[] getPublicKeyCoords(String pubKey) throws TorusUtilError {

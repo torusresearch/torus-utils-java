@@ -851,7 +851,7 @@ public class TorusUtils {
                     String oAuthKeyAddress = KeyUtils.generateAddressFromPrivKey(privateKey.toString(16));
                     String finalEvmAddress = "";
                     if (finalPubKey != null) {
-                        finalEvmAddress = KeyUtils.generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger(), finalPubKey.normalize().getAffineYCoord().toBigInteger());
+                        finalEvmAddress = KeyUtils.generateAddressFromPubKey(finalPubKey.normalize().getAffineXCoord().toBigInteger().toString(16), finalPubKey.normalize().getAffineYCoord().toBigInteger().toString(16));
                     }
 
                     String finalPrivKey = "";
@@ -977,6 +977,8 @@ public class TorusUtils {
                             return formatLegacyPublicKeyData(verifierLookupItem, true, isNewKey, finalServerTimeOffset);
                         } catch (GetOrSetNonceError | ExecutionException | InterruptedException e) {
                             e.printStackTrace();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
                         }
                     } else {
                         try {
@@ -1011,8 +1013,18 @@ public class TorusUtils {
                     String finalPubKeyX = finalPubKeyCoords[0];
                     String finalPubKeyY = finalPubKeyCoords[1];
 
-                    String oAuthAddress = KeyUtils.generateAddressFromPubKey(new BigInteger(oAuthPubKeyX, 16), new BigInteger(oAuthPubKeyY, 16));
-                    String finalAddresss = KeyUtils.generateAddressFromPubKey(new BigInteger(finalPubKeyX, 16), new BigInteger(finalPubKeyY, 16));
+                    String oAuthAddress = null;
+                    try {
+                        oAuthAddress = KeyUtils.generateAddressFromPubKey(oAuthPubKeyX,  oAuthPubKeyY);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    String finalAddresss = null;
+                    try {
+                        finalAddresss = KeyUtils.generateAddressFromPubKey(finalPubKeyX, finalPubKeyY);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
 
                     TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthPubKeyX, oAuthPubKeyY),
                             new FinalPubKeyData(finalAddresss, finalPubKeyX, finalPubKeyY),
@@ -1024,7 +1036,7 @@ public class TorusUtils {
     }
 
     private CompletableFuture<TorusPublicKey> formatLegacyPublicKeyData(VerifierLookupItem finalKeyResult, boolean enableOneKey, AtomicBoolean isNewKey,
-                                                                        BigInteger serverTimeOffset) throws GetOrSetNonceError, ExecutionException, InterruptedException {
+                                                                        BigInteger serverTimeOffset) throws Exception {
         String X = finalKeyResult.getPub_key_X();
         String Y = finalKeyResult.getPub_key_Y();
 
@@ -1071,13 +1083,13 @@ public class TorusUtils {
         }
         String oAuthX = oAuthPubKey.getAffineXCoord().toString();
         String oAuthY = oAuthPubKey.getAffineYCoord().toString();
-        String oAuthAddress = KeyUtils.generateAddressFromPubKey(oAuthPubKey.getAffineXCoord().toBigInteger(), oAuthPubKey.getAffineYCoord().toBigInteger());
+        String oAuthAddress = KeyUtils.generateAddressFromPubKey(oAuthPubKey.getAffineXCoord().toBigInteger().toString(16), oAuthPubKey.getAffineYCoord().toBigInteger().toString(16));
         if (typeOfUser.equals(TypeOfUser.v2) && finalPubKey == null) {
             throw new Error("Unable to derive finalPubKey");
         }
         String finalX = finalPubKey != null ? finalPubKey.getAffineXCoord().toString() : "";
         String finalY = finalPubKey != null ? finalPubKey.getAffineYCoord().toString() : "";
-        String finalAddress = finalPubKey != null ? KeyUtils.generateAddressFromPubKey(finalPubKey.getAffineXCoord().toBigInteger(), finalPubKey.getAffineYCoord().toBigInteger()) : "";
+        String finalAddress = finalPubKey != null ? KeyUtils.generateAddressFromPubKey(finalPubKey.getAffineXCoord().toBigInteger().toString(16), finalPubKey.getAffineYCoord().toBigInteger().toString(16)) : "";
 
         TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthX, oAuthY),
                 new FinalPubKeyData(finalAddress, finalX, finalY),
