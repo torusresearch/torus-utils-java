@@ -279,7 +279,7 @@ public class KeyUtils {
 
             //AES256CBC aes256cbc = new org.torusresearch.torusutils.helpers.AES256CBC(privateKey, nodePub, iv);
             //String encryptedMsg = aes256cbc.encryptAndHex(AES256CBC.toByteArray(Utils.padLeft(shareInfo.getShare().toString(16), '0', 64)));
-            Ecies encryptedMsg = Encryption.encrypt(Encryption.savePublicKey(Encryption.loadPublicKey(nodePub.getBytes())), Utils.padLeft(shareInfo.getShare().toString(16), '0', 64));
+            Ecies encryptedMsg = Encryption.encrypt(Encryption.savePublicKey(Encryption.loadPublicKey(nodePub.getBytes()), false), Utils.padLeft(shareInfo.getShare().toString(16), '0', 64));
             encShares.add(encryptedMsg);
         }
 
