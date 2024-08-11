@@ -71,13 +71,17 @@ public class Utils {
 
     public static List<List<Integer>> kCombinations(List<Integer> set, int k) {
         List<List<Integer>> combs = new ArrayList<>();
-        if (k > set.size()) {
+
+        if ((k == 0) || k > set.size())
+        {
             return combs;
         }
+
         if (k == set.size()) {
             combs.add(set);
             return combs;
         }
+
         if (k == 1) {
             for (Integer i : set) {
                 ArrayList<Integer> arrList = new ArrayList<>();
@@ -86,7 +90,8 @@ public class Utils {
             }
             return combs;
         }
-        for (int i = 0; i < set.size() - k + 1; i++) {
+
+        for (int i = 0; i < ((set.size() - k) + 1); i++) {
             List<List<Integer>> tailCombs = Utils.kCombinations(set.subList(i + 1, set.size()), k - 1);
             for (List<Integer> tailComb : tailCombs) {
                 List<Integer> prependedComb = new ArrayList<>();
@@ -178,7 +183,13 @@ public class Utils {
                             VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
                             String currentNodePubKey = verifierLookupResponse.getKeys().get(0).getPubKeyX().toLowerCase();
                             // Possible NullPointerException here
-                            String pubNonceX = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce().getX();
+                            GetOrSetNonceResult.PubNonce pubNonce = verifierLookupResponse.getKeys().get(0).getNonceData().getPubNonce();
+                            String pubNonceX = null;
+                            if (pubNonce != null)
+                            {
+                                pubNonceX = pubNonce.getX();
+                            }
+
                             String thresholdPubKey = null;
                             for (String x : keyResults) {
                                 KeysRPCResponse keyResponse = gson.fromJson(x, KeysRPCResponse.class);
