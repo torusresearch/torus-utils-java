@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
 
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,7 +73,7 @@ public class CyanTest {
 
     @DisplayName("Gets Public Address")
     @Test
-    public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
+    public void shouldGetPublicAddress() throws ExecutionException, InterruptedException, JSONException {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
@@ -92,7 +93,7 @@ public class CyanTest {
 
     @DisplayName("Fetch User Type and Public Address")
     @Test
-    public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException {
+    public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException, JSONException {
         VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
@@ -149,7 +150,7 @@ public class CyanTest {
 
     @DisplayName("Key Assign test")
     @Test
-    public void shouldKeyAssign() throws ExecutionException, InterruptedException {
+    public void shouldKeyAssign() throws ExecutionException, InterruptedException, JSONException {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-cyan", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs("tkey-google-cyan", email, "")).get();

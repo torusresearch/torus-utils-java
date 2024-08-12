@@ -16,6 +16,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.APIUtils;
@@ -890,11 +891,11 @@ public class TorusUtils {
         }
     }
 
-    public CompletableFuture<TorusPublicKey> getNewPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended, String networkMigrated) {
+    public CompletableFuture<TorusPublicKey> getNewPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended, String networkMigrated) throws JSONException, ExecutionException, InterruptedException {
         System.out.println("> torusUtils.java/getPublicAddress " + endpoints + " " + verifierArgs + " " + isExtended);
         AtomicBoolean isNewKey = new AtomicBoolean(false);
         Gson gson = new Gson();
-        return Utils.getPubKeyOrKeyAssign(endpoints, networkMigrated, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.keyType, verifierArgs.getExtendedVerifierId())
+        return Utils.getPubKeyOrKeyAssign(endpoints, networkMigrated, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), "hello", this.options.getServerTimeOffset().intValue(), verifierArgs.getExtendedVerifierId())
                 .thenComposeAsync(keyAssignResult -> {
                     JRPCResponse.ErrorInfo errorResult = keyAssignResult.errorResult;
                     KeyResult keyResult = keyAssignResult.keyResult;
@@ -1080,11 +1081,11 @@ public class TorusUtils {
         return keyCf;
     }
 
-    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) {
+    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) throws JSONException, ExecutionException, InterruptedException {
         return getNewPublicAddress(endpoints, verifierArgs, isExtended, getMigratedNetworkInfo());
     }
 
-    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, VerifierArgs verifierArgs) {
+    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, VerifierArgs verifierArgs) throws JSONException, ExecutionException, InterruptedException {
         return getNewPublicAddress(endpoints, verifierArgs, false, getMigratedNetworkInfo());
     }
 
@@ -1136,7 +1137,7 @@ public class TorusUtils {
         return this.getOrSetNonce(privKey, serverTimeOffset, true);
     }
 
-    public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, VerifierArgs verifierArgs) {
+    public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, VerifierArgs verifierArgs) throws JSONException, ExecutionException, InterruptedException {
         return getNewPublicAddress(endpoints, verifierArgs, false, getMigratedNetworkInfo());
     }
 

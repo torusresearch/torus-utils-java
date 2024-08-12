@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -85,7 +86,7 @@ public class SapphireMainnetTest {
 
     @DisplayName("Gets Public Address")
     @Test
-    public void shouldGetPublicAddress() throws ExecutionException, InterruptedException {
+    public void shouldGetPublicAddress() throws ExecutionException, InterruptedException, JSONException {
         String verifier = "tkey-google-sapphire-mainnet";
         VerifierArgs args = new VerifierArgs(verifier, TORUS_TEST_EMAIL, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
@@ -107,7 +108,7 @@ public class SapphireMainnetTest {
 
     @DisplayName("Key Assign test")
     @Test
-    public void shouldKeyAssign() throws ExecutionException, InterruptedException {
+    public void shouldKeyAssign() throws ExecutionException, InterruptedException, JSONException {
         String verifier = "tkey-google-sapphire-mainnet";
         String email = JwtUtils.getRandomEmail();
         VerifierArgs args = new VerifierArgs(verifier, email, "");
