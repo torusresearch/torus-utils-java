@@ -70,7 +70,7 @@ public class MainnetTest {
 
     @DisplayName("Gets Public Address")
     @Test
-    public void shouldGetPublicAddress() throws ExecutionException, InterruptedException, JSONException {
+    public void shouldGetPublicAddress() throws Exception {
         VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
@@ -90,7 +90,7 @@ public class MainnetTest {
 
     @DisplayName("Fetch User Type and Public Address")
     @Test
-    public void shouldFetchUserTypeAndPublicAddress() throws ExecutionException, InterruptedException, JSONException {
+    public void shouldFetchUserTypeAndPublicAddress() throws Exception {
         VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
@@ -144,7 +144,7 @@ public class MainnetTest {
 
     @DisplayName("Key Assign test")
     @Test
-    public void shouldKeyAssign() throws ExecutionException, InterruptedException, JSONException {
+    public void shouldKeyAssign() throws Exception {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs("google", email, "")).get();

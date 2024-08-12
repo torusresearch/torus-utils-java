@@ -12,7 +12,7 @@ public class TorusCtorOptions {
     private String allowHost;
     private String signerHost;
     // in seconds
-    private BigInteger serverTimeOffset = new BigInteger("0");
+    private BigInteger serverTimeOffset = BigInteger.ZERO;
     private String origin;
     private Web3AuthNetwork network;
     private String clientId;

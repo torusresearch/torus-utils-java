@@ -6,28 +6,36 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
+import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.params.ParametersWithRandom;
+import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.util.encoders.Hex;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
-import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
-import org.torusresearch.torusutils.apis.KeyAssignResult;
 import org.torusresearch.torusutils.apis.KeyLookupResult;
 import org.torusresearch.torusutils.apis.KeyResult;
-import org.torusresearch.torusutils.apis.KeysRPCResponse;
+import org.torusresearch.torusutils.apis.requests.GetNonceParams;
+import org.torusresearch.torusutils.apis.requests.GetNonceSetDataParams;
 import org.torusresearch.torusutils.apis.requests.GetOrSetKeyParams;
 import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.apis.responses.PubNonce;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierKey;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierLookupResponse;
 import org.torusresearch.torusutils.types.JRPCResponse;
+import org.torusresearch.torusutils.types.MetadataParams;
+import org.torusresearch.torusutils.types.SetData;
 import org.torusresearch.torusutils.types.TorusKeyType;
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
@@ -36,20 +44,21 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 
+import java.lang.reflect.Type;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class Utils {
@@ -71,7 +80,7 @@ public class Utils {
             if (index != null) {
                 hashMap.put(value, index+1);
             } else {
-                hashMap.put(value, index == null ? 0 : index);
+                hashMap.put(value, 0);
             }
             if (hashMap.get(value) != null && hashMap.get(value) == threshold) {
                 return s;
@@ -133,7 +142,11 @@ public class Utils {
         return !network.name().contains("sapphire");
     }
     public static KeyResult normalizeKeyResult(VerifierLookupResponse result) {
-        KeyResult finalResult = new KeyResult(result.is_new_key);
+        Boolean isNewKey = false;
+        if (result.is_new_key != null) {
+            isNewKey = result.is_new_key;
+        }
+        KeyResult finalResult = new KeyResult(isNewKey);
         if (result.keys.length > 0) {
             VerifierKey finalKey = result.keys[0];
             finalResult.keys = new VerifierKey[]{ finalKey };
@@ -141,17 +154,72 @@ public class Utils {
         return finalResult;
     }
 
-    public static CompletableFuture<KeyLookupResult> getPubKeyOrKeyAssign(String[] endpoints, Web3AuthNetwork network, String verifier, String verifierId, String legacyMetdadataHost, @Nullable Integer serverTimeOffset, @Nullable String extendedVerifierId) throws ExecutionException, InterruptedException, JSONException {
-        int threshold = (endpoints.length / 2) + 1;
+    public static MetadataParams generateMetadataParams(@NotNull Integer serverTimeOffset, @NotNull String message, @NotNull String privateKey, @NotNull String X, @NotNull String Y, @Nullable TorusKeyType keyType) throws Exception {
+        int timeStamp = serverTimeOffset + (int) (System.currentTimeMillis() / 1000L);
+        SetData setData = new SetData(message, String.valueOf(timeStamp));
+        PrivateKey key = KeyUtils.deserializePrivateKey(Hex.decode(privateKey));
 
-        Integer timeOffset = 0;
+        Gson gson = new Gson();
+        String setDataString = gson.toJson(setData);
+        ECParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
+        ECDomainParameters domainParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH(), params.getSeed());
+        ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(new BigInteger(KeyUtils.serializePrivateKey(key)), domainParams);
+        byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
+        SecureRandom random = new SecureRandom();
+        ECDSASigner signer = new ECDSASigner();
+        signer.init(true, new ParametersWithRandom(privKeyParams, random));
+        BigInteger[] signature = signer.generateSignature(hashedData);
+
+        String sig = Utils.padLeft(signature[0].toString(16), '0', 64) + Utils.padLeft(signature[1].toString(16), '0', 64) + Utils.padLeft("", '0', 2);
+        byte[] sigBytes = java.util.Base64.getEncoder().encode(Hex.decode(sig));
+        String finalSig = new String(sigBytes, StandardCharsets.UTF_8);
+        return new MetadataParams(X, Y, setData, finalSig, null, keyType);
+    }
+
+    public static GetOrSetNonceResult getOrSetNonce(@NotNull String legacyMetadataHost, @NotNull String X, @NotNull String Y, @NotNull Integer serverTimeOffset, @Nullable String privateKey, Boolean getOnly, @Nullable TorusKeyType keyType) throws Exception {
+        String msg = getOnly ? "getNonce": "getOrSetNonce";
+        Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+        String data;
+        if (privateKey != null) {
+            MetadataParams params = generateMetadataParams(serverTimeOffset, msg, privateKey, X, Y, keyType);
+            data = gson.toJson(params);
+        } else {
+            GetNonceParams params = new GetNonceParams(X, Y , new GetNonceSetDataParams(msg));
+            data = gson.toJson(params);
+        }
+
+        String postResult = APIUtils.post(legacyMetadataHost + "/get_or_set_nonce", data, true).get();
+        JSONObject jsonObject = new JSONObject(postResult);
+        return gson.fromJson(jsonObject.toString(), GetOrSetNonceResult.class);
+    }
+
+    public static GetOrSetNonceResult getOrSetSapphireMetadataNonce(@NotNull String metadataHost, @NotNull Web3AuthNetwork network, @NotNull String X, @NotNull String Y, @Nullable Integer serverTimeOffset, @Nullable String privateKey, Boolean getOnly, @Nullable TorusKeyType keyType) throws Exception {
+        // fix this comparision in fetchnodedetails, comparision should be against .sapphire()
+        int timeOffset = 0;
         if (serverTimeOffset != null) {
             timeOffset = serverTimeOffset;
         }
 
         timeOffset += (int) (System.currentTimeMillis() / 1000);
 
-        GetOrSetKeyParams params = new GetOrSetKeyParams(true, verifier, verifierId, extendedVerifierId, true, true, timeOffset.toString());
+        if (network.name().contains("sapphire")) {
+            return getOrSetNonce(metadataHost, X, Y, timeOffset, privateKey, getOnly, keyType);
+        } else {
+            throw TorusUtilError.METADATA_NONCE_MISSING;
+        }
+    }
+
+    public static KeyLookupResult getPubKeyOrKeyAssign(@NotNull  String[] endpoints, @NotNull  Web3AuthNetwork network, @NotNull String verifier, @NotNull String verifierId, @NotNull String legacyMetdadataHost, @Nullable Integer serverTimeOffset, @Nullable String extendedVerifierId) throws Exception {
+        int threshold = (endpoints.length / 2) + 1;
+
+        int timeOffset = 0;
+        if (serverTimeOffset != null) {
+            timeOffset = serverTimeOffset;
+        }
+
+        timeOffset += (int) (System.currentTimeMillis() / 1000);
+
+        GetOrSetKeyParams params = new GetOrSetKeyParams(true, verifier, verifierId, extendedVerifierId, true, true,String.valueOf(timeOffset));
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
             lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("GetPubKeyOrKeyAssign",
@@ -169,10 +237,12 @@ public class Utils {
         for (CompletableFuture<String> lookup: lookupPromises) {
             try {
                 String result = lookup.get();
+
+                @SuppressWarnings({"unchecked"}) // Due to Type Erasure of Generic Types at Runtime. Java does this to ensure code is compatible with pre-generic versions of Java.
                 JsonRPCResponse<VerifierLookupResponse> response = json.fromJson(result, JsonRPCResponse.class);
                 collected.add(response);
                 lookupPubKeys = collected.stream().filter(item -> item.getError() == null && item.getResult() != null).collect(Collectors.toList());
-                errResult = (JRPCResponse.ErrorInfo) Utils.thresholdSame(collected.stream().filter(item -> item.getError() != null).collect(Collectors.toList()).toArray(), threshold);
+                errResult = (JRPCResponse.ErrorInfo) Utils.thresholdSame(collected.stream().filter(item -> item.getError() != null).toArray(), threshold);
                 ArrayList<KeyResult> normalizedKeys = new ArrayList<>();
                 for (JsonRPCResponse<VerifierLookupResponse> item : lookupPubKeys) {
                     VerifierLookupResponse vlr = item.getTypedResult(VerifierLookupResponse.class);
@@ -194,142 +264,53 @@ public class Utils {
                     VerifierLookupResponse x1Result = x1.getTypedResult(VerifierLookupResponse.class);
                    String currentNodePubKeyX = Utils.addLeading0sForLength64(x1Result.keys[0].pub_key_X).toLowerCase();
                    String thresholdPubKeyX = Utils.addLeading0sForLength64(key.keys[0].pub_key_X).toLowerCase();
-                   PubNonce pubNonce = x1Result.keys[0].nonce_data.pubNonce;
-                   if (pubNonce != null && currentNodePubKeyX.equals(thresholdPubKeyX)) {
-                       nonce = x1Result.keys[0].nonce_data;
-                       break;
+                   if (x1Result.keys[0].nonce_data != null) {
+                        PubNonce pubNonce = x1Result.keys[0].nonce_data.pubNonce;
+                        if (pubNonce != null && currentNodePubKeyX.equals(thresholdPubKeyX)) {
+                            nonce = x1Result.keys[0].nonce_data;
+                            break;
+                        }
                     }
                 }
             }
 
             if (nonce == null) {
-
+               nonce = getOrSetSapphireMetadataNonce(legacyMetdadataHost, network, key.keys[0].pub_key_X,key.keys[0].pub_key_Y, null, null, false, null);
+               if (nonce.nonce != null) {
+                   nonce.nonce = null;
+               }
             }
         }
 
-
-        return new Some<>(lookupPromises, (lookupResults, resolved) -> {
-            try {
-                List<JRPCResponse.ErrorInfo> errorResults = new ArrayList<>();
-                List<String> keyResults = new ArrayList<>();
-                List<BigInteger> nodeIndexes = new ArrayList<>();
-                GetOrSetNonceResult nonceResult = null;
-                Gson gson = new Gson();
-                for (String x : lookupResults) {
-                    if (x != null && !x.equals("")) {
-                        try {
-                            JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
-                            JSONObject jsonObject = new JSONObject(Utils.convertToJsonObject(response.getResult()));
-                            if (jsonObject.has("node_index")) {
-                                jsonObject.remove("node_index");
-                            }
-                            if (jsonObject.has("keys")) {
-                                JSONArray keysArray = (JSONArray) jsonObject.get("keys");
-                                for (int i = 0; i < keysArray.length(); i++) {
-                                    JSONObject keyObject = (JSONObject) keysArray.get(i);
-                                    if (keyObject.has("key_index")) {
-                                        keyObject.remove("key_index");
-                                    }
-                                    if (keyObject.has("created_at")) {
-                                        keyObject.remove("created_at");
-                                    }
-                                }
-                            }
-                            keyResults.add(jsonObject.toString());
-                        } catch (Exception e) {
-                            keyResults.add("");
+        ArrayList<BigInteger> serverTimeOffsets = new ArrayList<>();
+        ArrayList<Integer> nodeIndexes = new ArrayList<>();
+        if (key != null && (nonce != null || extendedVerifierId != null || isLegacyNetorkRouteMap(network) || errResult != null)) {
+            for (int i = 0; i < lookupPubKeys.size(); i++) {
+                JsonRPCResponse<VerifierLookupResponse> x1 = lookupPubKeys.get(i);
+                VerifierLookupResponse x1Result = x1.getTypedResult(VerifierLookupResponse.class);
+                if (x1 != null && x1Result != null) {
+                    String currentNodePubKey = x1Result.keys[0].pub_key_X.toLowerCase();
+                    String thresholdPubKey = key.keys[0].pub_key_X.toLowerCase();
+                    if (currentNodePubKey.equals(thresholdPubKey)) {
+                        if (x1Result.node_index != null)
+                        {
+                            nodeIndexes.add(Integer.valueOf(x1Result.node_index));
                         }
                     }
-                }
-                for (String x : lookupResults) {
-                    if (x != null && !x.equals("")) {
-                        try {
-                            JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
-                            errorResults.add((JRPCResponse.ErrorInfo) response.getResult());
-                        } catch (Exception e) {
-                            errorResults.add(null);
-                        }
+                    if (x1Result.server_time_offset != null) {
+                        serverTimeOffsets.add(new BigInteger(x1Result.server_time_offset));
+                    } else {
+                        serverTimeOffsets.add(BigInteger.ZERO);
                     }
                 }
-                for (String x : lookupResults) {
-                    if (x != null && !x.equals("")) {
-                        try {
-                            JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
-                            VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
-                            String pubNonceX = null;
-                            PubNonce pubNonce = verifierLookupResponse.keys[0].nonce_data.pubNonce;
-                            if (pubNonce != null) {
-                                pubNonceX = pubNonce.x;
-                            }
-                            if (pubNonceX != null) {
-                                nonceResult = verifierLookupResponse.keys[0].nonce_data;
-                            }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                }
-
-                JRPCResponse.ErrorInfo errorResult = (JRPCResponse.ErrorInfo) thresholdSame(errorResults.toArray(), threshold);
-                KeyResult keyResult = (KeyResult) thresholdSame(keyResults.toArray(), threshold);
-
-                if (keyResult != null && nonceResult == null && extendedVerifierId == null && !org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
-                    for (String x1 : lookupResults) {
-                        if (x1 != null && !x1.equals("")) {
-                            JsonRPCResponse response = gson.fromJson(x1, JsonRPCResponse.class);
-                            VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
-                            String currentNodePubKey = verifierLookupResponse.keys[0].pub_key_X.toLowerCase();
-                            // Possible NullPointerException here
-                            PubNonce pubNonce = verifierLookupResponse.keys[0].nonce_data.pubNonce;
-                            String pubNonceX = null;
-                            if (pubNonce != null)
-                            {
-                                pubNonceX = pubNonce.x;
-                            }
-
-                            String thresholdPubKey = null;
-                            for (String x : keyResults) {
-                                KeysRPCResponse keyResponse = gson.fromJson(x, KeysRPCResponse.class);
-                                thresholdPubKey = keyResponse.getKeys().get(0).getPubKeyX().toLowerCase();
-                            }
-                            if (pubNonceX != null && currentNodePubKey.equals(thresholdPubKey)) {
-                                nonceResult = verifierLookupResponse.keys[0].nonce_data;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                List<BigInteger> serverTimeOffsets = new ArrayList<>();
-                if ((keyResult != null && (nonceResult != null || extendedVerifierId != null || org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)))
-                        || errorResult != null) {
-                    for (String x : lookupResults) {
-                        JsonRPCResponse response = gson.fromJson(x, JsonRPCResponse.class);
-                        VerifierLookupResponse verifierLookupResponse = gson.fromJson(Utils.convertToJsonObject(response.getResult()), VerifierLookupResponse.class);
-                        String currentNodePubKey = verifierLookupResponse.keys[0].pub_key_X.toLowerCase();
-                        String serverTimeOffsetStr = verifierLookupResponse.server_time_offset;
-                        String thresholdPubKey = null;
-                        for (String x1 : keyResults) {
-                            KeysRPCResponse keyResponse = gson.fromJson(x1, KeysRPCResponse.class);
-                            thresholdPubKey = keyResponse.getKeys().get(0).getPubKeyX().toLowerCase();
-                        }
-                        if (currentNodePubKey.equals(thresholdPubKey)) {
-                            nodeIndexes.add(new BigInteger(verifierLookupResponse.node_index, 16));
-                        }
-                        BigInteger serverOffset = BigInteger.valueOf(serverTimeOffsetStr != null ? Integer.parseInt(serverTimeOffsetStr, 10) : 0);
-                        serverTimeOffsets.add(serverOffset);
-                    }
-                    BigInteger serverOffset = keyResult != null ? (BigInteger) calculateMedian(serverTimeOffsets) : BigInteger.ZERO;
-                    return CompletableFuture.completedFuture(new KeyLookupResult(keyResult, nodeIndexes, serverOffset, nonceResult,  errorResult));
-                }
-
-                CompletableFuture<KeyLookupResult> failedFuture = new CompletableFuture<>();
-                failedFuture.completeExceptionally(new Exception("invalid results from KeyLookup " + gson.toJson(lookupResults)));
-                return failedFuture;
-            } catch (Exception e) {
-                return null;
             }
-        }).getCompletableFuture();
+        }
+
+        BigInteger finalServerTimeOffset = BigInteger.ZERO;
+        if (key != null) {
+            finalServerTimeOffset = calculateMedian(serverTimeOffsets);
+        }
+        return new KeyLookupResult(key,nodeIndexes, finalServerTimeOffset, nonce, errResult);
     }
 
     public static boolean isEmpty(final CharSequence cs) {

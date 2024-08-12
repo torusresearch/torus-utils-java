@@ -5,17 +5,17 @@ import java.util.List;
 
 public class NodesData {
 
-    public List<BigInteger> nodeIndexes;
+    public List<Integer> nodeIndexes;
 
-    public NodesData(List<BigInteger> nodeIndexes) {
+    public NodesData(List<Integer> nodeIndexes) {
         this.nodeIndexes = nodeIndexes;
     }
 
-    public List<BigInteger> getNodeIndexes() {
+    public List<Integer> getNodeIndexes() {
         return nodeIndexes;
     }
 
-    public void setNodeIndexes(List<BigInteger> nodeIndexes) {
+    public void setNodeIndexes(List<Integer> nodeIndexes) {
         this.nodeIndexes = nodeIndexes;
     }
 }

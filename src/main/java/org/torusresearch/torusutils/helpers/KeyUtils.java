@@ -192,8 +192,8 @@ public class KeyUtils {
         ECPoint oAuthPubPoint = domainParams.getG().multiply(privKeyParams.getD());
         ECPublicKeyParameters publicKeyParams = new ECPublicKeyParameters(oAuthPubPoint, domainParams);
 
-        long timeSeconds = System.currentTimeMillis() / 1000L;
-        BigInteger timestamp = serverTimeOffset.add(BigInteger.valueOf(timeSeconds));
+        BigInteger timeSeconds = BigInteger.valueOf(System.currentTimeMillis() / 1000L);
+        BigInteger timestamp = serverTimeOffset.add(timeSeconds);
 
         // Serialize public key into padded X and Y coordinates
         String derivedPubKeyString = Hex.toHexString(publicKeyParams.getQ().getEncoded(false));

@@ -86,7 +86,7 @@ public class SapphireMainnetTest {
 
     @DisplayName("Gets Public Address")
     @Test
-    public void shouldGetPublicAddress() throws ExecutionException, InterruptedException, JSONException {
+    public void shouldGetPublicAddress() throws Exception {
         String verifier = "tkey-google-sapphire-mainnet";
         VerifierArgs args = new VerifierArgs(verifier, TORUS_TEST_EMAIL, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
@@ -108,7 +108,7 @@ public class SapphireMainnetTest {
 
     @DisplayName("Key Assign test")
     @Test
-    public void shouldKeyAssign() throws ExecutionException, InterruptedException, JSONException {
+    public void shouldKeyAssign() throws Exception {
         String verifier = "tkey-google-sapphire-mainnet";
         String email = JwtUtils.getRandomEmail();
         VerifierArgs args = new VerifierArgs(verifier, email, "");

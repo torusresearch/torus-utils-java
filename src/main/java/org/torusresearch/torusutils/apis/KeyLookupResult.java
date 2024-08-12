@@ -12,7 +12,7 @@ public class KeyLookupResult {
     @Nullable
     public final KeyResult keyResult;
 
-    public final List<BigInteger> nodeIndexes;
+    public final List<Integer> nodeIndexes;
     public final BigInteger server_time_offset;
     @Nullable
     public final GetOrSetNonceResult nonceResult;
@@ -20,7 +20,7 @@ public class KeyLookupResult {
     @Nullable
     public final JRPCResponse.ErrorInfo errorResult;
 
-    public KeyLookupResult(@Nullable KeyResult keyResult, List<BigInteger> nodeIndexes, BigInteger server_time_offset, @Nullable GetOrSetNonceResult nonceResult, @Nullable JRPCResponse.ErrorInfo errorResult) {
+    public KeyLookupResult(@Nullable KeyResult keyResult, List<Integer> nodeIndexes, BigInteger server_time_offset, @Nullable GetOrSetNonceResult nonceResult, @Nullable JRPCResponse.ErrorInfo errorResult) {
         this.keyResult = keyResult;
         this.nodeIndexes = nodeIndexes;
         this.server_time_offset = server_time_offset;

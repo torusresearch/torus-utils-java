@@ -2,17 +2,18 @@ package org.torusresearch.torusutils.apis;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
+import org.torusresearch.torusutils.types.JRPCResponse;
 
 public class JsonRPCResponse<T> {
-    private final JsonRPCError error;
+    private final JRPCResponse.ErrorInfo error;
     public final T result;
 
 
-    public JsonRPCError getError() {
+    public JRPCResponse.ErrorInfo getError() {
         return error;
     }
 
+    // TODO: Remove this function
     public T getResult() {
         return result;
     }
@@ -23,7 +24,7 @@ public class JsonRPCResponse<T> {
         return gson.fromJson(gson.toJson(result), type.getType());
     }
 
-    public JsonRPCResponse(JsonRPCError error, T result) {
+    public JsonRPCResponse(JRPCResponse.ErrorInfo error, T result) {
         this.error = error;
         this.result = result;
     }

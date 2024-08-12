@@ -11,7 +11,6 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.google.gson.Gson;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,6 @@ import org.torusresearch.torusutils.apis.responses.PubNonce;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
-import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
@@ -88,7 +86,7 @@ public class SapphireDevnetTest {
 
     @DisplayName("should fetch public address of a legacy v1 user")
     @Test
-    public void testFetchPublicAddressOfLegacyV1User() throws ExecutionException, InterruptedException, JSONException {
+    public void testFetchPublicAddressOfLegacyV1User() throws Exception {
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
         VerifierArgs verifierDetails = new VerifierArgs("google-lrc", "himanshu@tor.us", ""); // Replace with the actual verifier ID
         TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET);
@@ -113,15 +111,15 @@ public class SapphireDevnetTest {
 
     @DisplayName("Gets Public Address")
     @Test
-    public void shouldGetPublicAddress() throws ExecutionException, InterruptedException, JSONException {
+    public void shouldGetPublicAddress() throws Exception {
         String verifier = TORUS_TEST_VERIFIER;
         VerifierArgs args = new VerifierArgs(verifier, TORUS_TEST_EMAIL, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args).get();
         assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
-        assertEquals("0x462A8BF111A55C9354425F875F89B22678c0Bc44", torusPublicKey.getFinalKeyData().getWalletAddress());
+        assertEquals("0x137B3607958562D03Eb3C6086392D1eFa01aA6aa", torusPublicKey.oAuthKeyData.walletAddress);
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
-                new OAuthPubKeyData("0x137B3607958562D03Eb3C6086392D1eFa01aA6aa",
+                new OAuthPubKeyData("0x462A8BF111A55C9354425F875F89B22678c0Bc44",
                         "118a674da0c68f16a1123de9611ba655f4db1e336fe1b2d746028d65d22a3c6b",
                         "8325432b3a3418d632b4fe93db094d6d83250eea60fe512897c0ad548737f8a5"),
                 new FinalPubKeyData("0x462A8BF111A55C9354425F875F89B22678c0Bc44",
@@ -129,14 +127,14 @@ public class SapphireDevnetTest {
                         "58ec9768c2fe871b3e2a83cdbcf37ba6a88ad19ec2f6e16a66231732713fd507"),
                 new Metadata(new PubNonce("5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc",
                         "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed"),
-                        new BigInteger("0", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
+                        BigInteger.ZERO, TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
         ));
     }
 
     @DisplayName("should keep public address same")
     @Test
-    public void shouldKeyPublicAddressSame() throws ExecutionException, InterruptedException, JSONException {
+    public void shouldKeyPublicAddressSame() throws Exception {
         String email = JwtUtils.getRandomEmail();
         VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, email, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
@@ -148,7 +146,7 @@ public class SapphireDevnetTest {
 
     @DisplayName("should be able to key assign")
     @Test
-    public void shouldKeyAssign() throws ExecutionException, InterruptedException, JSONException {
+    public void shouldKeyAssign() throws Exception {
         String email = JwtUtils.getRandomEmail();
         VerifierArgs args = new VerifierArgs(TORUS_TEST_VERIFIER, email, "");
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
@@ -256,7 +254,7 @@ public class SapphireDevnetTest {
 
     @DisplayName("should be able to aggregate login")
     @Test
-    public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldAggregateLogin() throws ExecutionException, InterruptedException {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
         VerifierParams verifierParams = new VerifierParams();
