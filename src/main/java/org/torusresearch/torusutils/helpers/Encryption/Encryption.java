@@ -34,7 +34,7 @@ public class Encryption {
 
     public static Ecies encrypt(byte[] publicKey, String plaintext) throws Exception {
         KeyPair ephemeral = KeyUtils.generateKeyPair();
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", provider);
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", provider);
 
         SecureRandom random = new SecureRandom();
         byte[] iv = new byte[16];
