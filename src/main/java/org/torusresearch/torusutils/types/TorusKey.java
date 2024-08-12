@@ -5,6 +5,7 @@ public class TorusKey {
     public FinalKeyData finalKeyData;
     public OAuthKeyData oAuthKeyData;
     public SessionData sessionData;
+
     public Metadata metadata;
     public NodesData nodesData;
     public PostboxKeyData postboxKeyData;

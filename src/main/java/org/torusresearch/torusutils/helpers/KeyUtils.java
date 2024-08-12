@@ -25,13 +25,14 @@ import org.torusresearch.torusutils.apis.ecies.Ecies;
 import org.torusresearch.torusutils.apis.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.helpers.Encryption.Encryption;
 import org.torusresearch.torusutils.types.ImportedShare;
-import org.torusresearch.torusutils.types.KeyType;
+import org.torusresearch.torusutils.types.TorusKeyType;
 import org.torusresearch.torusutils.types.NonceMetadataParams;
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
 import org.torusresearch.torusutils.types.PrivateKeyData;
-import org.torusresearch.torusutils.types.SetNonceData;
+import org.torusresearch.torusutils.apis.requests.SetNonceData;
 import org.torusresearch.torusutils.types.Share;
+import org.torusresearch.torusutils.types.TorusKeyType;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
@@ -200,10 +201,7 @@ public class KeyUtils {
         String derivedPubKeyY = derivedPubKeyString.substring(66);
 
         // Create SetNonceData object with operation and timestamp
-        SetNonceData setNonceData = new SetNonceData(operation, timestamp.toString(16));
-        if (nonce != null) {
-            setNonceData.setData(Utils.padLeft(nonce.toString(16), '0', 64));
-        }
+        SetNonceData setNonceData = new SetNonceData(operation, timestamp.toString(16), null, Utils.padLeft(nonce.toString(16), '0', 64));
 
         // Convert SetNonceData object to JSON string
         Gson gson = new Gson();
@@ -234,8 +232,8 @@ public class KeyUtils {
                 Base64.encodeBytes(encodedData.getBytes(StandardCharsets.UTF_8)), finalSig);
     }
 
-    public static List<ImportedShare> generateShares(KeyType keyType, BigInteger serverTimeOffset, List<BigInteger> nodeIndexes, List<TorusNodePub> nodePubKeys, String privateKey) throws Exception {
-        if (keyType != KeyType.secp256k1) {
+    public static List<ImportedShare> generateShares(TorusKeyType keyType, BigInteger serverTimeOffset, List<BigInteger> nodeIndexes, List<TorusNodePub> nodePubKeys, String privateKey) throws Exception {
+        if (keyType != TorusKeyType.secp256k1) {
             throw new RuntimeException("Unsupported key type");
         }
 

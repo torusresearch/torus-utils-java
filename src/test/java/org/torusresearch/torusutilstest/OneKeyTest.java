@@ -16,9 +16,10 @@ import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.VerifyParams;
+import org.torusresearch.torusutils.apis.responses.PubNonce;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
-import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
@@ -123,7 +124,7 @@ public class OneKeyTest {
                         "17d35ffc722d7a8dd88353815e9553cacf567c5f3b8d082adac9d653367ce47a",
                         "68ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(new GetOrSetNonceResult.PubNonce(
+                new Metadata(new PubNonce(
                         "8e8c399d8ba00ff88e6c42eb40c10661f822868ba2ad8fe12a8830e996b1e25d",
                         "554b12253694bf9eb98485441bba7ba220b78cb78ee21664e96f934d10b1494d"
                 ), new BigInteger("22d160abe5320fe2be52a57c7aca8fe5d7e5eff104ff4d2b32767e3344e040bf", 16), TypeOfUser.v2, false, torusKey.getMetadata().getServerTimeOffset()),
@@ -155,7 +156,7 @@ public class OneKeyTest {
                         "d63bac65bdfc7484a28d4362347bbd098095db190c14a4ce9dbaafe74803eccc",
                         "f4b7e0fb1e6f6fbac539c55e22aff2900947de652d2d6254a9cd8709f505f83a"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(new GetOrSetNonceResult.PubNonce(
+                new Metadata(new PubNonce(
                         "f494a5bf06a2f0550aafb6aabeb495bd6ea3ef92eaa736819b5b0ad6bfbf1aab",
                         "35df3d3a14f88cbba0cfd092a1e5a0e4e725ba52a8d45719614555542d701f18"
                 ), new BigInteger("aa0dcf552fb5be7a5c52b783c1b61c1aca7113872e172a5818994715c8a5497c", 16), TypeOfUser.v2, false, torusKey.getMetadata().serverTimeOffset),
@@ -187,7 +188,7 @@ public class OneKeyTest {
                         "f1a2163cba5620b7b40241a6112e7918e9445b0b9cfbbb9d77b2de6f61ed5c27",
                         "d9733fc1098151f3e3289673e7c69c4ed46cbbdbc13416560e14741524d2d51a"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(new GetOrSetNonceResult.PubNonce(
+                new Metadata(new PubNonce(
                         "376c0ac5e15686633061cf5833dd040365f91377686d7ab5338c5202bd963a2f",
                         "794d7edb6a5ec0307dd40789274b377f37f293b0410a6cbd303db309536099b7"
                 ), new BigInteger("d3d455dcab49dc700319244e9e187f443596f2acbce238cff1c215d8809fa1f9", 16), TypeOfUser.v2, false, torusKey.getMetadata().getServerTimeOffset()),

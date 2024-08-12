@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types;
 
+import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
+
 import java.math.BigInteger;
 
 public class PrivateKeyWithNonceResult {

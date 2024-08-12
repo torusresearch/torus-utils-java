@@ -1,6 +1,6 @@
 package org.torusresearch.torusutils.apis;
 
-import org.torusresearch.torusutils.types.KeyType;
+import org.torusresearch.torusutils.types.TorusKeyType;
 
 public class GetPubKeyOrKeyAssignRequestParams {
     private final String verifier;
@@ -9,9 +9,9 @@ public class GetPubKeyOrKeyAssignRequestParams {
     private final boolean one_key_flow;
     private final boolean fetch_node_index;
     private final boolean distributed_metadata;
-    private final KeyType key_type;
+    private final TorusKeyType key_type;
 
-    public GetPubKeyOrKeyAssignRequestParams(String _verifier, String _verifier_id, String _extended_verifier_id, KeyType key_type, boolean _one_key_flow,
+    public GetPubKeyOrKeyAssignRequestParams(String _verifier, String _verifier_id, String _extended_verifier_id, TorusKeyType key_type, boolean _one_key_flow,
                                              boolean _fetch_node_index, boolean distributed_metadata) {
         verifier = _verifier;
         verifier_id = _verifier_id;
@@ -46,7 +46,7 @@ public class GetPubKeyOrKeyAssignRequestParams {
         return distributed_metadata;
     }
 
-    public KeyType getKeyType() {
+    public TorusKeyType getKeyType() {
         return key_type;
     }
 }

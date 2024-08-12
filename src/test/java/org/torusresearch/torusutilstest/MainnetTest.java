@@ -82,7 +82,7 @@ public class MainnetTest {
                 new FinalPubKeyData("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E",
                         "72beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
                         "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5"),
-                new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
     }
@@ -102,7 +102,7 @@ public class MainnetTest {
                 new FinalPubKeyData("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E",
                         "72beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
                         "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5"),
-                new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().serverTimeOffset),
+                new Metadata(key.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().serverTimeOffset),
                 new NodesData(key.nodesData.nodeIndexes)
         ));
 
@@ -119,7 +119,7 @@ public class MainnetTest {
                 new FinalPubKeyData("0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526",
                         "bbfd26b1e61572c4e991a21b64f12b313cb6fce6b443be92d4d5fd8f311e8f33",
                         "df2c905356ec94faaa111a886be56ed6fa215b7facc1d1598486558355123c25"),
-                new Metadata(key2.getMetadata().getPubNonce(),
+                new Metadata(key2.getMetadata().pubNonce,
                         BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().getServerTimeOffset()),
                 new NodesData(key2.getNodesData().nodeIndexes)
         ));
@@ -136,7 +136,7 @@ public class MainnetTest {
                 new FinalPubKeyData("0x40A4A04fDa1f29a3667152C8830112FBd6A77BDD",
                         "6779af3031d9e9eec6b4133b0ae13e367c83a614f92d2008e10c7f3b8e6723bc",
                         "80edc4502abdfb220dd6e2fcfa2dbb058125dc95873e4bfa6877f9c26da7fdff"),
-                new Metadata(key3.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().serverTimeOffset),
+                new Metadata(key3.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().serverTimeOffset),
                 new NodesData(key3.getNodesData().nodeIndexes)
         ));
     }

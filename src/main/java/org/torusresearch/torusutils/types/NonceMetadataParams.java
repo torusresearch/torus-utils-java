@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types;
 
+import org.torusresearch.torusutils.apis.requests.SetNonceData;
+
 import java.util.Objects;
 
 public class NonceMetadataParams {
@@ -7,7 +9,7 @@ public class NonceMetadataParams {
     private String pubKeyX;
     private String pubKeyY;
     private SetNonceData setData;
-    private KeyType keyType;
+    private TorusKeyType keyType;
     private String signature;
     private String encodedData;
     private String seed;
@@ -20,7 +22,7 @@ public class NonceMetadataParams {
         this.signature = signature;
     }
 
-    public NonceMetadataParams(String pubKeyX, String pubKeyY, SetNonceData setData, String encodedData, String signature, String namespace, KeyType keyType, String seed) {
+    public NonceMetadataParams(String pubKeyX, String pubKeyY, SetNonceData setData, String encodedData, String signature, String namespace, TorusKeyType keyType, String seed) {
         this.pubKeyX = pubKeyX;
         this.pubKeyY = pubKeyY;
         this.setData = setData;
@@ -63,11 +65,11 @@ public class NonceMetadataParams {
         this.setData = setData;
     }
 
-    public KeyType getKeyType() {
+    public TorusKeyType getKeyType() {
         return keyType;
     }
 
-    public void setKeyType(KeyType keyType) {
+    public void setKeyType(TorusKeyType keyType) {
         this.keyType = keyType;
     }
 

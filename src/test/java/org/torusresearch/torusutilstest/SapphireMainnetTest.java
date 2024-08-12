@@ -18,9 +18,10 @@ import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.VerifyParams;
+import org.torusresearch.torusutils.apis.responses.PubNonce;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
-import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
@@ -97,7 +98,7 @@ public class SapphireMainnetTest {
                 new FinalPubKeyData("0x327b2742768B436d09153429E762FADB54413Ded",
                         "1567e030ca76e520c180c50bc6baed07554ebc35c3132495451173e9310d8be5",
                         "123c0560757ffe6498bf2344165d0f295ea74eb8884683675e5f17ae7bb41cdb"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("56e803db7710adbfe0ecca35bc6a3ad27e966df142e157e76e492773c88e8433",
+                new Metadata(new PubNonce("56e803db7710adbfe0ecca35bc6a3ad27e966df142e157e76e492773c88e8433",
                         "f4168594c1126ca731756dd480f992ee73b0834ba4b787dd892a9211165f50a3"),
                         new BigInteger("0", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
@@ -175,7 +176,7 @@ public class SapphireMainnetTest {
                 new FinalPubKeyData("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB",
                         "b943bfdc29c515195270d3a219da6a57bcaf6e58e57d03e2accb8c716e6949c8",
                         "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
+                new Metadata(new PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
                         new BigInteger("0", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())
@@ -198,7 +199,7 @@ public class SapphireMainnetTest {
                 new FinalPubKeyData("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB",
                         "b943bfdc29c515195270d3a219da6a57bcaf6e58e57d03e2accb8c716e6949c8",
                         "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
+                new Metadata(new PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
                         new BigInteger("0", 16), TypeOfUser.v2, false,
                         torusPublicKey.getMetadata().serverTimeOffset),
@@ -227,7 +228,7 @@ public class SapphireMainnetTest {
                         "cc6e57662c3866c4316c05b0fe902db9aaf5541fbf5fda854c3b4634eceeb43c",
                         "d768b327cbde681e5850a7d14f1c724bba2b8f8ab7fe2b1c4f1ee6979fc25478"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
+                new Metadata(new PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
                         new BigInteger("3c2b6ba5b54ca0ba4ae978eb48429a84c47b7b3e526b35e7d46dd716887f52bf", 16), TypeOfUser.v2,
                         false, torusKey.getMetadata().serverTimeOffset),
@@ -255,7 +256,7 @@ public class SapphireMainnetTest {
                         "198a4989615c5c2c7fa4d49c076ea7765743d09816bb998acb9ff54f5db4a391",
                         "90a219ac78273e82e36eaa57c15f9070195e436644319d6b9aea422bb4d31906"),
                 new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
-                new Metadata(new GetOrSetNonceResult.PubNonce("ab4d287c263ab1bb83c37646d0279764e50fe4b0c34de4da113657866ddcf318",
+                new Metadata(new PubNonce("ab4d287c263ab1bb83c37646d0279764e50fe4b0c34de4da113657866ddcf318",
                         "ad35db2679dfad4b62d77cf753d7b98f73c902e5d101cc2c3c1209ece6d94382"),
                         new BigInteger("4f1181d8689f0d0960f1a6f9fe26e03e557bdfba11f4b6c8d7b1285e9c271b13", 16),
                         TypeOfUser.v2, false, torusKey.getMetadata().serverTimeOffset),
@@ -297,7 +298,7 @@ public class SapphireMainnetTest {
                 new FinalPubKeyData("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB",
                         "b943bfdc29c515195270d3a219da6a57bcaf6e58e57d03e2accb8c716e6949c8",
                         "a0fe9ac87310d302a821f89a747d80c9b7dc5cbd0956571f84b09e58d11eee90"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
+                new Metadata(new PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
                         new BigInteger("0", 16), TypeOfUser.v2, false, torusPublicKey.getMetadata().serverTimeOffset),
                 new NodesData(torusPublicKey.getNodesData().getNodeIndexes())

@@ -17,7 +17,7 @@ public class TorusCtorOptions {
     private Web3AuthNetwork network;
     private String clientId;
     private boolean enableOneKey = false;
-    private KeyType keyType = KeyType.secp256k1;
+    private TorusKeyType keyType = TorusKeyType.secp256k1;
 
     public TorusCtorOptions(String origin, String clientId, Web3AuthNetwork network) {
         this.origin = origin;
@@ -89,11 +89,11 @@ public class TorusCtorOptions {
         this.enableOneKey = enableOneKey;
     }
 
-    public KeyType getKeyType() {
+    public TorusKeyType getKeyType() {
         return keyType;
     }
 
-    public void setKeyType(KeyType keyType) {
+    public void setKeyType(TorusKeyType keyType) {
         this.keyType = keyType;
     }
 

@@ -13,12 +13,12 @@ public class ImportedShare {
     private EciesHexOmitCipherText encryptedShareMetadata;
     private String encryptedSeed;
     private int node_index;
-    private KeyType key_type;
+    private TorusKeyType key_type;
     private String nonce_data;
     private String nonce_signature;
 
     public ImportedShare(String oauth_pub_key_x, String oauth_pub_key_y, Point final_user_point, String signing_pub_key_x, String signing_pub_key_y, String encryptedShare,
-                         EciesHexOmitCipherText encryptedShareMetadata, String encryptedSeed, int node_index, KeyType key_type,
+                         EciesHexOmitCipherText encryptedShareMetadata, String encryptedSeed, int node_index, TorusKeyType key_type,
                          String nonce_data, String nonce_signature) {
         this.oauth_pub_key_x = oauth_pub_key_x;
         this.oauth_pub_key_y = oauth_pub_key_y;
@@ -35,7 +35,7 @@ public class ImportedShare {
     }
 
     public ImportedShare(String oauth_pub_key_x, String oauth_pub_key_y, Point final_user_point, String signing_pub_key_x, String signing_pub_key_y, String encryptedShare,
-                         EciesHexOmitCipherText encryptedShareMetadata, int node_index, KeyType key_type,
+                         EciesHexOmitCipherText encryptedShareMetadata, int node_index, TorusKeyType key_type,
                          String nonce_data, String nonce_signature) {
         this.oauth_pub_key_x = oauth_pub_key_x;
         this.oauth_pub_key_y = oauth_pub_key_y;
@@ -123,11 +123,11 @@ public class ImportedShare {
         this.node_index = node_index;
     }
 
-    public KeyType getKey_type() {
+    public TorusKeyType getKey_type() {
         return key_type;
     }
 
-    public void setKey_type(KeyType key_type) {
+    public void setKey_type(TorusKeyType key_type) {
         this.key_type = key_type;
     }
 

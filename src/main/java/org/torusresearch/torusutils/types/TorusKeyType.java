@@ -1,6 +1,6 @@
 package org.torusresearch.torusutils.types;
 
-public enum KeyType {
+public enum TorusKeyType {
     secp256k1,
     ed25519
 }

@@ -17,9 +17,10 @@ import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.VerifyParams;
+import org.torusresearch.torusutils.apis.responses.PubNonce;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
-import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
@@ -84,7 +85,7 @@ public class CyanTest {
                 new FinalPubKeyData("0x3507F0d192a44E436B8a6C32a37d57D022861b1a",
                         "8aaadab9530cb157d0b0dfb7b27d1a3aaca45274563c22c92c77ee2191779051",
                         "d57b89d9f62bb6609d8542c3057943805c8c72f6f27d39781b820f27d7210f12"),
-                new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
     }
@@ -104,7 +105,7 @@ public class CyanTest {
                 new FinalPubKeyData("0x3507F0d192a44E436B8a6C32a37d57D022861b1a",
                         "8aaadab9530cb157d0b0dfb7b27d1a3aaca45274563c22c92c77ee2191779051",
                         "d57b89d9f62bb6609d8542c3057943805c8c72f6f27d39781b820f27d7210f12"),
-                new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().getServerTimeOffset()),
+                new Metadata(key.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().getServerTimeOffset()),
                 new NodesData(key.nodesData.nodeIndexes)
         ));
 
@@ -119,7 +120,7 @@ public class CyanTest {
                 new FinalPubKeyData("0x8EA83Ace86EB414747F2b23f03C38A34E0217814",
                         "cbe7b0f0332e5583c410fcacb6d4ff685bec053cfd943ac75f5e4aa3278a6fbb",
                         "b525c463f438c7a3c4b018c8c5d16c9ef33b9ac6f319140a22b48b17bdf532dd"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("da0039dd481e140090bed9e777ce16c0c4a16f30f47e8b08b73ac77737dd2d4",
+                new Metadata(new PubNonce("da0039dd481e140090bed9e777ce16c0c4a16f30f47e8b08b73ac77737dd2d4",
                         "7fecffd2910fa47dbdbc989f5c119a668fc922937175974953cbb51c49268265"
                 ), BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().getServerTimeOffset()),
                 new NodesData(key2.nodesData.nodeIndexes)
@@ -137,7 +138,7 @@ public class CyanTest {
                 new FinalPubKeyData("0xCC1f953f6972a9e3d685d260399D6B85E2117561",
                         "8d784434becaad9b23d9293d1f29c4429447315c4cac824cbf2eb21d3f7d79c8",
                         "fe46a0ef5efe33d16f6cfa678a597be930fbec5432cbb7f3580189c18bd7e157"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("50e250cc6ac1d50d32d2b0f85f11c6625a917a115ced4ef24f4eac183e1525c7",
+                new Metadata(new PubNonce("50e250cc6ac1d50d32d2b0f85f11c6625a917a115ced4ef24f4eac183e1525c7",
                         "8067a52d02b8214bf82e91b66ce5009f674f4c3998b103059c46c386d0c17f90"
                 ), BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().getServerTimeOffset()),
                 new NodesData(key3.nodesData.nodeIndexes)

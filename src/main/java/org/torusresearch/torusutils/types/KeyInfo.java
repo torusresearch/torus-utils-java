@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types;
 
+import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
+
 public class KeyInfo {
     private String pub_key_X;
     private String pub_key_Y;

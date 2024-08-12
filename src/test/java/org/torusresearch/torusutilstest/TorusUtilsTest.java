@@ -17,9 +17,10 @@ import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.VerifyParams;
+import org.torusresearch.torusutils.apis.responses.PubNonce;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
-import org.torusresearch.torusutils.types.GetOrSetNonceResult;
+import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
@@ -82,7 +83,7 @@ public class TorusUtilsTest {
                 new FinalPubKeyData("0xf5804f608C233b9cdA5952E46EB86C9037fd6842",
                         "ed737569a557b50722a8b5c0e4e5ca30cef1ede2f5674a0616b78246bb93dfd0",
                         "d9e8e6c54c12c4da38c2f0d1047fcf6089036127738f4ef72a83431339586ca9"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("f3f7caefd6540d923c9993113f34226371bd6714a5be6882dedc95a6a929a8",
+                new Metadata(new PubNonce("f3f7caefd6540d923c9993113f34226371bd6714a5be6882dedc95a6a929a8",
                         "f28620603601ce54fa0d70fd691fb72ff52f5bf164bf1a91617922eaad8cc7a5"), BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.getNodesData().getNodeIndexes())
         ));
@@ -102,7 +103,7 @@ public class TorusUtilsTest {
                 new FinalPubKeyData("0xf5804f608C233b9cdA5952E46EB86C9037fd6842",
                         "ed737569a557b50722a8b5c0e4e5ca30cef1ede2f5674a0616b78246bb93dfd0",
                         "d9e8e6c54c12c4da38c2f0d1047fcf6089036127738f4ef72a83431339586ca9"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("f3f7caefd6540d923c9993113f34226371bd6714a5be6882dedc95a6a929a8",
+                new Metadata(new PubNonce("f3f7caefd6540d923c9993113f34226371bd6714a5be6882dedc95a6a929a8",
                         "f28620603601ce54fa0d70fd691fb72ff52f5bf164bf1a91617922eaad8cc7a5"),
                         BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().getServerTimeOffset()),
                 new NodesData(key.getNodesData().getNodeIndexes())
@@ -121,7 +122,7 @@ public class TorusUtilsTest {
                 new FinalPubKeyData("0xE91200d82029603d73d6E307DbCbd9A7D0129d8D",
                         "c350e338dde24df986915992fea6e0aef3560c245ca144ee7fe1498784c4ef4e",
                         "a605e52b65d3635f89654519dfa7e31f7b45f206ef4189866ad0c2240d40f97f"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("ad121b67fa550da814bbbd54ec7070705d058c941e04c03e07967b07b2f90345",
+                new Metadata(new PubNonce("ad121b67fa550da814bbbd54ec7070705d058c941e04c03e07967b07b2f90345",
                         "bfe2395b177a72ebb836aaf24cedff2f14cd9ed49047990f5cdb99e4981b5753"),
                         BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().serverTimeOffset),
                 new NodesData(key2.getNodesData().nodeIndexes)
@@ -139,7 +140,7 @@ public class TorusUtilsTest {
                 new FinalPubKeyData("0x1016DA7c47A04C76036637Ea02AcF1d29c64a456",
                         "d3e222f6b23f0436b7c86e9cc4164eb5ea8448e4c0e7539c8b4f7fd00e8ec5c7",
                         "1c47f5faccec6cf57c36919f6f0941fe3d8d65033cf2cc78f209304386044222"),
-                new Metadata(new GetOrSetNonceResult.PubNonce("4f86b0e69992d1551f1b16ceb0909453dbe17b9422b030ee6c5471c2e16b65d0",
+                new Metadata(new PubNonce("4f86b0e69992d1551f1b16ceb0909453dbe17b9422b030ee6c5471c2e16b65d0",
                         "640384f3d39debb04c4e9fe5a5ec6a1b494b0ad66d00ac9be6f166f21d116ca4"),
                         BigInteger.ZERO, TypeOfUser.v2, true, key3.getMetadata().serverTimeOffset),
                 new NodesData(key3.getNodesData().nodeIndexes)

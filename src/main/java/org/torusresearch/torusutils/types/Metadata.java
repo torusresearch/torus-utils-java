@@ -1,17 +1,19 @@
 package org.torusresearch.torusutils.types;
 
+import org.torusresearch.torusutils.apis.responses.PubNonce;
+
 import java.math.BigInteger;
 
 public class Metadata {
 
-    public GetOrSetNonceResult.PubNonce pubNonce;
+    public PubNonce pubNonce;
     public BigInteger nonce;
     public boolean upgraded;
     public TypeOfUser typeOfUser;
 
     public BigInteger serverTimeOffset;
 
-    public Metadata(GetOrSetNonceResult.PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded, BigInteger serverTimeOffset) {
+    public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded, BigInteger serverTimeOffset) {
         this.pubNonce = pubNonce;
         this.nonce = nonce;
         this.typeOfUser = typeOfUser;
@@ -19,14 +21,14 @@ public class Metadata {
         this.serverTimeOffset = serverTimeOffset;
     }
 
-    public Metadata(GetOrSetNonceResult.PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded) {
+    public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded) {
         this.pubNonce = pubNonce;
         this.nonce = nonce;
         this.typeOfUser = typeOfUser;
         this.upgraded = upgraded;
     }
 
-    public GetOrSetNonceResult.PubNonce getPubNonce() {
+    public PubNonce getPubNonce() {
         return pubNonce;
     }
 
