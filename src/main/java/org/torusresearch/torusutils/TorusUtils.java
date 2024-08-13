@@ -22,6 +22,12 @@ import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.JsonRPCRequest;
+import org.torusresearch.torusutils.apis.requests.GetNonceParams;
+import org.torusresearch.torusutils.apis.requests.GetNonceSetDataParams;
+import org.torusresearch.torusutils.types.common.KeyLookup.KeyLookupResult;
+import org.torusresearch.torusutils.types.common.KeyLookup.KeyResult;
+import org.torusresearch.torusutils.apis.requests.CommitmentRequestParams;
+import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.PubKey;
 import org.torusresearch.torusutils.apis.requests.CommitmentRequestParams;
@@ -42,7 +48,6 @@ import org.torusresearch.torusutils.helpers.PredicateFailedException;
 import org.torusresearch.torusutils.helpers.Some;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.helpers.Utils;
-import org.torusresearch.torusutils.types.DecryptedShare;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.GetMetadataParams;
@@ -77,6 +82,7 @@ import org.web3j.crypto.Hash;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
 import java.security.Security;
@@ -564,7 +570,7 @@ public class TorusUtils {
 
                                 if (completedResponses.size() >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.extended_verifier_id != null ||
                                         LEGACY_NETWORKS_ROUTE_MAP.containsKey(network))) {
-                                    List<DecryptedShare> decryptedShares = new ArrayList<>();
+                                    HashMap<BigInteger,BigInteger> decryptedShares = new HashMap<>();
                                     List<String> shares = new ArrayList<>();
                                     List<CompletableFuture<String>> sharePromises = new ArrayList<>();
                                     List<CompletableFuture<String>> sessionTokenSigPromises = new ArrayList<>();
@@ -722,7 +728,7 @@ public class TorusUtils {
                                     for (int index = 0; index < shares.size(); index++) {
                                         Object curr = shares.get(index);
                                         if (curr != null) {
-                                            decryptedShares.add(new DecryptedShare( new BigInteger(_nodeIndexs.get(index).toString()), new BigInteger(curr.toString())));
+                                            decryptedShares.put(new BigInteger(_nodeIndexs.get(index).toString()), new BigInteger(curr.toString()));
                                         }
                                     }
 
@@ -732,9 +738,8 @@ public class TorusUtils {
                                         List<BigInteger> currentCombiSharesValues = new ArrayList<>();
                                         for (int i = 0; i < decryptedShares.size(); i++) {
                                             if (currentCombi.contains(i)) {
-                                                DecryptedShare decryptedShare = decryptedShares.get(i);
-                                                currentCombiSharesIndexes.add(decryptedShare.getIndex());
-                                                currentCombiSharesValues.add(decryptedShare.getValue());
+                                                currentCombiSharesIndexes.add(new BigInteger(String.valueOf(i)));
+                                                currentCombiSharesValues.add(decryptedShares.get(new BigInteger(String.valueOf(i))));
                                             }
                                         }
                                         BigInteger derivedPrivateKey = Lagrange.lagrangeInterpolation(currentCombiSharesValues.toArray(new BigInteger[0]), currentCombiSharesIndexes.toArray(new BigInteger[0]));
@@ -990,65 +995,65 @@ public class TorusUtils {
         return key;
     }
 
-    private TorusPublicKey formatLegacyPublicKeyData(LegacyVerifierLookupResponse finalKeyResult, boolean enableOneKey, Boolean isNewKey,
-                                                                        Integer serverTimeOffset) throws Exception {
+    private TorusPublicKey formatLegacyPublicKeyData(@NotNull LegacyVerifierLookupResponse finalKeyResult, boolean enableOneKey, boolean isNewKey,
+                                                                        @NotNull Integer serverTimeOffset) throws Exception {
         LegacyVerifierKey key = finalKeyResult.keys[0];
         String X = key.pub_key_X;
         String Y = key.pub_key_Y;
-
         GetOrSetNonceResult nonceResult = null;
+        String finalPubKey;
         BigInteger nonce;
-        ECPoint finalPubKey;
         TypeOfUser typeOfUser;
         PubNonce pubNonce = null;
-        ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
-        ECPoint oAuthPubKey = Utils.getPublicKeyFromHex(X, Y);
+
+        String oAuthPubKey = KeyUtils.getPublicKeyFromCoords(X,Y,false);
+        Integer finalServerTimeOffset = (this.options.serverTimeOffset == null) ? serverTimeOffset : this.options.serverTimeOffset;
 
         if (enableOneKey) {
-            try {
-                nonceResult = getOrSetNonce(this.defaultHost, key.pub_key_X, key.pub_key_Y, false);
-                nonce = new BigInteger(Utils.isEmpty(nonceResult.nonce) ? "0" : nonceResult.nonce, 16);
-                typeOfUser = nonceResult.typeOfUser;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            nonceResult = Utils.getOrSetNonce(this.defaultHost, X, Y, finalServerTimeOffset, null, !isNewKey, null);
+            nonce = (nonceResult.nonce == null) ? BigInteger.ZERO : new BigInteger(nonceResult.nonce);
+            typeOfUser = (nonceResult.typeOfUser == null) ? TypeOfUser.v1 : nonceResult.typeOfUser;
 
-            finalPubKey = curve.getCurve().createPoint(new BigInteger(key.pub_key_X, 16), new BigInteger(key.pub_key_Y, 16));
-            if (nonceResult.typeOfUser == TypeOfUser.v1) {
-                finalPubKey = finalPubKey.add(curve.getG().multiply(nonce)).normalize();
-            } else if (nonceResult.typeOfUser == TypeOfUser.v2) {
-                assert nonceResult.pubNonce != null;
-                ECPoint oneKeyMetadataPoint = curve.getCurve().createPoint(new BigInteger(nonceResult.pubNonce.x, 16), new BigInteger(nonceResult.pubNonce.y, 16));
-                finalPubKey = finalPubKey.add(oneKeyMetadataPoint).normalize();
+            if (typeOfUser == TypeOfUser.v1) {
+                finalPubKey = oAuthPubKey;
+                nonce = getMetadata(this.defaultHost, new GetMetadataParams(X, Y));
+
+                if (nonce.compareTo(BigInteger.ZERO) > 0) {
+                    PrivateKey noncePrivate = KeyUtils.deserializePrivateKey(Hex.decode(Utils.padLeft(nonce.toString(16), '0', 64)));
+                    String noncePublicKey = Hex.toHexString(KeyUtils.serializePublicKey(KeyUtils.privateToPublic(noncePrivate), false));
+                    finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(finalPubKey, noncePublicKey), false);
+                }
+            } else if (typeOfUser == TypeOfUser.v2) {
+                String pubNonceKey = KeyUtils.getPublicKeyFromCoords(nonceResult.pubNonce.x, nonceResult.pubNonce.y, false);
+                finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPubKey, pubNonceKey), false);
                 pubNonce = nonceResult.pubNonce;
             } else {
                 throw new RuntimeException("getOrSetNonce should always return typeOfUser.");
             }
         } else {
             typeOfUser = TypeOfUser.v1;
-            nonce = TorusUtils.getMetadata(this.defaultHost,new GetMetadataParams(X, Y));
-            finalPubKey = curve.getCurve().createPoint(new BigInteger(X, 16), new BigInteger(Y, 16));
-            finalPubKey = finalPubKey.add(curve.getG().multiply(nonce)).normalize();
+            finalPubKey = oAuthPubKey;
+            nonce = getMetadata(this.defaultHost, new GetMetadataParams(X,Y));
+            if (nonce.compareTo(BigInteger.ZERO) > 0) {
+                PrivateKey noncePrivate = KeyUtils.deserializePrivateKey(Hex.decode(Utils.padLeft(nonce.toString(16), '0', 64)));
+                String noncePublicKey = Hex.toHexString(KeyUtils.serializePublicKey(KeyUtils.privateToPublic(noncePrivate), false));
+                finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(finalPubKey, noncePublicKey), false);
+            }
         }
 
-        if (oAuthPubKey == null) {
-            throw new Error("Unable to derive oAuthPubKey");
-        }
-        String oAuthX = oAuthPubKey.getAffineXCoord().toString();
-        String oAuthY = oAuthPubKey.getAffineYCoord().toString();
-        String oAuthAddress = KeyUtils.generateAddressFromPubKey(oAuthPubKey.getAffineXCoord().toBigInteger().toString(16), oAuthPubKey.getAffineYCoord().toBigInteger().toString(16));
-        if (typeOfUser.equals(TypeOfUser.v2) && finalPubKey == null) {
-            throw new Error("Unable to derive finalPubKey");
-        }
-        String finalX = finalPubKey != null ? finalPubKey.getAffineXCoord().toString() : "";
-        String finalY = finalPubKey != null ? finalPubKey.getAffineYCoord().toString() : "";
-        String finalAddress = finalPubKey != null ? KeyUtils.generateAddressFromPubKey(finalPubKey.getAffineXCoord().toBigInteger().toString(16), finalPubKey.getAffineYCoord().toBigInteger().toString(16)) : "";
+        String oAuthAddress = KeyUtils.generateAddressFromPubKey(X, Y);
 
-        TorusPublicKey resultKey = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthX, oAuthY),
-                new FinalPubKeyData(finalAddress, finalX, finalY),
-                new Metadata(pubNonce, nonce, typeOfUser, nonceResult != null && nonceResult.upgraded, serverTimeOffset),
+        if (typeOfUser == TypeOfUser.v2 && finalPubKey == null) {
+            throw TorusUtilError.PRIVATE_KEY_DERIVE_FAILED;
+        }
+
+        String[] finalPubKeyCoords = KeyUtils.getPublicKeyCoords(finalPubKey);
+        String finalAddress = KeyUtils.generateAddressFromPubKey(finalPubKeyCoords[0],finalPubKeyCoords[1]);
+
+        return new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, Utils.padLeft(X, '0', 64),  Utils.padLeft(Y, '0', 64)),
+                new FinalPubKeyData(finalAddress,finalPubKeyCoords[0], finalPubKeyCoords[1]),
+                new Metadata(pubNonce, nonce, typeOfUser, (nonceResult != null && nonceResult.upgraded != null) ? nonceResult.upgraded : false, serverTimeOffset),
                 new NodesData(new ArrayList<>()));
-        return resultKey;
     }
 
     public TorusPublicKey getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) throws Exception {
@@ -1065,34 +1070,6 @@ public class TorusUtils {
 
     private Web3AuthNetwork getNetworkInfo() {
         return this.options.network;
-    }
-
-    private static GetOrSetNonceResult _getOrSetNonce(String legacyMetadataHost, MetadataParams data) throws ExecutionException, InterruptedException, JSONException {
-        Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-        String finalData = gson.toJson(data);
-        String urlResponse = APIUtils.post(legacyMetadataHost + "/get_or_set_nonce", finalData, true).get();
-        JSONObject jsonObject = new JSONObject(urlResponse);
-        return gson.fromJson(jsonObject.toString(), GetOrSetNonceResult.class);
-    }
-
-    public static GetOrSetNonceResult getOrSetNonce(String legacyMetadataHost, String X, String Y, boolean getOnly) throws JSONException, ExecutionException, InterruptedException {
-        String msg = getOnly ? "getNonce" : "getOrSetNonce";
-        MetadataParams data = new MetadataParams(X, Y, new SetData(msg, "0"), null, null, null);
-        return _getOrSetNonce(legacyMetadataHost, data);
-    }
-
-    public static GetOrSetNonceResult getOrSetNonce(String legacyMetadataHost, BigInteger privKey, Integer serverTimeOffset, boolean getOnly) throws JSONException, ExecutionException, InterruptedException {
-        String msg = getOnly ? "getNonce" : "getOrSetNonce";
-        MetadataParams data = TorusUtils.generateMetadataParams(msg, privKey, serverTimeOffset);
-        return _getOrSetNonce(legacyMetadataHost, data);
-    }
-
-    public static GetOrSetNonceResult getNonce(String legacyMetadataHost, String X, String Y, Integer serverTimeOffset) throws JSONException, ExecutionException, InterruptedException {
-        return getOrSetNonce(legacyMetadataHost, X, Y, true);
-    }
-
-    public static GetOrSetNonceResult getNonce(String legacyMetadataHost, BigInteger privKey, Integer serverTimeOffset) throws JSONException, ExecutionException, InterruptedException {
-        return getOrSetNonce(legacyMetadataHost, privKey, serverTimeOffset, true);
     }
 
     public TorusPublicKey getUserTypeAndAddress(String[] endpoints, VerifierArgs verifierArgs) throws Exception {
