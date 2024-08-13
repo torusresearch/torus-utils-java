@@ -28,14 +28,4 @@ public class JwtUtils {
         MockNeat mock = MockNeat.threadLocal();
         return mock.emails().val();
     }
-
-    // TODO: This should be returned, not used as a comparison in the tests
-    public static int getTimeDiff(BigInteger timestampInSeconds) {
-        BigInteger timestampInMillis = timestampInSeconds.multiply(BigInteger.valueOf(1000));
-        BigInteger systemTimestampMillis = BigInteger.valueOf(System.currentTimeMillis());
-        BigInteger timeDifferenceMillis = systemTimestampMillis.subtract(timestampInMillis);
-        BigInteger timeDifferenceSeconds = timeDifferenceMillis.divide(BigInteger.valueOf(1000));
-        //System.out.println("Time difference: " + timeDifferenceSeconds + " seconds");
-        return timeDifferenceSeconds.intValue();
-    }
 }
