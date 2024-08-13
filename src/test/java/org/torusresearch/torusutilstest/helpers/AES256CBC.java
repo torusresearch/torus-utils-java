@@ -14,49 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AES256CBC {
-
-    //TODO: Move this test to proper place
-    @Test
-    public void testKCombinations() throws Exception {
-        List<Integer> set = new ArrayList<>();
-        List<List<Integer>> allCombis = Utils.kCombinations(set, 0);
-        assertEquals(allCombis.size(), 0);
-
-        set.add(0);
-        set.add(1);
-        set.add(2);
-        set.add(3);
-        set.add(4);
-        set.add(5);
-
-
-        allCombis = Utils.kCombinations(set, 10);
-        assertEquals(allCombis.size(), 0);
-
-        allCombis = Utils.kCombinations(set, 6);
-        assertEquals(allCombis.size(), 1);
-
-        allCombis = Utils.kCombinations(set, 1);
-        assertEquals(allCombis.size(), 6);
-
-        allCombis = Utils.kCombinations(set, 2);
-        assertEquals(allCombis.size(), 15);
-
-        set.remove(0);
-        allCombis = Utils.kCombinations(set, 3);
-        assertEquals(allCombis.size(), 10);
-    }
-
-    //TODO: Move this test to proper place
-    @Test
-    public void testGenerateAddressFromPublicKey() throws Exception {
-        String fullAddress = "04238569d5e12caf57d34fb5b2a0679c7775b5f61fd18cd69db9cc600a651749c3ec13a9367380b7a024a67f5e663f3afd40175c3223da63f6024b05d0bd9f292e";
-        String[] coords = KeyUtils.getPublicKeyCoords(fullAddress);
-        String etherAddress = KeyUtils.generateAddressFromPubKey(coords[0], coords[1]);
-        String finalAddress = "0x048975d4997D7578A3419851639c10318db430b6";
-        assertEquals(etherAddress, finalAddress);
-    }
-
     @Test
     public void testECDH() throws Exception {
         KeyPair secret = KeyUtils.generateKeyPair();
