@@ -97,7 +97,7 @@ public class MainnetTest {
                         "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
                         "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1"),
                 new FinalPubKeyData("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E",
-                        "72beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
+                        "072beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
                         "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5"),
                 new Metadata(key.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().serverTimeOffset),
                 new NodesData(key.nodesData.nodeIndexes)
@@ -112,7 +112,7 @@ public class MainnetTest {
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xA9c6829e4899b6D630130ebf59D046CA868D7f83",
                         "5566cd940ea540ba1a3ba2ff0f5fd3d9a3a74350ac3baf47b811592ae6ea1c30",
-                        "7a302e87e8d9eb5d143f570c248657288c13c09ecbe1e3a8720449daf9315b0"),
+                        "07a302e87e8d9eb5d143f570c248657288c13c09ecbe1e3a8720449daf9315b0"),
                 new FinalPubKeyData("0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526",
                         "bbfd26b1e61572c4e991a21b64f12b313cb6fce6b443be92d4d5fd8f311e8f33",
                         "df2c905356ec94faaa111a886be56ed6fa215b7facc1d1598486558355123c25"),

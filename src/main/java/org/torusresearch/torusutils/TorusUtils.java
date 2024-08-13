@@ -861,7 +861,7 @@ public class TorusUtils {
             return new BigInteger(Utils.isEmpty(response.getMessage()) ? "0" : response.getMessage(), 16);
     }
 
-    public TorusPublicKey getNewPublicAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId, Web3AuthNetwork network) throws Exception {
+    public TorusPublicKey getNewPublicAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId, Web3AuthNetwork network, @NotNull boolean enableOneKey) throws Exception {
         KeyLookupResult keyAssignResult = Utils.getPubKeyOrKeyAssign(endpoints, network, verifier, verifierId, this.defaultHost, this.options.serverTimeOffset, extendedVerifierId);
 
         JsonRPCRequest.JRPCResponse.ErrorInfo errorResult = keyAssignResult.errorResult;
@@ -908,7 +908,7 @@ public class TorusUtils {
                 }
                 LegacyVerifierLookupResponse verifierLegacyLookupItem =
                         new LegacyVerifierLookupResponse(legacyKeys.toArray(new LegacyVerifierKey[0]), finalServerTimeOffset.toString());
-                return formatLegacyPublicKeyData(verifierLegacyLookupItem, true, keyAssignResult.keyResult.is_new_key, finalServerTimeOffset);
+                return formatLegacyPublicKeyData(verifierLegacyLookupItem, enableOneKey, keyAssignResult.keyResult.is_new_key, finalServerTimeOffset);
         } else {
             String[] pubKeyCoords = KeyUtils.getPublicKeyCoords(pubKey);
             String _X = pubKeyCoords[0];
@@ -1012,7 +1012,7 @@ public class TorusUtils {
     }
 
     public TorusPublicKey getPublicAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId) throws Exception {
-        return getNewPublicAddress(endpoints, verifier, verifierId, extendedVerifierId, getNetworkInfo());
+        return getNewPublicAddress(endpoints, verifier, verifierId, extendedVerifierId, getNetworkInfo(), this.options.enableOneKey);
     }
 
     private String getMigratedNetworkInfo() {
@@ -1024,7 +1024,7 @@ public class TorusUtils {
     }
 
     public TorusPublicKey getUserTypeAndAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId) throws Exception {
-        return getNewPublicAddress(endpoints, verifier, verifierId, extendedVerifierId, getNetworkInfo());
+        return getNewPublicAddress(endpoints, verifier, verifierId, extendedVerifierId, getNetworkInfo(), true);
     }
 
     public static MetadataParams generateMetadataParams(String message, BigInteger privateKey, Integer serverTimeOffset) {
