@@ -209,17 +209,26 @@ public class Utils {
         }
     }
 
+    /*
+    public static int getTimeDiff(BigInteger timestampInSeconds) {
+        BigInteger timestampInMillis = timestampInSeconds.multiply(BigInteger.valueOf(1000));
+        BigInteger systemTimestampMillis = BigInteger.valueOf(System.currentTimeMillis());
+        BigInteger timeDifferenceMillis = systemTimestampMillis.subtract(timestampInMillis);
+        BigInteger timeDifferenceSeconds = timeDifferenceMillis.divide(BigInteger.valueOf(1000));
+        //System.out.println("Time difference: " + timeDifferenceSeconds + " seconds");
+        return timeDifferenceSeconds.intValue();
+    }
+     */
     public static KeyLookupResult getPubKeyOrKeyAssign(@NotNull  String[] endpoints, @NotNull  Web3AuthNetwork network, @NotNull String verifier, @NotNull String verifierId, @NotNull String legacyMetdadataHost, @Nullable Integer serverTimeOffset, @Nullable String extendedVerifierId) throws Exception {
         int threshold = (endpoints.length / 2) + 1;
 
-        int timeOffset = 0;
+        BigInteger timeOffset = BigInteger.ZERO;
         if (serverTimeOffset != null) {
-            timeOffset = serverTimeOffset;
+            timeOffset = BigInteger.valueOf(serverTimeOffset);
         }
+        timeOffset.add( new BigInteger(String.valueOf(System.currentTimeMillis() / 1000)));
 
-        timeOffset += (int) (System.currentTimeMillis() / 1000);
-
-        GetOrSetKeyParams params = new GetOrSetKeyParams(true, verifier, verifierId, extendedVerifierId, true, true,String.valueOf(timeOffset));
+        GetOrSetKeyParams params = new GetOrSetKeyParams(true, verifier, verifierId, extendedVerifierId, true, true, timeOffset.toString());
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
             lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("GetPubKeyOrKeyAssign",
@@ -282,7 +291,7 @@ public class Utils {
             }
         }
 
-        ArrayList<BigInteger> serverTimeOffsets = new ArrayList<>();
+        ArrayList<Integer> serverTimeOffsets = new ArrayList<>();
         ArrayList<Integer> nodeIndexes = new ArrayList<>();
         if (key != null && (nonce != null || extendedVerifierId != null || isLegacyNetorkRouteMap(network) || errResult != null)) {
             for (int i = 0; i < lookupPubKeys.size(); i++) {
@@ -298,15 +307,15 @@ public class Utils {
                         }
                     }
                     if (x1Result.server_time_offset != null) {
-                        serverTimeOffsets.add(new BigInteger(x1Result.server_time_offset));
+                        serverTimeOffsets.add(Integer.valueOf(x1Result.server_time_offset));
                     } else {
-                        serverTimeOffsets.add(BigInteger.ZERO);
+                        serverTimeOffsets.add(0);
                     }
                 }
             }
         }
 
-        BigInteger finalServerTimeOffset = BigInteger.ZERO;
+        Integer finalServerTimeOffset = 0;
         if (key != null) {
             finalServerTimeOffset = calculateMedian(serverTimeOffsets);
         }
@@ -478,10 +487,10 @@ public class Utils {
         return key;
     }
 
-    public static BigInteger calculateMedian(List<BigInteger> arr) {
+    public static Integer calculateMedian(List<Integer> arr) {
         int arrSize = arr.size();
 
-        if (arrSize == 0) return BigInteger.ZERO;
+        if (arrSize == 0) return 0;
 
         Collections.sort(arr);
 
@@ -491,9 +500,9 @@ public class Utils {
         }
 
         // return average of two mid values in case of even arrSize
-        BigInteger mid1 = arr.get(arrSize / 2 - 1);
-        BigInteger mid2 = arr.get(arrSize / 2);
-        return (mid1.add(mid2)).divide(BigInteger.valueOf(2));
+        Integer mid1 = arr.get(arrSize / 2 - 1);
+        Integer mid2 = arr.get(arrSize / 2);
+        return (mid1+mid2)/2;
     }
 
     public static String addLeading0sForLength64(String input) {

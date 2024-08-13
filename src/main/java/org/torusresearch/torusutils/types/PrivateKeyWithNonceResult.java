@@ -9,9 +9,9 @@ public class PrivateKeyWithNonceResult {
     private BigInteger privateKey;
     private GetOrSetNonceResult nonceResult;
 
-    private BigInteger serverTimeOffsetResponse;
+    private Integer serverTimeOffsetResponse;
 
-    public PrivateKeyWithNonceResult(BigInteger _privateKey, GetOrSetNonceResult _nonceResult, BigInteger serverTimeOffsetResponse) {
+    public PrivateKeyWithNonceResult(BigInteger _privateKey, GetOrSetNonceResult _nonceResult, Integer serverTimeOffsetResponse) {
         this.privateKey = _privateKey;
         this.nonceResult = _nonceResult;
         this.serverTimeOffsetResponse = serverTimeOffsetResponse;
@@ -25,7 +25,7 @@ public class PrivateKeyWithNonceResult {
         return nonceResult;
     }
 
-    public BigInteger getServerTimeOffsetResponse() {
+    public Integer getServerTimeOffsetResponse() {
         return serverTimeOffsetResponse;
     }
 }

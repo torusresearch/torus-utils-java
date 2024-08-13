@@ -19,6 +19,7 @@ import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.VerifyParams;
 import org.torusresearch.torusutils.apis.responses.PubNonce;
+import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
@@ -61,10 +62,10 @@ public class TorusUtilsTest {
     static String TORUS_TEST_EMAIL = "archit1@tor.us";
 
     @BeforeAll
-    static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID", Web3AuthNetwork.TESTNET);
+        TorusCtorOptions opts = new TorusCtorOptions("YOUR_CLIENT_ID", Web3AuthNetwork.TESTNET, null, 0, false);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
@@ -88,7 +89,7 @@ public class TorusUtilsTest {
                         "f28620603601ce54fa0d70fd691fb72ff52f5bf164bf1a91617922eaad8cc7a5"), BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.getNodesData().getNodeIndexes())
         ));
-        assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(publicAddress.getMetadata().getServerTimeOffset() < 20);
     }
 
     @DisplayName("Fetch User Type and Public Address")
@@ -173,7 +174,7 @@ public class TorusUtilsTest {
         verifierParams.setVerifierId(TORUS_TEST_EMAIL);
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER,
                 verifierParams, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null).get();
-        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0xF8d2d3cFC30949C1cb1499C9aAC8F9300535a8d6",
@@ -202,7 +203,7 @@ public class TorusUtilsTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null).get();
-        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals("0x938a40E155d118BD31E439A9d92D67bd55317965", torusKey.getoAuthKeyData().getWalletAddress());
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x938a40E155d118BD31E439A9d92D67bd55317965",

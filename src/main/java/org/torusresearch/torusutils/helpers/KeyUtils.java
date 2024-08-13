@@ -186,14 +186,14 @@ public class KeyUtils {
         );
     }
 
-    public static NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce, BigInteger serverTimeOffset) {
+    public static NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce, Integer serverTimeOffset) {
         ECDomainParameters domainParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH(), params.getSeed());
         ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(privateKey, domainParams);
         ECPoint oAuthPubPoint = domainParams.getG().multiply(privKeyParams.getD());
         ECPublicKeyParameters publicKeyParams = new ECPublicKeyParameters(oAuthPubPoint, domainParams);
 
         BigInteger timeSeconds = BigInteger.valueOf(System.currentTimeMillis() / 1000L);
-        BigInteger timestamp = serverTimeOffset.add(timeSeconds);
+        BigInteger timestamp = timeSeconds.add(BigInteger.valueOf(serverTimeOffset));
 
         // Serialize public key into padded X and Y coordinates
         String derivedPubKeyString = Hex.toHexString(publicKeyParams.getQ().getEncoded(false));
@@ -232,7 +232,7 @@ public class KeyUtils {
                 Base64.encodeBytes(encodedData.getBytes(StandardCharsets.UTF_8)), finalSig);
     }
 
-    public static List<ImportedShare> generateShares(TorusKeyType keyType, BigInteger serverTimeOffset, List<BigInteger> nodeIndexes, List<TorusNodePub> nodePubKeys, String privateKey) throws Exception {
+    public static List<ImportedShare> generateShares(TorusKeyType keyType, Integer serverTimeOffset, List<BigInteger> nodeIndexes, List<TorusNodePub> nodePubKeys, String privateKey) throws Exception {
         if (keyType != TorusKeyType.secp256k1) {
             throw new RuntimeException("Unsupported key type");
         }

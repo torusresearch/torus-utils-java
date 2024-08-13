@@ -11,9 +11,9 @@ public class Metadata {
     public boolean upgraded;
     public TypeOfUser typeOfUser;
 
-    public BigInteger serverTimeOffset;
+    public Integer serverTimeOffset;
 
-    public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded, BigInteger serverTimeOffset) {
+    public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded, Integer serverTimeOffset) {
         this.pubNonce = pubNonce;
         this.nonce = nonce;
         this.typeOfUser = typeOfUser;
@@ -44,7 +44,7 @@ public class Metadata {
         return typeOfUser;
     }
 
-    public BigInteger getServerTimeOffset() {
+    public Integer getServerTimeOffset() {
         return serverTimeOffset;
     }
 }

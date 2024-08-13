@@ -18,6 +18,7 @@ import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.VerifyParams;
 import org.torusresearch.torusutils.apis.responses.PubNonce;
+import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
@@ -60,11 +61,10 @@ public class OneKeyTest {
     static String TORUS_TEST_EMAIL = "hello@tor.us";
 
     @BeforeAll
-    static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID", Web3AuthNetwork.TESTNET);
-        opts.setEnableOneKey(true);
+        TorusCtorOptions opts = new TorusCtorOptions("YOUR_CLIENT_ID", Web3AuthNetwork.TESTNET, null, 0, true);
         torusUtils = new TorusUtils(opts);
         // TODO: Why are we reading from this instead of just generating a key?
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
@@ -89,7 +89,7 @@ public class OneKeyTest {
                 new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
         assertEquals("0x930abEDDCa6F9807EaE77A3aCc5c78f20B168Fd1", publicAddress.getFinalKeyData().getWalletAddress());
-        assertTrue(JwtUtils.getTimeDiff(publicAddress.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(publicAddress.getMetadata().getServerTimeOffset() < 20);
     }
 
     @DisplayName("Key Assign test")
@@ -132,7 +132,7 @@ public class OneKeyTest {
                 new NodesData(torusKey.nodesData.nodeIndexes)
         ));
         assertEquals("296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4", torusKey.getFinalKeyData().getPrivKey());
-        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
     }
 
     @DisplayName("Login test v2")
@@ -145,7 +145,7 @@ public class OneKeyTest {
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER,
                 verifierParams, JwtUtils.generateIdToken(email, algorithmRs), null).get();
         System.out.println(torusKey.getFinalKeyData().getPrivKey() + " priv key " + torusKey.getFinalKeyData().getWalletAddress() + " nonce " + torusKey.getMetadata().getNonce());
-        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals(torusKey.getFinalKeyData().getPrivKey(), "9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075");
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x2876820fd9536BD5dd874189A85d71eE8bDf64c2",
@@ -177,7 +177,7 @@ public class OneKeyTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null).get();
-        assertTrue(JwtUtils.getTimeDiff(torusKey.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B", torusKey.getFinalKeyData().getWalletAddress());
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B",

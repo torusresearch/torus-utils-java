@@ -21,6 +21,7 @@ import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.VerifyParams;
 import org.torusresearch.torusutils.apis.responses.PubNonce;
 import org.torusresearch.torusutils.helpers.KeyUtils;
+import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.Metadata;
@@ -72,11 +73,10 @@ public class SapphireDevnetTest {
     static String TORUS_TEST_EMAIL = "devnettestuser@tor.us";
 
     @BeforeAll
-    static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.SAPPHIRE_DEVNET);
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "YOUR_CLIENT_ID", Web3AuthNetwork.SAPPHIRE_DEVNET);
-        opts.setEnableOneKey(true);
+        TorusCtorOptions opts = new TorusCtorOptions("YOUR_CLIENT_ID", Web3AuthNetwork.SAPPHIRE_DEVNET, null, 0, true);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
@@ -88,9 +88,7 @@ public class SapphireDevnetTest {
     public void testFetchPublicAddressOfLegacyV1User() throws Exception {
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
         VerifierArgs verifierDetails = new VerifierArgs("google-lrc", "himanshu@tor.us", ""); // Replace with the actual verifier ID
-        TorusCtorOptions opts = new TorusCtorOptions("Custom", "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET);
-        opts.setAllowHost("https://signer.tor.us/api/allow");
-        opts.setEnableOneKey(true);
+        TorusCtorOptions opts = new TorusCtorOptions( "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET, null, 0 , true);
         torusUtils = new TorusUtils(opts);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", "himanshu@tor.us").get();
         TorusPublicKey publicKeyData = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), verifierDetails);
@@ -238,7 +236,7 @@ public class SapphireDevnetTest {
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, args);
-        assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(torusPublicKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals("0x8a7e297e20804786767B1918a5CFa11683e5a3BB", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xaEafa3Fc7349E897F8fCe981f55bbD249f12aC8C",
