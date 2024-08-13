@@ -962,7 +962,7 @@ public class TorusUtils {
         TypeOfUser typeOfUser;
         PubNonce pubNonce = null;
 
-        String oAuthPubKey = KeyUtils.getPublicKeyFromCoords(X,Y,false);
+        String oAuthPubKey = KeyUtils.getPublicKeyFromCoords(X,Y,true);
         Integer finalServerTimeOffset = (this.options.serverTimeOffset == null) ? serverTimeOffset : this.options.serverTimeOffset;
 
         if (enableOneKey) {
@@ -980,7 +980,7 @@ public class TorusUtils {
                     finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(finalPubKey, noncePublicKey), false);
                 }
             } else if (typeOfUser == TypeOfUser.v2) {
-                String pubNonceKey = KeyUtils.getPublicKeyFromCoords(nonceResult.pubNonce.x, nonceResult.pubNonce.y, false);
+                String pubNonceKey = KeyUtils.getPublicKeyFromCoords(nonceResult.pubNonce.x, nonceResult.pubNonce.y, true);
                 finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPubKey, pubNonceKey), false);
                 pubNonce = nonceResult.pubNonce;
             } else {
