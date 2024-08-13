@@ -173,8 +173,8 @@ public class Lagrange {
             while (points.containsKey(Utils.addLeadingZerosForLength64(shareIndex.toString(16)))) {
                 shareIndex = generatePrivateExcludingIndexes(new ArrayList<>());
             }
-            ConcreteSecretKey secretKey = new ConcreteSecretKey();
-            byte[] serializedKey = secretKey.serialize();
+
+            byte[] serializedKey = KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate());
             String serializedHex = Utils.serializeHex(serializedKey);
             points.put(Utils.addLeadingZerosForLength64(shareIndex.toString(16)),
                     new Point(shareIndex, new BigInteger(serializedHex, 16)));

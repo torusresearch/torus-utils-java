@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.helpers.Encryption;
+package org.torusresearch.torusutils.helpers.encryption;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.macs.HMac;
@@ -9,7 +9,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.torusresearch.torusutils.types.common.ecies.Ecies;
 import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.helpers.KeyUtils;
-import org.torusresearch.torusutils.helpers.SHA512;
+import org.torusresearch.torusutils.helpers.hashing.SHA512;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;

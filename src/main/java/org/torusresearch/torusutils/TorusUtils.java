@@ -16,7 +16,7 @@ import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.LegacyVerifierKey;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.LegacyVerifierLookupResponse;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierKey;
-import org.torusresearch.torusutils.helpers.Base64;
+import org.torusresearch.torusutils.helpers.encoding.Base64;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.helpers.Utils;
@@ -1043,6 +1043,7 @@ public class TorusUtils {
         ECDSASignature signature = derivedECKeyPair.sign(hashedData);
         String sig = Utils.padLeft(signature.r.toString(16), '0', 64) + Utils.padLeft(signature.s.toString(16), '0', 64) + Utils.padLeft("", '0', 2);
         byte[] sigBytes = Utils.toByteArray(new BigInteger(sig, 16));
+        // TODO: Consider java.util.Base64.getEncoder().encode(sigBytes); and remove Base64 class if fine
         String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
         return new MetadataParams(derivedPubKeyX, derivedPubKeyY, setData, finalSig, null, null);
     }
