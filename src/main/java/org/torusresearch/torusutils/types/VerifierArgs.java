@@ -1,5 +1,6 @@
 package org.torusresearch.torusutils.types;
 
+// TODO: Refactor this out
 public class VerifierArgs {
     private final String verifier;
     private final String verifierId;
