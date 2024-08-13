@@ -29,7 +29,6 @@ import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SetData;
 import org.torusresearch.torusutils.types.TorusKeyType;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
-import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.common.ImportedShare;
 import org.torusresearch.torusutils.types.common.KeyLookup.KeyLookupResult;
@@ -862,8 +861,8 @@ public class TorusUtils {
             return new BigInteger(Utils.isEmpty(response.getMessage()) ? "0" : response.getMessage(), 16);
     }
 
-    public TorusPublicKey getNewPublicAddress(String[] endpoints, VerifierArgs verifierArgs, Web3AuthNetwork network) throws Exception {
-        KeyLookupResult keyAssignResult = Utils.getPubKeyOrKeyAssign(endpoints, network, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.defaultHost, this.options.serverTimeOffset, verifierArgs.getExtendedVerifierId());
+    public TorusPublicKey getNewPublicAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId, Web3AuthNetwork network) throws Exception {
+        KeyLookupResult keyAssignResult = Utils.getPubKeyOrKeyAssign(endpoints, network, verifier, verifierId, this.defaultHost, this.options.serverTimeOffset, extendedVerifierId);
 
         JsonRPCRequest.JRPCResponse.ErrorInfo errorResult = keyAssignResult.errorResult;
         if (errorResult != null) {
@@ -880,7 +879,7 @@ public class TorusUtils {
         }
 
         GetOrSetNonceResult nonceResult = keyAssignResult.nonceResult;
-        if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null && !isLegacyNetorkRouteMap(network)) {
+        if (nonceResult == null && extendedVerifierId == null && !isLegacyNetorkRouteMap(network)) {
             throw new RuntimeException("metadata nonce is missing in share response");
         }
 
@@ -899,7 +898,7 @@ public class TorusUtils {
 
         Integer finalServerTimeOffset = (this.options.serverTimeOffset != null) ? this.options.serverTimeOffset : keyAssignResult.server_time_offset;
 
-        if (verifierArgs.getExtendedVerifierId() != null) {
+        if (extendedVerifierId != null) {
             finalPubKey = pubKey;
             oAuthPubKey = finalPubKey;
         } else if (isLegacyNetorkRouteMap(network)) {
@@ -1012,12 +1011,8 @@ public class TorusUtils {
                 new NodesData(new ArrayList<>()));
     }
 
-    public TorusPublicKey getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) throws Exception {
-        return getNewPublicAddress(endpoints, verifierArgs, getNetworkInfo());
-    }
-
-    public TorusPublicKey getPublicAddress(String[] endpoints, VerifierArgs verifierArgs) throws Exception {
-        return getNewPublicAddress(endpoints, verifierArgs,  getNetworkInfo());
+    public TorusPublicKey getPublicAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId) throws Exception {
+        return getNewPublicAddress(endpoints, verifier, verifierId, extendedVerifierId, getNetworkInfo());
     }
 
     private String getMigratedNetworkInfo() {
@@ -1028,8 +1023,8 @@ public class TorusUtils {
         return this.options.network;
     }
 
-    public TorusPublicKey getUserTypeAndAddress(String[] endpoints, VerifierArgs verifierArgs) throws Exception {
-        return getNewPublicAddress(endpoints, verifierArgs, getNetworkInfo());
+    public TorusPublicKey getUserTypeAndAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId) throws Exception {
+        return getNewPublicAddress(endpoints, verifier, verifierId, extendedVerifierId, getNetworkInfo());
     }
 
     public static MetadataParams generateMetadataParams(String message, BigInteger privateKey, Integer serverTimeOffset) {

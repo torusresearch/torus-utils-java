@@ -25,7 +25,6 @@ import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.TorusException;
-import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.VerifyParam;
 import org.torusresearch.torusutils.types.common.PubNonce;
@@ -73,9 +72,8 @@ public class TorusUtilsTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws Exception {
-        VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL, null);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", TORUS_TEST_EMAIL).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), "google-lrc", TORUS_TEST_EMAIL, null);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
                         "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
@@ -93,9 +91,8 @@ public class TorusUtilsTest {
     @DisplayName("Fetch User Type and Public Address")
     @Test
     public void shouldFetchUserTypeAndPublicAddress() throws Exception {
-        VerifierArgs args = new VerifierArgs("google-lrc", TORUS_TEST_EMAIL, null);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
-        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), args);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", TORUS_TEST_EMAIL).get();
+        TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), "google-lrc", TORUS_TEST_EMAIL, null);
         assertThat(key).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
                         "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
@@ -114,7 +111,7 @@ public class TorusUtilsTest {
         String v2Verifier = "tkey-google-lrc";
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
-        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2TestEmail, null));
+        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), v2Verifier, v2TestEmail, null);
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x376597141d8d219553378313d18590F373B09795",
                         "86cd2db15b7a9937fa8ab7d0bf8e7f4113b64d1f4b2397aad35d6d4749d2fb6c",
@@ -132,7 +129,7 @@ public class TorusUtilsTest {
 
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
-        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2nTestEmail, null));
+        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), v2Verifier, v2nTestEmail, null);
         assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xd45383fbF04BccFa0450d7d8ee453ca86b7C6544",
                         "d25cc473fbb448d20b5551f3c9aa121e1924b3d197353347187c47ad13ecd5d8",
@@ -154,7 +151,7 @@ public class TorusUtilsTest {
     public void shouldKeyAssign() throws Exception {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs("google-lrc", email, ""), false);
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), "google-lrc", email, "");
         System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
         assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
         assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
