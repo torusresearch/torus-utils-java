@@ -11,11 +11,6 @@ public class JsonRPCResponse<T> {
         return error;
     }
 
-    // TODO: Remove this function, after all done, will throw on LinkedList cannot be casted due to missing type from Type Erasure.
-    public T getResult() {
-        return result;
-    }
-
     public T getTypedResult(Class<T> clazz) {
         Gson gson = new Gson();
         TypeToken type = TypeToken.get(clazz);

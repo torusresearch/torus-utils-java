@@ -247,7 +247,7 @@ public class Utils {
                 @SuppressWarnings({"unchecked"}) // Due to Type Erasure of Generic Types at Runtime. Java does this to ensure code is compatible with pre-generic versions of Java.
                 JsonRPCResponse<VerifierLookupResponse> response = json.fromJson(result, JsonRPCResponse.class);
                 collected.add(response);
-                lookupPubKeys = collected.stream().filter(item -> item.getError() == null && item.getResult() != null).collect(Collectors.toList());
+                lookupPubKeys = collected.stream().filter(item -> item.getError() == null && item.getTypedResult(VerifierLookupResponse.class) != null).collect(Collectors.toList());
                 errResult = (JsonRPCRequest.JRPCResponse.ErrorInfo) Utils.thresholdSame(collected.stream().filter(item -> item.getError() != null).toArray(), threshold);
                 ArrayList<KeyResult> normalizedKeys = new ArrayList<>();
                 for (JsonRPCResponse<VerifierLookupResponse> item : lookupPubKeys) {

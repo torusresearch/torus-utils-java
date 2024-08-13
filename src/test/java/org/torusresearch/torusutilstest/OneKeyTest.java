@@ -63,7 +63,6 @@ public class OneKeyTest {
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
         TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.TESTNET, null, 0, true);
         torusUtils = new TorusUtils(opts);
-        // TODO: Why are we reading from this instead of just generating a key? Remove this
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
         algorithmRs = Algorithm.ECDSA256(publicKey, privateKey);
