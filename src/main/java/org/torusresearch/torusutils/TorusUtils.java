@@ -996,7 +996,7 @@ public class TorusUtils {
             }
         }
 
-        String oAuthAddress = KeyUtils.generateAddressFromPubKey(X, Y);
+        String oAuthAddress = KeyUtils.generateAddressFromPubKey(Utils.padLeft(X,'0', 64), Utils.padLeft(Y,'0', 64));
 
         if (typeOfUser == TypeOfUser.v2 && finalPubKey == null) {
             throw TorusUtilError.PRIVATE_KEY_DERIVE_FAILED;
