@@ -107,7 +107,7 @@ public class TorusUtils {
 
     public final String defaultHost;
     public final TorusCtorOptions options;
-    private static int sessionTime = 86400;
+    private int sessionTime = 86400;
     private final TorusKeyType keyType;
     public static final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
 
@@ -143,8 +143,8 @@ public class TorusUtils {
         return err instanceof GetOrSetNonceError;
     }
 
-    public static void setSessionTime(int _sessionTime) {
-        sessionTime = _sessionTime;
+    public void setSessionTime(int sessionTime) {
+        this.sessionTime = sessionTime;
     }
     private void setupBouncyCastle() {
         final Provider provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -884,6 +884,10 @@ public class TorusUtils {
     }
 
     public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, String verifier, VerifierParams verifierParams, String idToken, TorusUtilsExtraParams extraParams) {
+        if (extraParams.session_token_exp_second == null) {
+            extraParams.session_token_exp_second = this.sessionTime;
+        }
+
         return this.retrieveOrImportShare(endpoints, verifier, verifierParams, idToken, extraParams, this.options.network.toString(), new ImportedShare[]{}); // TODO: extraParams should be passed here and not ignored
     }
 

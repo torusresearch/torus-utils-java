@@ -325,7 +325,7 @@ public class SapphireDevnetTest {
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeEndpoints();
 
         int customSessionTime = 3600;
-        TorusUtils.setSessionTime(customSessionTime);
+        torusUtils.setSessionTime(customSessionTime);
 
         TorusKey torusKey = torusUtils.retrieveShares(torusNodeEndpoints, TORUS_TEST_VERIFIER,
                 verifierParams, idToken, null).get();
