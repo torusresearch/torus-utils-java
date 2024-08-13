@@ -224,9 +224,11 @@ public class KeyUtils {
         byte[] sigBytes = Utils.toByteArray(new BigInteger(sig, 16));
 
         // Encode the signature bytes to Base64
+        // TODO: Consider java.util.Base64.getEncoder().encode(sigBytes); and remove Base64 class if fine
         String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
 
         // Return a new NonceMetadataParams object with the derived values
+        // TODO: Consider java.util.Base64.getEncoder().encode(sigBytes); and remove Base64 class if fine
         return new NonceMetadataParams(derivedPubKeyX, derivedPubKeyY, setNonceData,
                 Base64.encodeBytes(encodedData.getBytes(StandardCharsets.UTF_8)), finalSig);
     }
