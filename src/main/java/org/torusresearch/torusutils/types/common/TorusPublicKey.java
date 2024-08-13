@@ -1,4 +1,9 @@
-package org.torusresearch.torusutils.types;
+package org.torusresearch.torusutils.types.common;
+
+import org.torusresearch.torusutils.types.FinalPubKeyData;
+import org.torusresearch.torusutils.types.NodesData;
+import org.torusresearch.torusutils.types.OAuthPubKeyData;
+import org.torusresearch.torusutils.types.Metadata;
 
 import java.util.Objects;
 

@@ -1,15 +1,13 @@
-package org.torusresearch.torusutils.types;
+package org.torusresearch.torusutils.types.common;
 
 import static org.torusresearch.fetchnodedetails.types.Utils.METADATA_MAP;
-import static org.torusresearch.fetchnodedetails.types.Utils.SIGNER_MAP;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
+import org.torusresearch.torusutils.types.TorusKeyType;
 
-import java.math.BigInteger;
-
-public class TorusCtorOptions {
+public class TorusOptions {
     public final String legacyMetadataHost;
     // in seconds
     public final  Integer serverTimeOffset;
@@ -20,7 +18,7 @@ public class TorusCtorOptions {
 
     public final TorusKeyType keyType = TorusKeyType.secp256k1;
 
-    public TorusCtorOptions(@NotNull String clientId, @NotNull Web3AuthNetwork network, @Nullable String legacyMetadataHost, @Nullable Integer serverTimeOffset, @NotNull Boolean enableOneKey) {
+    public TorusOptions(@NotNull String clientId, @NotNull Web3AuthNetwork network, @Nullable String legacyMetadataHost, @Nullable Integer serverTimeOffset, @NotNull Boolean enableOneKey) {
         this.clientId = clientId;
         this.network = network;
         if (legacyMetadataHost == null) {

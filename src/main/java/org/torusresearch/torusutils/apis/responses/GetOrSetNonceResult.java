@@ -1,7 +1,8 @@
 package org.torusresearch.torusutils.apis.responses;
 
 import org.jetbrains.annotations.Nullable;
-import org.torusresearch.torusutils.types.TypeOfUser;
+import org.torusresearch.torusutils.types.common.TypeOfUser;
+import org.torusresearch.torusutils.types.common.PubNonce;
 
 public class GetOrSetNonceResult {
     @Nullable

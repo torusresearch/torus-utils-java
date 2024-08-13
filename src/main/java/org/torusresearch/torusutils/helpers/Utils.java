@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -23,18 +22,18 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.apis.APIUtils;
+import org.torusresearch.torusutils.apis.JsonRPCRequest;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
-import org.torusresearch.torusutils.apis.KeyLookupResult;
-import org.torusresearch.torusutils.apis.KeyResult;
+import org.torusresearch.torusutils.types.common.KeyLookup.KeyLookupResult;
+import org.torusresearch.torusutils.types.common.KeyLookup.KeyResult;
 import org.torusresearch.torusutils.apis.requests.GetNonceParams;
 import org.torusresearch.torusutils.apis.requests.GetNonceSetDataParams;
 import org.torusresearch.torusutils.apis.requests.GetOrSetKeyParams;
 import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
-import org.torusresearch.torusutils.apis.responses.PubNonce;
+import org.torusresearch.torusutils.types.common.meta.MetadataParams;
+import org.torusresearch.torusutils.types.common.PubNonce;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierKey;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierLookupResponse;
-import org.torusresearch.torusutils.types.JRPCResponse;
-import org.torusresearch.torusutils.types.MetadataParams;
 import org.torusresearch.torusutils.types.SetData;
 import org.torusresearch.torusutils.types.TorusKeyType;
 import org.torusresearch.torusutils.types.Point;
@@ -44,7 +43,6 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 
-import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -236,7 +234,7 @@ public class Utils {
 
         ArrayList<JsonRPCResponse<VerifierLookupResponse>> collected = new ArrayList<>();
 
-        JRPCResponse.ErrorInfo errResult = null;
+        JsonRPCRequest.JRPCResponse.ErrorInfo errResult = null;
         KeyResult key = null;
         List<JsonRPCResponse<VerifierLookupResponse>> lookupPubKeys = null;
         GetOrSetNonceResult nonce = null;
@@ -250,7 +248,7 @@ public class Utils {
                 JsonRPCResponse<VerifierLookupResponse> response = json.fromJson(result, JsonRPCResponse.class);
                 collected.add(response);
                 lookupPubKeys = collected.stream().filter(item -> item.getError() == null && item.getResult() != null).collect(Collectors.toList());
-                errResult = (JRPCResponse.ErrorInfo) Utils.thresholdSame(collected.stream().filter(item -> item.getError() != null).toArray(), threshold);
+                errResult = (JsonRPCRequest.JRPCResponse.ErrorInfo) Utils.thresholdSame(collected.stream().filter(item -> item.getError() != null).toArray(), threshold);
                 ArrayList<KeyResult> normalizedKeys = new ArrayList<>();
                 for (JsonRPCResponse<VerifierLookupResponse> item : lookupPubKeys) {
                     VerifierLookupResponse vlr = item.getTypedResult(VerifierLookupResponse.class);

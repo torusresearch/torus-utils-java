@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.types;
+package org.torusresearch.torusutils.types.common;
 
 import java.util.Objects;
 

@@ -19,18 +19,18 @@ import org.torusresearch.torusutils.apis.VerifyParams;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
-import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
-import org.torusresearch.torusutils.types.TorusCtorOptions;
+import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.TorusException;
-import org.torusresearch.torusutils.types.TorusKey;
-import org.torusresearch.torusutils.types.TorusPublicKey;
-import org.torusresearch.torusutils.types.TypeOfUser;
+import org.torusresearch.torusutils.types.common.TorusKey;
+import org.torusresearch.torusutils.types.common.TorusPublicKey;
+import org.torusresearch.torusutils.types.common.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutils.types.VerifierParams;
+import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
 import org.web3j.crypto.Hash;
@@ -61,7 +61,7 @@ public class AquaTest {
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.AQUA);
-        TorusCtorOptions opts = new TorusCtorOptions("YOUR_CLIENT_ID", Web3AuthNetwork.AQUA, null, 0, false);
+        TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.AQUA, null, 0, false);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(),

@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.apis.responses;
+package org.torusresearch.torusutils.types.common;
 
 import org.jetbrains.annotations.NotNull;
 

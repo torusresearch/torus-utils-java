@@ -1,10 +1,10 @@
 package org.torusresearch.torusutils.types;
 
-public class MetadataPubKey {
+public class GetMetadataParams {
     private final String pub_key_X;
     private final String pub_key_Y;
 
-    public MetadataPubKey(String pub_key_X, String pub_key_Y) {
+    public GetMetadataParams(String pub_key_X, String pub_key_Y) {
         this.pub_key_X = pub_key_X;
         this.pub_key_Y = pub_key_Y;
     }

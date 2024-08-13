@@ -3,7 +3,7 @@ package org.torusresearch.torusutils.apis.responses;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.torusresearch.torusutils.apis.PubKey;
-import org.torusresearch.torusutils.apis.ecies.EciesHexOmitCipherText;
+import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 
 public class KeyAssignment {
     public final String index;

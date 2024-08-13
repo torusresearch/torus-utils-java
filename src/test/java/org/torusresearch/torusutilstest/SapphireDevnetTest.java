@@ -19,24 +19,24 @@ import org.torusresearch.fetchnodedetails.types.NodeDetails;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.VerifyParams;
-import org.torusresearch.torusutils.apis.responses.PubNonce;
+import org.torusresearch.torusutils.types.common.PubNonce;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
-import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
-import org.torusresearch.torusutils.types.SessionToken;
-import org.torusresearch.torusutils.types.TorusCtorOptions;
-import org.torusresearch.torusutils.types.TorusKey;
-import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.common.SessionToken;
+import org.torusresearch.torusutils.types.common.TorusOptions;
+import org.torusresearch.torusutils.types.common.TorusKey;
+import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
-import org.torusresearch.torusutils.types.TypeOfUser;
+import org.torusresearch.torusutils.types.common.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutils.types.VerifierParams;
+import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
 import org.web3j.crypto.Hash;
@@ -76,7 +76,7 @@ public class SapphireDevnetTest {
     static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.SAPPHIRE_DEVNET);
-        TorusCtorOptions opts = new TorusCtorOptions("YOUR_CLIENT_ID", Web3AuthNetwork.SAPPHIRE_DEVNET, null, 0, true);
+        TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.SAPPHIRE_DEVNET, null, 0, true);
         torusUtils = new TorusUtils(opts);
         ECPrivateKey privateKey = (ECPrivateKey) PemUtils.readPrivateKeyFromFile("src/test/java/org/torusresearch/torusutilstest/keys/key.pem", "EC");
         ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new ECPublicKeySpec(privateKey.getParams().getGenerator(), privateKey.getParams()));
@@ -88,7 +88,7 @@ public class SapphireDevnetTest {
     public void testFetchPublicAddressOfLegacyV1User() throws Exception {
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
         VerifierArgs verifierDetails = new VerifierArgs("google-lrc", "himanshu@tor.us", ""); // Replace with the actual verifier ID
-        TorusCtorOptions opts = new TorusCtorOptions( "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET, null, 0 , true);
+        TorusOptions opts = new TorusOptions( "BG4pe3aBso5SjVbpotFQGnXVHgxhgOxnqnNBKyjfEJ3izFvIVWUaMIzoCrAfYag8O6t6a6AOvdLcS4JR2sQMjR4", Web3AuthNetwork.TESTNET, null, 0 , true);
         torusUtils = new TorusUtils(opts);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", "himanshu@tor.us").get();
         TorusPublicKey publicKeyData = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), verifierDetails);

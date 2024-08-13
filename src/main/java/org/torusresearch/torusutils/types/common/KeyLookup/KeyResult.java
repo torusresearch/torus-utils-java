@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.apis;
+package org.torusresearch.torusutils.types.common.KeyLookup;
 
 import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierKey;

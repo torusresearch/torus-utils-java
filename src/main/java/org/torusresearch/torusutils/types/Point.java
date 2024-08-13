@@ -3,6 +3,9 @@ package org.torusresearch.torusutils.types;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.util.encoders.Hex;
+import org.torusresearch.torusutils.helpers.KeyUtils;
+import org.torusresearch.torusutils.helpers.Utils;
 
 import java.math.BigInteger;
 
@@ -33,43 +36,17 @@ public class Point {
         return y;
     }
 
-    public byte[] encode(String enc) {
+    public byte[] encode(String enc) throws Exception {
+        String xPadded = Utils.padLeft(this.x.toString(16),'0', 64);
+        String yPadded = Utils.padLeft(this.y.toString(16),'0', 64);
         switch (enc) {
             case "arr":
-                return concatenateByteArrays(
-                        hexStringToByteArray("04"),
-                        hexStringToByteArray(this.x.toString(16)),
-                        hexStringToByteArray(this.y.toString(16))
-                );
+                return Hex.decode("04"+ xPadded + yPadded);
             case "elliptic-compressed":
-                return ecCurve.getCurve().createPoint(x, y).getEncoded(true);
+                return KeyUtils.serializePublicKey(KeyUtils.deserializePublicKey(Hex.decode("04"+ xPadded + yPadded)), true);
             default:
                 throw new IllegalArgumentException("Invalid encoding in Point");
         }
-    }
-
-    private byte[] hexStringToByteArray(String hexString) {
-        int len = hexString.length();
-        byte[] byteArray = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            byteArray[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
-                    + Character.digit(hexString.charAt(i + 1), 16));
-        }
-        return byteArray;
-    }
-
-    private byte[] concatenateByteArrays(byte[]... byteArrays) {
-        int totalLength = 0;
-        for (byte[] byteArray : byteArrays) {
-            totalLength += byteArray.length;
-        }
-        byte[] result = new byte[totalLength];
-        int destPos = 0;
-        for (byte[] byteArray : byteArrays) {
-            System.arraycopy(byteArray, 0, result, destPos, byteArray.length);
-            destPos += byteArray.length;
-        }
-        return result;
     }
 }
 

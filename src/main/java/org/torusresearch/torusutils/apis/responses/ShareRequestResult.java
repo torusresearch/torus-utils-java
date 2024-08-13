@@ -2,7 +2,7 @@ package org.torusresearch.torusutils.apis.responses;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.torusresearch.torusutils.apis.ecies.EciesHexOmitCipherText;
+import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 
 public class ShareRequestResult {
     public final KeyAssignment[] keys;

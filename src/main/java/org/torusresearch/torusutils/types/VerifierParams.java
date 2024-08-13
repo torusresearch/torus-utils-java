@@ -1,43 +1,24 @@
 package org.torusresearch.torusutils.types;
 
+import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.apis.VerifyParams;
 
+import io.reactivex.annotations.Nullable;
+
 public class VerifierParams {
-    private String verifierId;
-    private String extendedVerifierId;
-    private String[] subVerifierIds;
-    private VerifyParams[] verifyParams;
+    public final String verifier_id;
+    @Nullable
+    public final String extended_verifier_id;
+    @Nullable
+    public final String[] sub_verifier_ids;
+    @Nullable
+    public final VerifyParam[] verify_params;
 
-    public String getVerifierId() {
-        return verifierId;
-    }
-
-    public void setVerifierId(String verifierId) {
-        this.verifierId = verifierId;
-    }
-
-    public String getExtendedVerifierId() {
-        return extendedVerifierId;
-    }
-
-    public void setExtendedVerifierId(String extendedVerifierId) {
-        this.extendedVerifierId = extendedVerifierId;
-    }
-
-    public String[] getSubVerifierIds() {
-        return subVerifierIds;
-    }
-
-    public void setSubVerifierIds(String[] subVerifierIds) {
-        this.subVerifierIds = subVerifierIds;
-    }
-
-    public VerifyParams[] getVerifyParams() {
-        return verifyParams;
-    }
-
-    public void setVerifyParams(VerifyParams[] verifyParams) {
-        this.verifyParams = verifyParams;
+    public VerifierParams(@NotNull String verifierId, @Nullable String extendedVerifierId, @Nullable String[] subVerifierIds, @Nullable VerifyParam[] verifyParams) {
+        this.verifier_id = verifierId;
+        this.extended_verifier_id = extendedVerifierId;
+        this.verify_params = verifyParams;
+        this.sub_verifier_ids = subVerifierIds;
     }
 }
 

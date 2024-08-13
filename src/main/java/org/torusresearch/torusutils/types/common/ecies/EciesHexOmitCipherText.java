@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.apis.ecies;
+package org.torusresearch.torusutils.types.common.ecies;
 
 public class EciesHexOmitCipherText {
     private final String iv;

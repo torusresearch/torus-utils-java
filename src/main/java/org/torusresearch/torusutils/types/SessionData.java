@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types;
 
+import org.torusresearch.torusutils.types.common.SessionToken;
+
 import java.util.List;
 
 public class SessionData {

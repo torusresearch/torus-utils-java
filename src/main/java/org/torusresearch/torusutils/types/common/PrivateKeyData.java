@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.types;
+package org.torusresearch.torusutils.types.common;
 
 public class PrivateKeyData {
     private final String oAuthKey;

@@ -2,7 +2,7 @@ package org.torusresearch.torusutilstest.helpers;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
-import org.torusresearch.torusutils.apis.ecies.Ecies;
+import org.torusresearch.torusutils.types.common.ecies.Ecies;
 import org.torusresearch.torusutils.helpers.Encryption.Encryption;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.Utils;

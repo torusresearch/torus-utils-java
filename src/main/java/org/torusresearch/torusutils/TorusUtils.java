@@ -1,6 +1,3 @@
-// TODO: There are too many decrypt calls in this, only 3 are needed across the codebase
-//  Likewise there is only one call to decrypt
-
 package org.torusresearch.torusutils;
 
 import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;
@@ -24,25 +21,22 @@ import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.apis.APIUtils;
-import org.torusresearch.torusutils.apis.KeyAssignResult;
-import org.torusresearch.torusutils.apis.KeyLookupResult;
-import org.torusresearch.torusutils.apis.KeyResult;
+import org.torusresearch.torusutils.apis.JsonRPCRequest;
+import org.torusresearch.torusutils.types.common.KeyLookup.KeyLookupResult;
+import org.torusresearch.torusutils.types.common.KeyLookup.KeyResult;
 import org.torusresearch.torusutils.apis.requests.CommitmentRequestParams;
-import org.torusresearch.torusutils.apis.ecies.EciesHexOmitCipherText;
+import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.responses.CommitmentRequestResult;
 import org.torusresearch.torusutils.apis.responses.KeyAssignment;
-import org.torusresearch.torusutils.apis.NodeSignature;
 import org.torusresearch.torusutils.apis.PubKey;
 import org.torusresearch.torusutils.apis.requests.ShareRequestItem;
 import org.torusresearch.torusutils.apis.requests.ShareRequestParams;
-import org.torusresearch.torusutils.apis.VerifierLookupItem;
-import org.torusresearch.torusutils.apis.responses.PubNonce;
+import org.torusresearch.torusutils.types.common.PubNonce;
 import org.torusresearch.torusutils.apis.responses.ShareRequestResult;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.LegacyVerifierKey;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.LegacyVerifierLookupResponse;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierKey;
-import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierLookupResponse;
 import org.torusresearch.torusutils.helpers.Base64;
 import org.torusresearch.torusutils.helpers.Encryption.Encryption;
 import org.torusresearch.torusutils.helpers.KeyUtils;
@@ -54,30 +48,28 @@ import org.torusresearch.torusutils.helpers.Utils;
 import org.torusresearch.torusutils.types.DecryptedShare;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
-import org.torusresearch.torusutils.types.GetOrSetNonceError;
 import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
-import org.torusresearch.torusutils.types.ImportedShare;
-import org.torusresearch.torusutils.types.JRPCResponse;
-import org.torusresearch.torusutils.types.Metadata;
+import org.torusresearch.torusutils.types.common.ImportedShare;
 import org.torusresearch.torusutils.types.SetData;
 import org.torusresearch.torusutils.types.TorusKeyType;
-import org.torusresearch.torusutils.types.MetadataParams;
-import org.torusresearch.torusutils.types.MetadataPubKey;
+import org.torusresearch.torusutils.types.GetMetadataParams;
 import org.torusresearch.torusutils.types.MetadataResponse;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.PrivateKeyWithNonceResult;
 import org.torusresearch.torusutils.types.SessionData;
-import org.torusresearch.torusutils.types.SessionToken;
-import org.torusresearch.torusutils.types.TorusCtorOptions;
+import org.torusresearch.torusutils.types.common.SessionToken;
+import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.TorusException;
-import org.torusresearch.torusutils.types.TorusKey;
-import org.torusresearch.torusutils.types.TorusPublicKey;
+import org.torusresearch.torusutils.types.common.TorusKey;
+import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
-import org.torusresearch.torusutils.types.TypeOfUser;
+import org.torusresearch.torusutils.types.common.TypeOfUser;
 import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutils.types.VerifierParams;
+import org.torusresearch.torusutils.types.Metadata;
+import org.torusresearch.torusutils.types.common.meta.MetadataParams;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
@@ -107,7 +99,7 @@ import okhttp3.internal.http2.Header;
 public class TorusUtils {
 
     private final String defaultHost;
-    private final TorusCtorOptions options;
+    private final TorusOptions options;
     private int sessionTime = 86400;
     private final TorusKeyType keyType;
 
@@ -126,7 +118,7 @@ public class TorusUtils {
         setupBouncyCastle();
     }
 
-    public TorusUtils(TorusCtorOptions options) throws TorusUtilError {
+    public TorusUtils(TorusOptions options) throws TorusUtilError {
         this.options = options;
         this.keyType = options.keyType;
         if (options.legacyMetadataHost == null) {
@@ -148,10 +140,6 @@ public class TorusUtils {
 
     public static void setAPIKey(String apiKey) {
         APIUtils.setApiKey(apiKey);
-    }
-
-    public static boolean isGetOrSetNonceError(Exception err) {
-        return err instanceof GetOrSetNonceError;
     }
 
     public void setSessionTime(int sessionTime) {
@@ -191,7 +179,7 @@ public class TorusUtils {
 
         try {
 
-            APIUtils.get(legacyMetadataHost, new Header[]{new Header("Origin", verifier), new Header("verifier", verifier), new Header("verifierid", verifierParams.getVerifierId()), new Header("network", network.name().toLowerCase()),
+            APIUtils.get(legacyMetadataHost, new Header[]{new Header("Origin", verifier), new Header("verifier", verifier), new Header("verifierid", verifierParams.verifier_id), new Header("network", network.name().toLowerCase()),
                     new Header("clientid", clientId), new Header("enablegating", "true")}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             Set<SessionToken> sessionTokenData = new HashSet<>();
@@ -270,33 +258,32 @@ public class TorusUtils {
                             }
                         }
                     }
-                    NodeSignature[] nodeSignatures = new NodeSignature[nodeSigs.size()]; // TODO: Fix this
-                    CommitmentRequestResult[] res = new CommitmentRequestResult[nodeSigs.size()];
+                    CommitmentRequestResult[] commitments = new CommitmentRequestResult[nodeSigs.size()];
                     for (int l = 0; l < nodeSigs.size(); l++) {
                         Gson gson = new Gson();
-                        nodeSignatures[l] = gson.fromJson(nodeSigs.get(l), NodeSignature.class);
+                        commitments[l] = gson.fromJson(nodeSigs.get(l), CommitmentRequestResult.class);
                     }
                     if (finalIsImportShareReq) {
                         List<ShareRequestItem> shareRequestItems = new ArrayList<>();
                         for (int i = 0; i < endpoints.length; i++) {
-                            ShareRequestItem shareRequestItem = new ShareRequestItem(verifier, verifierParams.getVerifierId(), verifierParams.getExtendedVerifierId(),
-                                    idToken, extraParams, res, importedShares[i].getOauth_pub_key_x(), importedShares[i].getOauth_pub_key_y(),
+                            ShareRequestItem shareRequestItem = new ShareRequestItem(verifier, verifierParams.verifier_id, verifierParams.extended_verifier_id,
+                                    idToken, extraParams, commitments, importedShares[i].getOauth_pub_key_x(), importedShares[i].getOauth_pub_key_y(),
                                     importedShares[i].getSigning_pub_key_x(), importedShares[i].getSigning_pub_key_y(), importedShares[i].getEncryptedShare(),
                                     importedShares[i].getEncryptedShareMetadata(), importedShares[i].getNode_index(), importedShares[i].getKey_type(),
-                                    importedShares[i].getNonce_data(), importedShares[i].getNonce_signature(), verifierParams.getSubVerifierIds(), verifierParams.getVerifyParams(), endpoints[i]);
+                                    importedShares[i].getNonce_data(), importedShares[i].getNonce_signature(), verifierParams.sub_verifier_ids, verifierParams.verify_params, endpoints[i]);
                             shareRequestItems.add(shareRequestItem);
                         }
                         String req = APIUtils.generateJsonRPCObject("ImportShares", new ShareRequestParams(shareRequestItems.toArray(new ShareRequestItem[0]), "0")); // TODO: Fix this client_time
-                        CompletableFuture<String> result = APIUtils.post(endpoints[Utils.getProxyCoordinatorEndpointIndex(endpoints, verifier, verifierParams.getVerifierId())], req, true);
+                        CompletableFuture<String> result = APIUtils.post(endpoints[Utils.getProxyCoordinatorEndpointIndex(endpoints, verifier, verifierParams.verifier_id)], req, true);
                         System.out.println(result.get());
                         promiseArrRequests.add(result);
                     } else {
                         for (String endpoint : endpoints) {
-                            ShareRequestItem shareRequestItem = new ShareRequestItem(verifier, verifierParams.getVerifierId(), verifierParams.getExtendedVerifierId(),
-                                    idToken, extraParams, res, null, null,
+                            ShareRequestItem shareRequestItem = new ShareRequestItem(verifier, verifierParams.verifier_id, verifierParams.extended_verifier_id,
+                                    idToken, extraParams, commitments, null, null,
                                     null, null, null,
                                     null, null, null,
-                                    null, null, verifierParams.getSubVerifierIds(), verifierParams.getVerifyParams(), null);
+                                    null, null, verifierParams.sub_verifier_ids, verifierParams.verify_params, null);
 
                             List<ShareRequestItem> shareRequestItems = new ArrayList<>();
                             shareRequestItems.add(shareRequestItem);
@@ -356,11 +343,11 @@ public class TorusUtils {
                                 }
                                 // If both thresholdNonceData and extended_verifier_id are not available,
                                 // then we need to throw an error; otherwise, the address would be incorrect.
-                                if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null &&
+                                if (thresholdNonceData == null && verifierParams.extended_verifier_id == null &&
                                         !LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
                                     throw new RuntimeException(String.format(
                                             "Invalid metadata result from nodes, nonce metadata is empty for verifier: %s and verifierId: %s",
-                                            verifier, verifierParams.getVerifierId())
+                                            verifier, verifierParams.verifier_id)
                                     );
                                 }
 
@@ -369,7 +356,7 @@ public class TorusUtils {
                                 }
 
                                 for (KeyLookupResult item : keyAssignResults) {
-                                    if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null) {
+                                    if (thresholdNonceData == null && verifierParams.extended_verifier_id == null) {
                                         VerifierKey keyAssignment = item.keyResult.keys[0];
                                         String currentPubKeyX = Utils.addLeading0sForLength64(keyAssignment.pub_key_X).toLowerCase();
                                         String thresholdPubKeyX = Utils.addLeading0sForLength64(thresholdPubKey.getX()).toLowerCase();
@@ -387,7 +374,7 @@ public class TorusUtils {
 
                                 Integer serverTimeOffsetResponse = (serverTimeOffset != null) ? serverTimeOffset : calculateMedian(serverTimeOffsets);
 
-                                if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null && !LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
+                                if (thresholdNonceData == null && verifierParams.extended_verifier_id == null && !LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
                                     GetOrSetNonceResult metadataNonce = TorusUtils.getNonce(legacyMetadataHost, privateKey, serverTimeOffsetResponse);
                                     thresholdNonceData = metadataNonce;
                                 }
@@ -563,11 +550,11 @@ public class TorusUtils {
                                 }
                                 // If both thresholdNonceData and extended_verifier_id are not available,
                                 // then we need to throw an error; otherwise, the address would be incorrect.
-                                if (thresholdNonceData == null && verifierParams.getExtendedVerifierId() == null &&
+                                if (thresholdNonceData == null && verifierParams.extended_verifier_id == null &&
                                         !LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
                                     throw new RuntimeException(String.format(
                                             "Invalid metadata result from nodes, nonce metadata is empty for verifier: %s and verifierId: %s",
-                                            verifier, verifierParams.getVerifierId())
+                                            verifier, verifierParams.verifier_id)
                                     );
                                 }
 
@@ -575,7 +562,7 @@ public class TorusUtils {
                                     thresholdPubKey = gson.fromJson(thresholdPublicKeyString, PubKey.class);
                                 }
 
-                                if (completedResponses.size() >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.getExtendedVerifierId() != null ||
+                                if (completedResponses.size() >= threshold && thresholdPubKey != null && (thresholdNonceData != null || verifierParams.extended_verifier_id != null ||
                                         LEGACY_NETWORKS_ROUTE_MAP.containsKey(network))) {
                                     List<DecryptedShare> decryptedShares = new ArrayList<>();
                                     List<String> shares = new ArrayList<>();
@@ -680,7 +667,7 @@ public class TorusUtils {
                                     }
 
                                     int minThresholdRequired = (int) Math.floor(endpoints.length / 2.0f) + 1;
-                                    if (verifierParams.getExtendedVerifierId() != null && validSigs.size() < minThresholdRequired) {
+                                    if (verifierParams.extended_verifier_id != null && validSigs.size() < minThresholdRequired) {
                                         throw new Error("Insufficient number of signatures from nodes, required: " + minThresholdRequired + ", found: " + validSigs.size());
                                     }
 
@@ -691,7 +678,7 @@ public class TorusUtils {
                                         }
                                     }
 
-                                    if (verifierParams.getExtendedVerifierId() != null && validTokens.size() < minThresholdRequired) {
+                                    if (verifierParams.extended_verifier_id != null && validTokens.size() < minThresholdRequired) {
                                         throw new Error("Insufficient number of session tokens from nodes, required: " + minThresholdRequired + ", found: " + validTokens.size());
                                     }
 
@@ -812,7 +799,7 @@ public class TorusUtils {
                     ECPoint finalPubKey = null;
                     PubNonce pubNonce = null;
                     TypeOfUser typeOfUser;
-                    if (verifierParams.getExtendedVerifierId() != null && !verifierParams.getExtendedVerifierId().equals("")) {
+                    if (verifierParams.extended_verifier_id != null && !verifierParams.extended_verifier_id.equals("")) {
                         typeOfUser = TypeOfUser.v2;
                         // for tss key no need to add pub nonce
                         finalPubKey = curve.getCurve().createPoint(new BigInteger(oAuthPubkeyX, 16), new BigInteger(oAuthPubkeyY, 16));
@@ -829,13 +816,13 @@ public class TorusUtils {
                                 finalPubKey = oAuthPubKeyPoint.add(pubNoncePoint);
                             } else {
                                 typeOfUser = TypeOfUser.v1;
-                                metadataNonce = TorusUtils.getMetadata(legacyMetadataHost, new MetadataPubKey(oAuthPubkeyX, oAuthPubkeyY));
+                                metadataNonce = TorusUtils.getMetadata(legacyMetadataHost, new GetMetadataParams(oAuthPubkeyX, oAuthPubkeyY));
                                 BigInteger privateKeyWithNonce = privateKey.add(metadataNonce).mod(secp256k1N);
                                 finalPubKey = curve.getG().multiply(privateKeyWithNonce).normalize();
                             }
                         } else {
                             typeOfUser = TypeOfUser.v1;
-                            metadataNonce = TorusUtils.getMetadata(legacyMetadataHost,new MetadataPubKey(oAuthPubkeyX, oAuthPubkeyY));
+                            metadataNonce = TorusUtils.getMetadata(legacyMetadataHost,new GetMetadataParams(oAuthPubkeyX, oAuthPubkeyY));
                             BigInteger privateKeyWithNonce = privateKey.add(metadataNonce).mod(secp256k1N);
                             finalPubKey = curve.getG().multiply(privateKeyWithNonce).normalize();
                         }
@@ -906,9 +893,9 @@ public class TorusUtils {
         return TorusUtils.retrieveOrImportShare(this.defaultHost, this.options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId,endpoints, verifier, verifierParams, idToken, new ImportedShare[]{}, this.apiKey, extraParams);
     }
 
-    public static BigInteger getMetadata(String legacyMetadataHost, MetadataPubKey data) throws ExecutionException, InterruptedException {
+    public static BigInteger getMetadata(String legacyMetadataHost, GetMetadataParams data) throws ExecutionException, InterruptedException {
             Gson gson = new Gson();
-            String metadata = gson.toJson(data, MetadataPubKey.class);
+            String metadata = gson.toJson(data, GetMetadataParams.class);
             String metadataApiResponse = APIUtils.post(legacyMetadataHost + "/get", metadata, true).get();
             MetadataResponse response = gson.fromJson(metadataApiResponse, MetadataResponse.class);
             return new BigInteger(Utils.isEmpty(response.getMessage()) ? "0" : response.getMessage(), 16);
@@ -917,7 +904,7 @@ public class TorusUtils {
     public TorusPublicKey getNewPublicAddress(String[] endpoints, VerifierArgs verifierArgs, Web3AuthNetwork network) throws Exception {
         KeyLookupResult keyAssignResult = Utils.getPubKeyOrKeyAssign(endpoints, network, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), this.defaultHost, this.options.serverTimeOffset, verifierArgs.getExtendedVerifierId());
 
-        JRPCResponse.ErrorInfo errorResult = keyAssignResult.errorResult;
+        JsonRPCRequest.JRPCResponse.ErrorInfo errorResult = keyAssignResult.errorResult;
         if (errorResult != null) {
             if (errorResult.getMessage().toLowerCase().contains("verifier not supported")) {
                 throw new RuntimeException("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
@@ -1023,7 +1010,7 @@ public class TorusUtils {
                 nonce = new BigInteger(Utils.isEmpty(nonceResult.nonce) ? "0" : nonceResult.nonce, 16);
                 typeOfUser = nonceResult.typeOfUser;
             } catch (Exception e) {
-                throw new GetOrSetNonceError(e);
+                throw new RuntimeException(e);
             }
 
             finalPubKey = curve.getCurve().createPoint(new BigInteger(key.pub_key_X, 16), new BigInteger(key.pub_key_Y, 16));
@@ -1039,7 +1026,7 @@ public class TorusUtils {
             }
         } else {
             typeOfUser = TypeOfUser.v1;
-            nonce = TorusUtils.getMetadata(this.defaultHost,new MetadataPubKey(X, Y));
+            nonce = TorusUtils.getMetadata(this.defaultHost,new GetMetadataParams(X, Y));
             finalPubKey = curve.getCurve().createPoint(new BigInteger(X, 16), new BigInteger(Y, 16));
             finalPubKey = finalPubKey.add(curve.getG().multiply(nonce)).normalize();
         }

@@ -1,9 +1,9 @@
 package org.torusresearch.torusutils.types;
 
-import org.torusresearch.torusutils.apis.responses.PubNonce;
+import org.torusresearch.torusutils.types.common.PubNonce;
+import org.torusresearch.torusutils.types.common.TypeOfUser;
 
 import java.math.BigInteger;
-
 public class Metadata {
 
     public PubNonce pubNonce;

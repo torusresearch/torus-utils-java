@@ -51,7 +51,7 @@ public class APIUtils {
 
     public static String generateJsonRPCObject(String method, Object params) {
         Gson gson = new Gson();
-        return gson.toJson(new JsonRPCCall(method, params));
+        return gson.toJson(new JsonRPCRequest(method, params));
     }
 
     public static Callback toCallback(CompletableFuture<String> future) {
