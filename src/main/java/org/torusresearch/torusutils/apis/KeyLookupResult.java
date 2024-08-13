@@ -3,11 +3,8 @@ package org.torusresearch.torusutils.apis;
 import org.jetbrains.annotations.Nullable;
 import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.types.JRPCResponse;
-
-import java.math.BigInteger;
 import java.util.List;
 
-// TODO: Come back to this
 public class KeyLookupResult {
     @Nullable
     public final KeyResult keyResult;

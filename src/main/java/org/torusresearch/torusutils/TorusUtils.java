@@ -111,7 +111,15 @@ public class TorusUtils {
     private int sessionTime = 86400;
     private final TorusKeyType keyType;
 
-    private final String apiKey = "torus-default"; // TODO: needs a setter and resetter
+    private String apiKey = "torus-default";
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public void removeApiKey() {
+        this.apiKey = "torus-default";
+    }
     public static final BigInteger secp256k1N = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
 
     {
@@ -184,7 +192,7 @@ public class TorusUtils {
         try {
 
             APIUtils.get(legacyMetadataHost, new Header[]{new Header("Origin", verifier), new Header("verifier", verifier), new Header("verifierid", verifierParams.getVerifierId()), new Header("network", network.name().toLowerCase()),
-                    new Header("clientid", clientId), new Header("enablegating", "true")}, true).get(); // TODO: Check these headers: Done
+                    new Header("clientid", clientId), new Header("enablegating", "true")}, true).get();
             List<CompletableFuture<String>> promiseArr = new ArrayList<>();
             Set<SessionToken> sessionTokenData = new HashSet<>();
             Set<Integer> nodeIndexs = new HashSet<>();
@@ -1130,10 +1138,10 @@ public class TorusUtils {
             BigInteger[] nodeIndexes,
             TorusNodePub[] nodePubKeys,
             String verifier,
-            VerifierParams verifierParams, // TODO: This must be strongly typed to VerifierParams
+            VerifierParams verifierParams,
             String idToken,
             String newPrivateKey,
-            TorusUtilsExtraParams extraParams // TODO: This must have a default value
+            TorusUtilsExtraParams extraParams
     ) throws Exception {
 
         if (endpoints.length != nodeIndexes.length) {

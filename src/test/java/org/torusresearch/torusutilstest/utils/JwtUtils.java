@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.util.Date;
 
 public class JwtUtils {
+    // TODO: Sanity check, check all fields
     public static String generateIdToken(String email, Algorithm alg) {
         return JWT.create()
                 .withSubject("email|" + email.split("@")[0])

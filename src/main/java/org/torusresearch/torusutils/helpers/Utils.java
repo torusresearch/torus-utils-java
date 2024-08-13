@@ -69,7 +69,6 @@ public class Utils {
         return value<0 ? Math.ceil(value) : Math.floor(value);
     }
 
-    // TODO: Check this, write tests
     public static <T> T thresholdSame(T[] arr, int threshold) throws JsonProcessingException {
         HashMap<String, Integer> hashMap = new HashMap<>();
         for (T s : arr) {
