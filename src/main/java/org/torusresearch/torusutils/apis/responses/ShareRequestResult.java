@@ -13,7 +13,7 @@ public class ShareRequestResult {
     public final String node_pubx;
     public final String node_puby;
     public final Boolean is_new_key;
-    public final String server_time_offset;
+    public String server_time_offset; // this is not final, it is modified by code
 
     public ShareRequestResult(@NotNull KeyAssignment[] keys, @NotNull String[] session_tokens, @NotNull EciesHexOmitCipherText[] session_token_metadata,
                               @NotNull String[] session_token_sigs, @NotNull EciesHexOmitCipherText[] session_token_sigs_metadata, @NotNull String node_pubx,
