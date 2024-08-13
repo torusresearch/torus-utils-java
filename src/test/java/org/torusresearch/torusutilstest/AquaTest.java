@@ -30,6 +30,7 @@ import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.VerifyParam;
+import org.torusresearch.torusutils.types.common.PubNonce;
 import org.torusresearch.torusutils.types.common.TorusKey;
 import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.common.TorusPublicKey;
@@ -117,12 +118,16 @@ public class AquaTest {
         assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x4ea5260fF85678A2a326D08DF9C44d1f559a5828",
-                        "e6febe33a9d4eeb680cc6b63ff6237ad1971f27adcd7f104a3b1de18eda9337",
+                        "0e6febe33a9d4eeb680cc6b63ff6237ad1971f27adcd7f104a3b1de18eda9337",
                         "a5a915561f3543688e71281a850b9ee10b9690f305d9e79028dfc8359192b82d"),
                 new FinalPubKeyData("0xBc32f315515AdE7010cabC5Fd68c966657A570BD",
                         "4897f120584ee18a72b9a6bb92c3ef6e45fc5fdff70beae7dc9325bd01332022",
                         "2066dbef2fcdded4573e3c04d1c04edd5d44662168e636ed9d0b0cbe2e67c968"),
-                new Metadata(key2.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().serverTimeOffset),
+                new Metadata(new PubNonce("1601cf4dc4362b219260663d5ec5119699fbca185d08b7acb2e36cad914340d5",
+                        "c2f7871f61ee71b4486ac9fb40ec759099800e737139dc5dfaaaed8c9d77c3c1"),
+                        BigInteger.ZERO, TypeOfUser.v2,
+                        false,
+                        key2.getMetadata().serverTimeOffset),
                 new NodesData(key2.nodesData.nodeIndexes)
         ));
 
