@@ -1,65 +1,32 @@
 package org.torusresearch.torusutils;
 
-import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;
 import static org.torusresearch.fetchnodedetails.types.Utils.METADATA_MAP;
-import static org.torusresearch.torusutils.helpers.Utils.calculateMedian;
 import static org.torusresearch.torusutils.helpers.Utils.isLegacyNetorkRouteMap;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
 
-import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.JsonRPCRequest;
-import org.torusresearch.torusutils.apis.requests.GetNonceParams;
-import org.torusresearch.torusutils.apis.requests.GetNonceSetDataParams;
-import org.torusresearch.torusutils.types.common.KeyLookup.KeyLookupResult;
-import org.torusresearch.torusutils.types.common.KeyLookup.KeyResult;
-import org.torusresearch.torusutils.apis.requests.CommitmentRequestParams;
-import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
-import org.torusresearch.torusutils.apis.JsonRPCResponse;
-import org.torusresearch.torusutils.apis.PubKey;
-import org.torusresearch.torusutils.apis.requests.CommitmentRequestParams;
-import org.torusresearch.torusutils.apis.requests.ShareRequestItem;
-import org.torusresearch.torusutils.apis.requests.ShareRequestParams;
-import org.torusresearch.torusutils.apis.responses.CommitmentRequestResult;
 import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
-import org.torusresearch.torusutils.apis.responses.KeyAssignment;
-import org.torusresearch.torusutils.apis.responses.ShareRequestResult;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.LegacyVerifierKey;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.LegacyVerifierLookupResponse;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierKey;
 import org.torusresearch.torusutils.helpers.Base64;
-import org.torusresearch.torusutils.helpers.Encryption.Encryption;
 import org.torusresearch.torusutils.helpers.KeyUtils;
-import org.torusresearch.torusutils.helpers.Lagrange;
-import org.torusresearch.torusutils.helpers.PredicateFailedException;
-import org.torusresearch.torusutils.helpers.Some;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.helpers.Utils;
-import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.GetMetadataParams;
 import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.MetadataResponse;
 import org.torusresearch.torusutils.types.NodesData;
-import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
-import org.torusresearch.torusutils.types.PrivateKeyWithNonceResult;
-import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.SetData;
-import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.TorusKeyType;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
 import org.torusresearch.torusutils.types.VerifierArgs;
@@ -68,12 +35,10 @@ import org.torusresearch.torusutils.types.common.ImportedShare;
 import org.torusresearch.torusutils.types.common.KeyLookup.KeyLookupResult;
 import org.torusresearch.torusutils.types.common.KeyLookup.KeyResult;
 import org.torusresearch.torusutils.types.common.PubNonce;
-import org.torusresearch.torusutils.types.common.SessionToken;
 import org.torusresearch.torusutils.types.common.TorusKey;
 import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
-import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.types.common.meta.MetadataParams;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
@@ -81,26 +46,16 @@ import org.web3j.crypto.Hash;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.Provider;
-import java.security.PublicKey;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import io.reactivex.annotations.Nullable;
-import okhttp3.internal.http2.Header;
 
 public class TorusUtils {
 
@@ -183,7 +138,7 @@ public class TorusUtils {
                                                              ) {
         String finaApiKey = (apiKey == null) ? "torus-default" : apiKey;
 
-        try {
+        /*try {
 
             APIUtils.get(legacyMetadataHost, new Header[]{new Header("Origin", verifier), new Header("verifier", verifier), new Header("verifierid", verifierParams.verifier_id), new Header("network", network.name().toLowerCase()),
                     new Header("clientid", clientId), new Header("enablegating", "true")}, true).get();
@@ -883,7 +838,8 @@ public class TorusUtils {
             CompletableFuture<TorusKey> cfRes = new CompletableFuture<>();
             cfRes.completeExceptionally(new TorusException("Torus Internal Error", e));
             return cfRes;
-        }
+        }*/
+        return null;
     }
 
     public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, String verifier, VerifierParams verifierParams, String idToken, @Nullable ImportedShare[] importedShares, TorusUtilsExtraParams extraParams) {
