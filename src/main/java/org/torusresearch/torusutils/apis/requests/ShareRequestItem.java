@@ -2,7 +2,6 @@ package org.torusresearch.torusutils.apis.requests;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.torusresearch.torusutils.apis.VerifyParams;
 import org.torusresearch.torusutils.types.VerifyParam;
 import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.apis.responses.CommitmentRequestResult;
@@ -31,7 +30,7 @@ public class ShareRequestItem {
     @Nullable
     public final EciesHexOmitCipherText encrypted_share_metadata;
     @Nullable
-    public final int node_index;
+    public final Integer node_index;
     @Nullable
     public final TorusKeyType key_type;
     @Nullable

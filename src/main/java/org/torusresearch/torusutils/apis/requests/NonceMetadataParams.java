@@ -4,30 +4,37 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.torusresearch.torusutils.types.TorusKeyType;
 
+import java.util.Objects;
+
 public class NonceMetadataParams {
     @Nullable
-    public String namespace;
-    public String pub_key_X;
-    public String pub_key_Y;
+    public final String namespace;
+    public final  String pub_key_X;
+    public final  String pub_key_Y;
+    public final  SetNonceData set_data;
     @Nullable
-    public SetNonceData set_data;
-    @Nullable
-    public TorusKeyType key_type;
+    public final TorusKeyType keyType;
 
-    public String signature;
-    public String encodedData;
+    public final  String signature;
+    public final  String encodedData;
     @Nullable
-    public String seed;
+    public final  String seed;
 
-    public NonceMetadataParams(@Nullable String namespace, @NotNull String pub_key_X, @NotNull String pub_key_Y, @NotNull SetNonceData set_data,
-                               @NotNull TorusKeyType key_type, @NotNull String signature, @NotNull String encodedData, @Nullable String seed) {
-        this.namespace = namespace;
+    public NonceMetadataParams(@NotNull String pub_key_X, @NotNull String pub_key_Y, @NotNull SetNonceData set_data, @NotNull String encodedData, @NotNull String signature, @Nullable String namespace, @Nullable TorusKeyType keyType, @Nullable String seed) {
         this.pub_key_X = pub_key_X;
         this.pub_key_Y = pub_key_Y;
-        this.signature = signature;
-        this.encodedData = encodedData;
-        this.seed = seed;
         this.set_data = set_data;
-        this.key_type = key_type;
+        this.encodedData = encodedData;
+        this.signature = signature;
+        this.namespace = namespace;
+        this.keyType = keyType;
+        this.seed = seed;
+    }
+
+    // TODO: Check this
+    @Override
+    public int hashCode() {
+        return Objects.hash(namespace, pub_key_X, pub_key_Y, set_data, keyType, signature, encodedData, seed);
     }
 }
+

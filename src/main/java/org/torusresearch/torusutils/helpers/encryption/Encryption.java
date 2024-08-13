@@ -6,6 +6,7 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Hex;
+import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.types.common.ecies.Ecies;
 import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.helpers.KeyUtils;
@@ -24,7 +25,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class Encryption {
     static final protected Provider provider  = new BouncyCastleProvider();
 
-    public static byte[] ecdh (byte[] dataPrv, byte[] dataPub) throws Exception
+    public static byte[] ecdh (@NotNull byte[] dataPrv, @NotNull byte[] dataPub) throws Exception
     {
         KeyAgreement ka = KeyAgreement.getInstance("ECDH", provider);
         ka.init(KeyUtils.deserializePrivateKey(dataPrv));
@@ -32,7 +33,7 @@ public class Encryption {
         return ka.generateSecret();
     }
 
-    public static Ecies encrypt(byte[] publicKey, String plaintext) throws Exception {
+    public static Ecies encrypt(@NotNull byte[] publicKey, @NotNull String plaintext) throws Exception {
         KeyPair ephemeral = KeyUtils.generateKeyPair();
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", provider);
 
@@ -65,7 +66,7 @@ public class Encryption {
         return new Ecies(Hex.toHexString(iv), Hex.toHexString(KeyUtils.serializePublicKey(ephemeral.getPublic(),false)),Hex.toHexString(cipherText), Hex.toHexString(finalMac));
     }
 
-    public static String decrypt(String privateKeyHex, Ecies ecies) throws Exception {
+    public static String decrypt(@NotNull String privateKeyHex, @NotNull Ecies ecies) throws Exception {
         byte[] shared = ecdh(Hex.decode(privateKeyHex), Hex.decode(ecies.getEphemPublicKey()));
         byte[] sha512hash = SHA512.digest(shared);
         SecretKeySpec aesKey = new SecretKeySpec(Arrays.copyOf(sha512hash, 32), "AES");
@@ -81,7 +82,7 @@ public class Encryption {
     }
 
 
-    public static String decryptNodeData(EciesHexOmitCipherText eciesData, String ciphertextHex, String privKey) throws Exception {
+    public static String decryptNodeData(@NotNull EciesHexOmitCipherText eciesData, @NotNull String ciphertextHex, @NotNull String privKey) throws Exception {
         Ecies eciesOpts = new Ecies(
                 eciesData.getIv(),
                 eciesData.getEphemPublicKey(),

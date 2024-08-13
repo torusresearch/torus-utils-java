@@ -14,7 +14,7 @@ public class TorusOptions {
     public final Web3AuthNetwork network;
     public final String clientId;
 
-    public final boolean enableOneKey = false;
+    public boolean enableOneKey;
 
     public final TorusKeyType keyType = TorusKeyType.secp256k1;
 
@@ -31,5 +31,6 @@ public class TorusOptions {
         } else {
             this.serverTimeOffset = 0;
         }
+        this.enableOneKey = enableOneKey;
     }
 }

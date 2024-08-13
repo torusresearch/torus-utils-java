@@ -23,12 +23,4 @@ public class MetadataParams {
         this.key_type = key_type;
         this.namespace = namespace;
     }
-
-    public SetData getSet_data() {
-        return set_data;
-    }
-
-    public String getSignature() {
-        return signature;
-    }
 }

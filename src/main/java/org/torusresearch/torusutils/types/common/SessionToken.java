@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types.common;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
 public class SessionToken {
@@ -9,7 +11,7 @@ public class SessionToken {
     private final String node_pubx;
     private final String node_puby;
 
-    public SessionToken(String token, String signature, String node_pubx, String node_puby) {
+    public SessionToken(@NotNull String token, @NotNull String signature, @NotNull String node_pubx, @NotNull String node_puby) {
         this.token = token;
         this.signature = signature;
         this.node_pubx = node_pubx;
@@ -33,11 +35,13 @@ public class SessionToken {
     }
 
 
+    // TODO: Check this
     @Override
     public int hashCode() {
         return Objects.hash(signature);
     }
 
+    // TODO: Check this
     @Override
     public boolean equals(Object obj) {
         SessionToken newObj = (SessionToken)obj;

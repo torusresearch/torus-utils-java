@@ -5,8 +5,8 @@ import org.torusresearch.torusutils.helpers.TorusUtilError;
 import java.math.BigInteger;
 
 public class Share {
-    private BigInteger share;
-    private BigInteger shareIndex;
+    private final BigInteger share;
+    private final BigInteger shareIndex;
 
     public Share(String shareIndex, String share) throws Exception {
         // Initialize shareIndex and share from hexadecimal strings

@@ -12,7 +12,6 @@ public class VerifierKey {
     public final GetOrSetNonceResult nonce_data;
     @Nullable
     public final String created_at;
-    // why is Integer better than primitive int?
 
     public VerifierKey(@NotNull String pub_key_X, @NotNull String pub_key_Y, @NotNull String address, @Nullable GetOrSetNonceResult nonce_data, @Nullable String created_at) {
         this.pub_key_X = pub_key_X;

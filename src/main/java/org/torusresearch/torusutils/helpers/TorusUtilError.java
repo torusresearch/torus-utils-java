@@ -1,5 +1,5 @@
 package org.torusresearch.torusutils.helpers;
-
+// TODO: Properly use and return all error types where applicable
 public class TorusUtilError extends Exception {
 
     // Define error cases

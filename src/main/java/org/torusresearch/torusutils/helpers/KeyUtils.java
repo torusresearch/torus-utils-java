@@ -20,6 +20,7 @@ import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
+import org.jetbrains.annotations.NotNull;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.helpers.encoding.Base64;
 import org.torusresearch.torusutils.types.common.ecies.Ecies;
@@ -27,7 +28,7 @@ import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.helpers.encryption.Encryption;
 import org.torusresearch.torusutils.types.common.ImportedShare;
 import org.torusresearch.torusutils.types.TorusKeyType;
-import org.torusresearch.torusutils.types.NonceMetadataParams;
+import org.torusresearch.torusutils.apis.requests.NonceMetadataParams;
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
 import org.torusresearch.torusutils.types.common.PrivateKeyData;
@@ -64,12 +65,12 @@ public class KeyUtils {
         return kpgen.generateKeyPair();
     }
 
-    public static byte [] serializePublicKey (PublicKey key, Boolean compressed) {
+    public static byte [] serializePublicKey (@NotNull PublicKey key, @NotNull Boolean compressed) {
         org.bouncycastle.jce.interfaces.ECPublicKey eckey = (ECPublicKey)key;
         return eckey.getQ().getEncoded(compressed);
     }
 
-    public static PublicKey deserializePublicKey (byte [] data) throws Exception
+    public static PublicKey deserializePublicKey (@NotNull byte [] data) throws Exception
     {
         ECPublicKeySpec pubKey = new ECPublicKeySpec(
                 params.getCurve().decodePoint(data), params);
@@ -77,11 +78,11 @@ public class KeyUtils {
         return kf.generatePublic(pubKey);
     }
 
-    public static byte [] serializePrivateKey (PrivateKey key) {
+    public static byte [] serializePrivateKey (@NotNull PrivateKey key) {
         ECPrivateKey eckey = (ECPrivateKey)key;
         return eckey.getD().toByteArray();
     }
-    public static PrivateKey deserializePrivateKey (byte [] data) throws Exception {
+    public static PrivateKey deserializePrivateKey (@NotNull byte [] data) throws Exception {
         ECPrivateKeySpec prvkey = new org.bouncycastle.jce.spec.ECPrivateKeySpec(new BigInteger(data), params);
         KeyFactory kf = KeyFactory.getInstance("ECDH", provider);
         return kf.generatePrivate(prvkey);
@@ -96,23 +97,23 @@ public class KeyUtils {
         return params.getN();
     }
 
-    public static PublicKey privateToPublic(PrivateKey key) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static PublicKey privateToPublic(@NotNull PrivateKey key) throws NoSuchAlgorithmException, InvalidKeySpecException {
         ECPoint pubKeyPoint = params.getG().multiply(new BigInteger(key.getEncoded()));
         KeyFactory kf = KeyFactory.getInstance("ECDH", provider);
         return kf.generatePublic(new ECPublicKeySpec(pubKeyPoint, params));
     }
 
-    public static String generateAddressFromPrivKey(String privateKey) throws Exception {
+    public static String generateAddressFromPrivKey(@NotNull String privateKey) throws Exception {
         PrivateKey privKey = deserializePrivateKey(Hex.decode(privateKey));
         return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.getEncoded())));
     }
 
-    public static String generateAddressFromPubKey(String publicKeyX, String publicKeyY) {
+    public static String generateAddressFromPubKey(@NotNull String publicKeyX, @NotNull String publicKeyY) {
         String finalPublicKey = publicKeyX + publicKeyY;
         return Keys.toChecksumAddress(Keys.getAddress(finalPublicKey));
     }
 
-    public static String[] getPublicKeyCoords(String pubKey) throws TorusUtilError {
+    public static String[] getPublicKeyCoords(@NotNull String pubKey) throws TorusUtilError {
         String publicKeyUnprefixed = pubKey;
         if (publicKeyUnprefixed.length() > 128) {
             publicKeyUnprefixed = Utils.strip04Prefix(publicKeyUnprefixed);
@@ -128,14 +129,14 @@ public class KeyUtils {
         return new String[]{xCoord, yCoord};
     }
 
-    public static String getPublicKeyFromCoords(String pubKeyX, String pubKeyY, boolean prefixed) {
+    public static String getPublicKeyFromCoords(@NotNull String pubKeyX, @NotNull String pubKeyY, boolean prefixed) {
         String X = addLeading0sForLength64(pubKeyX);
         String Y = addLeading0sForLength64(pubKeyY);
 
         return prefixed ? "04" + X + Y : X + Y;
     }
 
-    public static String combinePublicKeysFromStrings(List<String> keys, boolean compressed) throws TorusUtilError {
+    public static String combinePublicKeysFromStrings(@NotNull List<String> keys, boolean compressed) throws TorusUtilError {
         List<ECPoint> collection = new ArrayList<>();
 
         for (String item : keys) {
@@ -146,7 +147,7 @@ public class KeyUtils {
         return combinePublicKeys(collection, compressed);
     }
 
-    public static String combinePublicKeys(List<? extends ECPoint> keys, boolean compressed) throws TorusUtilError {
+    public static String combinePublicKeys(@NotNull List<? extends ECPoint> keys, boolean compressed) throws TorusUtilError {
         if (keys.isEmpty()) {
             throw new TorusUtilError("The keys list cannot be empty");
         }
@@ -160,7 +161,7 @@ public class KeyUtils {
         return Hex.toHexString(serializedPoint);
     }
 
-    public static PrivateKeyData generateKeyData(String privateKey) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+    public static PrivateKeyData generateKeyData(@NotNull String privateKey) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
         BigInteger scalar = new BigInteger(Hex.decode(privateKey));
         BigInteger randomNonce = new BigInteger(randomNonce());
 
@@ -186,7 +187,7 @@ public class KeyUtils {
         );
     }
 
-    public static NonceMetadataParams generateNonceMetadataParams(String operation, BigInteger privateKey, BigInteger nonce, Integer serverTimeOffset) {
+    public static NonceMetadataParams generateNonceMetadataParams(@NotNull String operation, @NotNull BigInteger privateKey, @NotNull BigInteger nonce, @NotNull Integer serverTimeOffset) {
         ECDomainParameters domainParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH(), params.getSeed());
         ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(privateKey, domainParams);
         ECPoint oAuthPubPoint = domainParams.getG().multiply(privKeyParams.getD());
@@ -222,7 +223,7 @@ public class KeyUtils {
                 Utils.padLeft("", '0', 2); // Assuming padding to ensure consistent length
 
         // Convert the hexadecimal signature string to bytes
-        byte[] sigBytes = Utils.toByteArray(new BigInteger(sig, 16));
+        byte[] sigBytes = Hex.decode(sig);
 
         // Encode the signature bytes to Base64
         // TODO: Consider java.util.Base64.getEncoder().encode(sigBytes); and remove Base64 class if fine
@@ -231,10 +232,10 @@ public class KeyUtils {
         // Return a new NonceMetadataParams object with the derived values
         // TODO: Consider java.util.Base64.getEncoder().encode(sigBytes); and remove Base64 class if fine
         return new NonceMetadataParams(derivedPubKeyX, derivedPubKeyY, setNonceData,
-                Base64.encodeBytes(encodedData.getBytes(StandardCharsets.UTF_8)), finalSig);
+                Base64.encodeBytes(encodedData.getBytes(StandardCharsets.UTF_8)), finalSig, null, null, null);
     }
 
-    public static List<ImportedShare> generateShares(TorusKeyType keyType, Integer serverTimeOffset, List<BigInteger> nodeIndexes, List<TorusNodePub> nodePubKeys, String privateKey) throws Exception {
+    public static List<ImportedShare> generateShares(@NotNull TorusKeyType keyType, @NotNull Integer serverTimeOffset, @NotNull List<BigInteger> nodeIndexes, @NotNull List<TorusNodePub> nodePubKeys, @NotNull String privateKey) throws Exception {
         if (keyType != TorusKeyType.secp256k1) {
             throw new RuntimeException("Unsupported key type");
         }
@@ -275,7 +276,7 @@ public class KeyUtils {
                     signingPub[0], signingPub[1], encrypted.getCiphertext(),
                     new EciesHexOmitCipherText(encrypted.getIv(), encrypted.getEphemPublicKey(), encrypted.getMac(), "AES256"),
                     Integer.parseInt(nodeIndexes.get(i).toString(16), 16), keyType,
-                    nonceParams.getEncodedData(), nonceParams.getSignature());
+                    nonceParams.encodedData, nonceParams.signature);
 
             sharesData.add(importShare);
         }

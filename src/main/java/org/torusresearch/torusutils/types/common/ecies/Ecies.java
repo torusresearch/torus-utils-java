@@ -1,14 +1,16 @@
 package org.torusresearch.torusutils.types.common.ecies;
 
+import org.jetbrains.annotations.NotNull;
+
 public class Ecies {
 
-    private String iv;
-    private String ephemPublicKey;
-    private String mac;
-    private String mode;
-    private String ciphertext;
+    private final String iv;
+    private final String ephemPublicKey;
+    private final String mac;
+    private final String mode;
+    private final String ciphertext;
 
-    public Ecies(String iv, String ephemPublicKey, String ciphertext, String mac, String mode) {
+    public Ecies(@NotNull String iv, @NotNull String ephemPublicKey, @NotNull String ciphertext, @NotNull String mac, @NotNull String mode) {
         this.iv = iv;
         this.ephemPublicKey = ephemPublicKey;
         this.mac = mac;
@@ -16,7 +18,7 @@ public class Ecies {
         this.mode = mode;
     }
 
-    public Ecies(String iv, String ephemPublicKey, String ciphertext, String mac) {
+    public Ecies(@NotNull String iv, @NotNull String ephemPublicKey, @NotNull String ciphertext, @NotNull String mac) {
         this.iv = iv;
         this.ephemPublicKey = ephemPublicKey;
         this.mac = mac;

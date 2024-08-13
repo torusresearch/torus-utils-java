@@ -67,7 +67,7 @@ public class Utils {
         return value<0 ? Math.ceil(value) : Math.floor(value);
     }
 
-    public static <T> T thresholdSame(T[] arr, int threshold) throws JsonProcessingException {
+    public static <T> T thresholdSame(@NotNull T[] arr, int threshold) throws JsonProcessingException {
         HashMap<String, Integer> hashMap = new HashMap<>();
         for (T s : arr) {
             ObjectMapper objectMapper = new ObjectMapper()
@@ -86,21 +86,13 @@ public class Utils {
         return null;
     }
 
-    public static String thresholdSame(List<String> list, int threshold) throws JsonProcessingException {
+    public static String thresholdSame(@NotNull List<String> list, int threshold) throws JsonProcessingException {
         String[] arr = new String[list.size()];
         list.toArray(arr);
         return Utils.thresholdSame(arr, threshold);
     }
 
-    public static List<List<Integer>> kCombinations(int s, int k) {
-        List<Integer> set = new ArrayList<>();
-        for (int i = 0; i < s; i++) {
-            set.add(i);
-        }
-        return kCombinations(set, k);
-    }
-
-    public static List<List<Integer>> kCombinations(List<Integer> set, int k) {
+    public static List<List<Integer>> kCombinations(@NotNull List<Integer> set, int k) {
         List<List<Integer>> combs = new ArrayList<>();
 
         if ((k == 0) || k > set.size())
@@ -134,11 +126,11 @@ public class Utils {
         return combs;
     }
 
-    public static boolean isLegacyNetorkRouteMap(Web3AuthNetwork network) {
+    public static boolean isLegacyNetorkRouteMap(@NotNull Web3AuthNetwork network) {
         // TODO: Fix this in fetchnodedetails, comparison should be against .legacy(network)
         return !network.name().toLowerCase().contains("sapphire");
     }
-    public static KeyResult normalizeKeyResult(VerifierLookupResponse result) {
+    public static KeyResult normalizeKeyResult(@NotNull VerifierLookupResponse result) {
         Boolean isNewKey = false;
         if (result.is_new_key != null) {
             isNewKey = result.is_new_key;
@@ -206,17 +198,7 @@ public class Utils {
         }
     }
 
-    /*
-    public static int getTimeDiff(BigInteger timestampInSeconds) {
-        BigInteger timestampInMillis = timestampInSeconds.multiply(BigInteger.valueOf(1000));
-        BigInteger systemTimestampMillis = BigInteger.valueOf(System.currentTimeMillis());
-        BigInteger timeDifferenceMillis = systemTimestampMillis.subtract(timestampInMillis);
-        BigInteger timeDifferenceSeconds = timeDifferenceMillis.divide(BigInteger.valueOf(1000));
-        //System.out.println("Time difference: " + timeDifferenceSeconds + " seconds");
-        return timeDifferenceSeconds.intValue();
-    }
-     */
-    public static KeyLookupResult getPubKeyOrKeyAssign(@NotNull  String[] endpoints, @NotNull  Web3AuthNetwork network, @NotNull String verifier, @NotNull String verifierId, @NotNull String legacyMetdadataHost, @Nullable Integer serverTimeOffset, @Nullable String extendedVerifierId) throws Exception {
+    public static KeyLookupResult getPubKeyOrKeyAssign(@NotNull String[] endpoints, @NotNull  Web3AuthNetwork network, @NotNull String verifier, @NotNull String verifierId, @NotNull String legacyMetdadataHost, @Nullable Integer serverTimeOffset, @Nullable String extendedVerifierId) throws Exception {
         int threshold = (endpoints.length / 2) + 1;
 
         BigInteger timeOffset = BigInteger.ZERO;
@@ -319,11 +301,11 @@ public class Utils {
         return new KeyLookupResult(key,nodeIndexes, finalServerTimeOffset, nonce, errResult);
     }
 
-    public static boolean isEmpty(final CharSequence cs) {
+    public static boolean isEmpty(@Nullable final CharSequence cs) {
         return cs == null || cs.length() == 0;
     }
 
-    public static String padLeft(String inputString, Character padChar, int length) {
+    public static String padLeft(@NotNull String inputString, @NotNull Character padChar, int length) {
         if (inputString.length() >= length) return inputString;
         StringBuilder sb = new StringBuilder();
         while (sb.length() < length - inputString.length()) {
@@ -333,23 +315,11 @@ public class Utils {
         return sb.toString();
     }
 
-    public static String convertToJsonObject(Object obj) {
-        Gson gson = new Gson();
-        return obj == null ? "" : gson.toJson(obj);
-    }
-
-    public static ECPoint getPublicKeyFromHex(String X, String Y) {
-        BigInteger x = new BigInteger(X, 16);
-        BigInteger y = new BigInteger(Y, 16);
-        ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
-        return curve.getCurve().createPoint(x, y);
-    }
-
-    public static boolean isSapphireNetwork(String network) {
+    public static boolean isSapphireNetwork(@NotNull String network) {
         return network.contains("sapphire");
     }
 
-    public static String getPrivKey(String sessionId) {
+    public static String getPrivKey(@NotNull String sessionId) {
         ECKeyPair derivedECKeyPair = ECKeyPair.create(new BigInteger(sessionId, 16));
         return derivedECKeyPair.getPrivateKey().toString(16);
     }
@@ -358,7 +328,7 @@ public class Utils {
         return Keys.createEcKeyPair().getPrivateKey();
     }
 
-    public static Polynomial generateRandomPolynomial(int degree, BigInteger secret, @Nullable List<Share> deterministicShares) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    public static Polynomial generateRandomPolynomial(int degree, @Nullable BigInteger secret, @Nullable List<Share> deterministicShares) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         BigInteger actualS = secret;
         if (secret == null) {
             actualS = generatePrivateExcludingIndexes(getBigIntegerList());
@@ -400,11 +370,11 @@ public class Utils {
         return bigIntegersList;
     }
 
-    public static Polynomial lagrangeInterpolatePolynomial(List<Point> points) {
+    public static Polynomial lagrangeInterpolatePolynomial(@NotNull List<Point> points) {
         return lagrange(points);
     }
 
-    private static Polynomial lagrange(List<Point> unsortedPoints) {
+    private static Polynomial lagrange(@NotNull List<Point> unsortedPoints) {
         List<Point> sortedPoints = pointSort(unsortedPoints);
         BigInteger[] polynomial = generateEmptyBNArray(sortedPoints.size());
         for (int i = 0; i < sortedPoints.size(); i++) {
@@ -418,7 +388,7 @@ public class Utils {
         return new Polynomial(polynomial);
     }
 
-    private static BigInteger[] interpolationPoly(int i, List<Point> innerPoints) {
+    private static BigInteger[] interpolationPoly(int i, @NotNull List<Point> innerPoints) {
         BigInteger[] coefficients = generateEmptyBNArray(innerPoints.size());
         BigInteger d = denominator(i, innerPoints);
         if (d.compareTo(BigInteger.ZERO) == 0) {
@@ -447,7 +417,7 @@ public class Utils {
         return coefficients;
     }
 
-    private static BigInteger denominator(int i, List<Point> innerPoints) {
+    private static BigInteger denominator(int i, @NotNull List<Point> innerPoints) {
         BigInteger result = BigInteger.ONE;
         BigInteger xi = innerPoints.get(i).getX();
         for (int j = innerPoints.size() - 1; j >= 0; j--) {
@@ -460,7 +430,7 @@ public class Utils {
         return result;
     }
 
-    private static List<Point> pointSort(List<Point> innerPoints) {
+    private static List<Point> pointSort(@NotNull List<Point> innerPoints) {
         List<Point> pointArrClone = new ArrayList<>(innerPoints);
         pointArrClone.sort(Comparator.comparing(Point::getX));
         return pointArrClone;
@@ -474,7 +444,7 @@ public class Utils {
         return array;
     }
 
-    private static BigInteger generatePrivateExcludingIndexes(List<BigInteger> shareIndexes) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    private static BigInteger generatePrivateExcludingIndexes(@NotNull List<BigInteger> shareIndexes) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         BigInteger key = Keys.createEcKeyPair().getPrivateKey();
         for (BigInteger el : shareIndexes) {
             if (el.equals(key)) {
@@ -484,7 +454,7 @@ public class Utils {
         return key;
     }
 
-    public static Integer calculateMedian(List<Integer> arr) {
+    public static Integer calculateMedian(@NotNull List<Integer> arr) {
         int arrSize = arr.size();
 
         if (arrSize == 0) return 0;
@@ -502,7 +472,7 @@ public class Utils {
         return (mid1+mid2)/2;
     }
 
-    public static String addLeading0sForLength64(String input) {
+    public static String addLeading0sForLength64(@NotNull String input) {
         StringBuilder inputBuilder = new StringBuilder(input);
         while (inputBuilder.length() < 64) {
             inputBuilder.insert(0, "0");
@@ -511,7 +481,7 @@ public class Utils {
         return input;
     }
 
-    public static String addLeadingZerosForLength64(String input) {
+    public static String addLeadingZerosForLength64(@NotNull String input) {
         int targetLength = 64;
         int inputLength = input.length();
 
@@ -528,7 +498,7 @@ public class Utils {
         }
     }
 
-    public static String serializeHex(byte[] data) {
+    public static String serializeHex(@NotNull byte[] data) {
         StringBuilder sb = new StringBuilder();
         for (byte b : data) {
             sb.append(String.format("%02X", b));
@@ -536,28 +506,17 @@ public class Utils {
         return sb.toString();
     }
 
-    public static String strip04Prefix(String pubKey) {
+    public static String strip04Prefix(@NotNull String pubKey) {
         if (pubKey.startsWith("04")) {
             return pubKey.substring(2);
         }
         return pubKey;
     }
 
-    public static int getProxyCoordinatorEndpointIndex(String[] endpoints, String verifier, String verifierId) {
+    public static int getProxyCoordinatorEndpointIndex(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId) {
         String verifierIdString = verifier + verifierId;
         String hashedVerifierId = Hash.sha3(verifierIdString).replace("0x", "");
         BigInteger proxyEndPointNum = new BigInteger(hashedVerifierId, 16).mod(BigInteger.valueOf(endpoints.length));
         return proxyEndPointNum.intValue();
-    }
-
-    public static byte[] toByteArray(BigInteger bi) {
-        byte[] b = bi.toByteArray();
-        if (b.length > 1 && b[0] == 0) {
-            int n = b.length - 1;
-            byte[] newArray = new byte[n];
-            System.arraycopy(b, 1, newArray, 0, n);
-            b = newArray;
-        }
-        return b;
     }
 }

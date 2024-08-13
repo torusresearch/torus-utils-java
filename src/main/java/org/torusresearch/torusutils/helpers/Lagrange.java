@@ -2,6 +2,7 @@ package org.torusresearch.torusutils.helpers;
 
 import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
 
+import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
 import org.torusresearch.torusutils.types.Share;
@@ -9,6 +10,7 @@ import org.torusresearch.torusutils.types.Share;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +18,7 @@ import java.util.Random;
 
 public class Lagrange {
 
-    public static BigInteger generatePrivateExcludingIndexes(List<BigInteger> shareIndexes) throws Exception {
+    public static BigInteger generatePrivateExcludingIndexes(@NotNull List<BigInteger> shareIndexes) {
         BigInteger key;
         do {
             key = new BigInteger(256, new Random());
@@ -31,7 +33,7 @@ public class Lagrange {
         return array;
     }
 
-    public static BigInteger denominator(int i, Point[] innerPoints) {
+    public static BigInteger denominator(int i, @NotNull Point[] innerPoints) {
         BigInteger result = BigInteger.ONE;
         BigInteger xi = innerPoints[i].getX();
 
@@ -45,7 +47,7 @@ public class Lagrange {
         return result;
     }
 
-    public static BigInteger[] interpolationPoly(int i, Point[] innerPoints) {
+    public static BigInteger[] interpolationPoly(int i, @NotNull Point[] innerPoints) {
         BigInteger[] coefficients = generateEmptyBNArray(innerPoints.length);
         BigInteger d = denominator(i, innerPoints);
 
@@ -79,13 +81,13 @@ public class Lagrange {
         return coefficients;
     }
 
-    public static Point[] pointSort(Point[] innerPoints) {
+    public static Point[] pointSort(@NotNull Point[] innerPoints) {
         Point[] pointArrClone = Arrays.copyOf(innerPoints, innerPoints.length);
-        Arrays.sort(pointArrClone, (p1, p2) -> p1.getX().compareTo(p2.getX()));
+        Arrays.sort(pointArrClone, Comparator.comparing(Point::getX));
         return pointArrClone;
     }
 
-    public static Polynomial lagrange(Point[] unsortedPoints) {
+    public static Polynomial lagrange(@NotNull Point[] unsortedPoints) {
         Point[] sortedPoints = pointSort(unsortedPoints);
         BigInteger[] polynomial = generateEmptyBNArray(sortedPoints.length);
 
@@ -102,7 +104,7 @@ public class Lagrange {
         return new Polynomial(polynomial);
     }
 
-    public static Polynomial lagrangeInterpolatePolynomial(Point[] points) {
+    public static Polynomial lagrangeInterpolatePolynomial(@NotNull Point[] points) {
         return lagrange(points);
     }
 
@@ -130,7 +132,7 @@ public class Lagrange {
         return secret.mod(secp256k1N);
     }
 
-    public static Polynomial generateRandomPolynomial(int degree, BigInteger secret, List<Share> deterministicShares) throws Exception {
+    public static Polynomial generateRandomPolynomial(int degree, @NotNull BigInteger secret, @NotNull  List<Share> deterministicShares) throws Exception {
         BigInteger actualS = secret;
 
         // Generate a random secret if not provided

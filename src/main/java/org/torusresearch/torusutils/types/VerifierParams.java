@@ -1,7 +1,6 @@
 package org.torusresearch.torusutils.types;
 
 import org.jetbrains.annotations.NotNull;
-import org.torusresearch.torusutils.apis.VerifyParams;
 
 import io.reactivex.annotations.Nullable;
 

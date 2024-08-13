@@ -32,10 +32,10 @@ public class JsonRPCRequest {
     }
 
     public static class JRPCResponse<T> {
-        private int id;
-        private String jsonrpc;
-        private T result;
-        private ErrorInfo error;
+        private final int id;
+        private final String jsonrpc;
+        private final T result;
+        private final ErrorInfo error;
 
         public JRPCResponse(int id, String jsonrpc, T result, ErrorInfo error) {
             this.id = id;

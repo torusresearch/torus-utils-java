@@ -1,6 +1,5 @@
 package org.torusresearch.torusutils.types;
 
-import java.math.BigInteger;
 import java.util.List;
 
 public class NodesData {
