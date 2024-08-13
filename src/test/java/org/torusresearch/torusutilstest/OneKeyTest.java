@@ -73,7 +73,7 @@ public class OneKeyTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws Exception {
-        VerifierArgs args = new VerifierArgs("google-lrc", "himanshu@tor.us", "");
+        VerifierArgs args = new VerifierArgs("google-lrc", "himanshu@tor.us", null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
@@ -95,7 +95,7 @@ public class OneKeyTest {
     public void shouldKeyAssign() throws Exception {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(TORUS_TEST_VERIFIER, email, ""), true);
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(TORUS_TEST_VERIFIER, email, null), true);
         System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
         assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
         assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");

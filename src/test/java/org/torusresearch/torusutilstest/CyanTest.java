@@ -73,7 +73,7 @@ public class CyanTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws Exception {
-        VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
+        VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args);
         assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", publicAddress.getFinalKeyData().getWalletAddress());
@@ -93,7 +93,7 @@ public class CyanTest {
     @DisplayName("Fetch User Type and Public Address")
     @Test
     public void shouldFetchUserTypeAndPublicAddress() throws Exception {
-        VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, "");
+        VerifierArgs args = new VerifierArgs("tkey-google-cyan", TORUS_TEST_EMAIL, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), args);
         assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", key.getFinalKeyData().getWalletAddress());
@@ -112,7 +112,7 @@ public class CyanTest {
         String v2Verifier = "tkey-google-cyan";
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
-        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2TestEmail, ""));
+        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2TestEmail, null));
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x29446f428293a4E6470AEaEDa6EAfA0F842EF54e",
                         "8b6f2048aba8c7833e3b02c5b6522bb18c484ad0025156e428f17fb8d8c34021",
@@ -130,7 +130,7 @@ public class CyanTest {
 
         // 2/n user
         String v2nTestEmail = "caspertorus@gmail.com";
-        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2nTestEmail, ""));
+        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2nTestEmail, null));
         assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xe8a19482cbe5FaC896A5860Ca4156fb999DDc73b",
                         "c491ba39155594896b27cf71a804ccf493289d918f40e6ba4d590f1c76139e9e",

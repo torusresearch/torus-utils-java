@@ -70,7 +70,7 @@ public class MainnetTest {
     @DisplayName("Gets Public Address")
     @Test
     public void shouldGetPublicAddress() throws Exception {
-        VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, "");
+        VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), args);
         assertEquals("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E", publicAddress.getFinalKeyData().getWalletAddress());
@@ -90,7 +90,7 @@ public class MainnetTest {
     @DisplayName("Fetch User Type and Public Address")
     @Test
     public void shouldFetchUserTypeAndPublicAddress() throws Exception {
-        VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, "");
+        VerifierArgs args = new VerifierArgs("google", TORUS_TEST_EMAIL, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(args.getVerifier(), args.getVerifierId()).get();
         TorusPublicKey key = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), args);
         assertEquals("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E", key.getFinalKeyData().getWalletAddress());
@@ -109,7 +109,7 @@ public class MainnetTest {
         String v2Verifier = "tkey-google";
         // 1/1 user
         String v2TestEmail = "somev2user@gmail.com";
-        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2TestEmail, ""));
+        TorusPublicKey key2 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2TestEmail, null));
         assertEquals("0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526", key2.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
         assertThat(key2).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
@@ -126,7 +126,7 @@ public class MainnetTest {
 
         // v1 user
         String v2nTestEmail = "caspertorus@gmail.com";
-        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2nTestEmail, ""));
+        TorusPublicKey key3 = torusUtils.getUserTypeAndAddress(nodeDetails.getTorusNodeEndpoints(), new VerifierArgs(v2Verifier, v2nTestEmail, null));
         assertEquals("0x40A4A04fDa1f29a3667152C8830112FBd6A77BDD", key3.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
         assertThat(key3).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
