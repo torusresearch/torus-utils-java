@@ -28,7 +28,6 @@ import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
-import org.torusresearch.torusutils.types.VerifierArgs;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.VerifyParam;
 import org.torusresearch.torusutils.types.common.PubNonce;
@@ -264,7 +263,6 @@ public class SapphireDevnetTest {
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, null, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(HashEnabledVerifier, TORUS_TEST_EMAIL).get();
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
-        VerifierArgs args = new VerifierArgs(HashEnabledVerifier, TORUS_TEST_EMAIL, "");
         TorusKey torusKey = torusUtils.retrieveShares(torusNodeEndpoints, HashEnabledVerifier,
                 verifierParams, idToken, null).get();
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
