@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.helpers;
+package org.torusresearch.torusutils.helpers.encoding;
 
 import java.nio.charset.StandardCharsets;
 

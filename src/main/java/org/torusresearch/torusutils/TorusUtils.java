@@ -16,7 +16,7 @@ import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.LegacyVerifierKey;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.LegacyVerifierLookupResponse;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierKey;
-import org.torusresearch.torusutils.helpers.Base64;
+import org.torusresearch.torusutils.helpers.encoding.Base64;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
 import org.torusresearch.torusutils.helpers.Utils;

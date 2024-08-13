@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.helpers;
+package org.torusresearch.torusutils.helpers.hashing;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
