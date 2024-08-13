@@ -5,6 +5,7 @@ package org.torusresearch.torusutils;
 
 import static org.torusresearch.fetchnodedetails.types.Utils.LEGACY_NETWORKS_ROUTE_MAP;
 import static org.torusresearch.torusutils.helpers.Utils.calculateMedian;
+import static org.torusresearch.torusutils.helpers.Utils.isLegacyNetorkRouteMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -884,143 +885,101 @@ public class TorusUtils {
         }
     }
 
-    public CompletableFuture<TorusPublicKey> getNewPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended, Web3AuthNetwork network) throws Exception {
-        System.out.println("> torusUtils.java/getPublicAddress " + endpoints + " " + verifierArgs + " " + isExtended);
-        AtomicBoolean isNewKey = new AtomicBoolean(false);
-        Gson gson = new Gson();
+    public TorusPublicKey getNewPublicAddress(String[] endpoints, VerifierArgs verifierArgs, Web3AuthNetwork network) throws Exception {
         KeyLookupResult keyAssignResult = Utils.getPubKeyOrKeyAssign(endpoints, network, verifierArgs.getVerifier(), verifierArgs.getVerifierId(), "https://node-1.dev-node.web3auth.io/metadata", this.options.getServerTimeOffset().intValue(), verifierArgs.getExtendedVerifierId());
 
         JRPCResponse.ErrorInfo errorResult = keyAssignResult.errorResult;
-        KeyResult keyResult = keyAssignResult.keyResult;
-        List<Integer> nodeIndexes = keyAssignResult.nodeIndexes;
-        GetOrSetNonceResult nonceResult = keyAssignResult.nonceResult;
-        BigInteger finalServerTimeOffset = (keyAssignResult.server_time_offset != null) ? keyAssignResult.server_time_offset : this.options.getServerTimeOffset();
-
-        if (errorResult != null && errorResult.getMessage().toLowerCase().contains("verifier not supported")) {
-            throw new RuntimeException("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
-        }
-
-        if (errorResult != null && !errorResult.getMessage().isEmpty()) {
-            throw new RuntimeException("node results do not match at first lookup " + keyResult + ", " + errorResult);
-        }
-
-        System.out.println("> torusUtils.java/getPublicAddress " + keyResult);
-        if (keyAssignResult.errorResult != null || keyAssignResult.keyResult.keys == null) {
-            throw new RuntimeException("node results do not match at final lookup " + keyResult + ", " + errorResult);
-        }
-
-        if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null &&
-                !LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
-            try {
-                throw new GetOrSetNonceError(new Exception("metadata nonce is missing in share response"));
-            } catch (GetOrSetNonceError e) {
-                e.printStackTrace();
+        if (errorResult != null) {
+            if (errorResult.getMessage().toLowerCase().contains("verifier not supported")) {
+                throw new RuntimeException("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
+            } else {
+                throw new RuntimeException(errorResult.getMessage());
             }
         }
 
-        VerifierKey verifierLookupItem = keyAssignResult.keyResult.keys[0];
-        isNewKey.set(true);
-        String pubKey = KeyUtils.getPublicKeyFromCoords(verifierLookupItem.pub_key_X, verifierLookupItem.pub_key_Y, true);
-        String X = verifierLookupItem.pub_key_X;
-        String Y = verifierLookupItem.pub_key_Y;
-        TypeOfUser typeOfUser = TypeOfUser.v1;
-        PubNonce pubNonce = null;
-        ECNamedCurveParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp256k1");
-        BigInteger nonce = new BigInteger("0");
-        try {
-            nonce = new BigInteger(nonceResult != null ? nonceResult.nonce : "0", 16);
-        } catch (Exception exception) {
-            // do nothing
+        KeyResult keyResult = keyAssignResult.keyResult;
+        if (keyResult == null || keyResult.keys.length == 0) {
+            throw new RuntimeException("node results do not match at first lookup " + keyResult + ", " + errorResult);
         }
-        CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
+
+        GetOrSetNonceResult nonceResult = keyAssignResult.nonceResult;
+        if (nonceResult == null && verifierArgs.getExtendedVerifierId() == null && !isLegacyNetorkRouteMap(network)) {
+            throw new RuntimeException("metadata nonce is missing in share response");
+        }
+
+       String pubKey = KeyUtils.getPublicKeyFromCoords(keyResult.keys[0].pub_key_X, keyResult.keys[0].pub_key_Y, false);
+
+        PubNonce pubNonce = null;
+        BigInteger nonce = null;
+        if (nonceResult != null && !nonceResult.nonce.isEmpty()) {
+            nonce = new BigInteger(nonceResult.nonce);
+        } else {
+            nonce = BigInteger.ZERO;
+        }
 
         String oAuthPubKey = null;
         String finalPubKey = null;
 
-        if (verifierArgs.getExtendedVerifierId() != null && !verifierArgs.getExtendedVerifierId().equals("")) {
+        BigInteger finalServerTimeOffset = (this.options.getServerTimeOffset() != null) ? this.options.getServerTimeOffset() : keyAssignResult.server_time_offset;
+
+        if (verifierArgs.getExtendedVerifierId() != null) {
             finalPubKey = pubKey;
             oAuthPubKey = finalPubKey;
-        } else if (LEGACY_NETWORKS_ROUTE_MAP.containsKey(network)) {
-            try {
+        } else if (isLegacyNetorkRouteMap(network)) {
                 ArrayList<LegacyVerifierKey>  legacyKeys = new ArrayList<>();
                 for (VerifierKey i : keyAssignResult.keyResult.keys) {
                     legacyKeys.add(new LegacyVerifierKey(i.pub_key_X,i.pub_key_Y,i.address));
                 }
                 LegacyVerifierLookupResponse verifierLegacyLookupItem =
-                        new LegacyVerifierLookupResponse(legacyKeys.toArray(new LegacyVerifierKey[0]), keyAssignResult.server_time_offset.toString());
-                return formatLegacyPublicKeyData(verifierLegacyLookupItem, true, isNewKey.get(), finalServerTimeOffset);
-            } catch (GetOrSetNonceError | ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                        new LegacyVerifierLookupResponse(legacyKeys.toArray(new LegacyVerifierKey[0]), finalServerTimeOffset.toString());
+                return formatLegacyPublicKeyData(verifierLegacyLookupItem, true, keyAssignResult.keyResult.is_new_key, finalServerTimeOffset);
         } else {
-            try {
-                PubNonce finalPubNonce = null;
-                if (nonceResult != null && nonceResult.pubNonce != null) {
-                    finalPubNonce = nonceResult.pubNonce;
-                }
-                String[] pubKeyCoords = KeyUtils.getPublicKeyCoords(pubKey);
-                String _X = pubKeyCoords[0];
-                String _Y = pubKeyCoords[1];
-                oAuthPubKey = KeyUtils.getPublicKeyFromCoords(_X, _Y, true);
-                finalPubKey = oAuthPubKey;
-                pubNonce = finalPubNonce;
-                if (pubNonce != null) {
-                    if (!pubNonce.x.isEmpty() && !pubNonce.y.isEmpty()) {
-                        String pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubNonce.x, pubNonce.y, true);
-                        finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPubKey, pubNonceKey), false);
-                    }
-                }
-            } catch (TorusUtilError e) {
-                throw new RuntimeException(e);
+            String[] pubKeyCoords = KeyUtils.getPublicKeyCoords(pubKey);
+            String _X = pubKeyCoords[0];
+            String _Y = pubKeyCoords[1];
+            PubNonce finalPubNonce = null;
+            if (nonceResult != null && nonceResult.pubNonce != null) {
+                finalPubNonce = nonceResult.pubNonce;
+            }
+            oAuthPubKey = KeyUtils.getPublicKeyFromCoords(_X, _Y, true);
+            finalPubKey = oAuthPubKey;
+            pubNonce = finalPubNonce;
+            if (pubNonce != null && !pubNonce.x.isEmpty() && !pubNonce.y.isEmpty()) {
+                    String pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubNonce.x, pubNonce.y, true);
+                    finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPubKey, pubNonceKey), false);
+
+            } else {
+                throw new RuntimeException("Public nonce is missing");
             }
         }
 
         if (oAuthPubKey == null || finalPubKey == null) {
             throw new Error("could not derive private key");
         }
-        String[] oAuthPubKeyCoords;
-        String[] finalPubKeyCoords;
-        try {
-            oAuthPubKeyCoords = KeyUtils.getPublicKeyCoords(oAuthPubKey);
-            finalPubKeyCoords = KeyUtils.getPublicKeyCoords(finalPubKey);
-        } catch (TorusUtilError e) {
-            throw new RuntimeException(e);
-        }
+        String[] oAuthPubKeyCoords = KeyUtils.getPublicKeyCoords(oAuthPubKey);
+        String[] finalPubKeyCoords = KeyUtils.getPublicKeyCoords(finalPubKey);
+
         String oAuthPubKeyX = oAuthPubKeyCoords[0];
         String oAuthPubKeyY = oAuthPubKeyCoords[1];
         String finalPubKeyX = finalPubKeyCoords[0];
         String finalPubKeyY = finalPubKeyCoords[1];
 
-        String oAuthAddress = null;
-        try {
-            oAuthAddress = KeyUtils.generateAddressFromPubKey(oAuthPubKeyX,  oAuthPubKeyY);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        String finalAddresss = null;
-        try {
-            finalAddresss = KeyUtils.generateAddressFromPubKey(finalPubKeyX, finalPubKeyY);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        String oAuthAddress = KeyUtils.generateAddressFromPubKey(oAuthPubKeyX,  oAuthPubKeyY);
+        String finalAddresss = KeyUtils.generateAddressFromPubKey(finalPubKeyX, finalPubKeyY);
 
         TorusPublicKey key = new TorusPublicKey(new OAuthPubKeyData(oAuthAddress, oAuthPubKeyX, oAuthPubKeyY),
                 new FinalPubKeyData(finalAddresss, finalPubKeyX, finalPubKeyY),
                 new Metadata(pubNonce, nonce, TypeOfUser.v2, nonceResult != null && nonceResult.upgraded, finalServerTimeOffset),
-                new NodesData(nodeIndexes));
-        keyCf.complete(key);
-        return keyCf;
+                new NodesData(keyAssignResult.nodeIndexes));
+        return key;
     }
 
-    private CompletableFuture<TorusPublicKey> formatLegacyPublicKeyData(LegacyVerifierLookupResponse finalKeyResult, boolean enableOneKey, Boolean isNewKey,
+    private TorusPublicKey formatLegacyPublicKeyData(LegacyVerifierLookupResponse finalKeyResult, boolean enableOneKey, Boolean isNewKey,
                                                                         BigInteger serverTimeOffset) throws Exception {
         LegacyVerifierKey key = finalKeyResult.keys[0];
         String X = key.pub_key_X;
         String Y = key.pub_key_Y;
 
-        CompletableFuture<TorusPublicKey> keyCf = new CompletableFuture<>();
         GetOrSetNonceResult nonceResult = null;
         BigInteger nonce;
         ECPoint finalPubKey;
@@ -1035,8 +994,7 @@ public class TorusUtils {
                 nonce = new BigInteger(Utils.isEmpty(nonceResult.nonce) ? "0" : nonceResult.nonce, 16);
                 typeOfUser = nonceResult.typeOfUser;
             } catch (Exception e) {
-                keyCf.completeExceptionally(new GetOrSetNonceError(e));
-                return keyCf;
+                throw new GetOrSetNonceError(e);
             }
 
             finalPubKey = curve.getCurve().createPoint(new BigInteger(key.pub_key_X, 16), new BigInteger(key.pub_key_Y, 16));
@@ -1048,8 +1006,7 @@ public class TorusUtils {
                 finalPubKey = finalPubKey.add(oneKeyMetadataPoint).normalize();
                 pubNonce = nonceResult.pubNonce;
             } else {
-                keyCf.completeExceptionally(new Exception("getOrSetNonce should always return typeOfUser."));
-                return keyCf;
+                throw new RuntimeException("getOrSetNonce should always return typeOfUser.");
             }
         } else {
             typeOfUser = TypeOfUser.v1;
@@ -1075,16 +1032,15 @@ public class TorusUtils {
                 new FinalPubKeyData(finalAddress, finalX, finalY),
                 new Metadata(pubNonce, nonce, typeOfUser, nonceResult != null && nonceResult.upgraded, serverTimeOffset),
                 new NodesData(new ArrayList<>()));
-        keyCf.complete(resultKey);
-        return keyCf;
+        return resultKey;
     }
 
-    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) throws Exception {
-        return getNewPublicAddress(endpoints, verifierArgs, isExtended, getNetworkInfo());
+    public TorusPublicKey getPublicAddress(String[] endpoints, VerifierArgs verifierArgs, boolean isExtended) throws Exception {
+        return getNewPublicAddress(endpoints, verifierArgs, getNetworkInfo());
     }
 
-    public CompletableFuture<TorusPublicKey> getPublicAddress(String[] endpoints, VerifierArgs verifierArgs) throws Exception {
-        return getNewPublicAddress(endpoints, verifierArgs, false, getNetworkInfo());
+    public TorusPublicKey getPublicAddress(String[] endpoints, VerifierArgs verifierArgs) throws Exception {
+        return getNewPublicAddress(endpoints, verifierArgs,  getNetworkInfo());
     }
 
     private String getMigratedNetworkInfo() {
@@ -1139,8 +1095,8 @@ public class TorusUtils {
         return this.getOrSetNonce(privKey, serverTimeOffset, true);
     }
 
-    public CompletableFuture<TorusPublicKey> getUserTypeAndAddress(String[] endpoints, VerifierArgs verifierArgs) throws Exception {
-        return getNewPublicAddress(endpoints, verifierArgs, false, getNetworkInfo());
+    public TorusPublicKey getUserTypeAndAddress(String[] endpoints, VerifierArgs verifierArgs) throws Exception {
+        return getNewPublicAddress(endpoints, verifierArgs, getNetworkInfo());
     }
 
     public MetadataParams generateMetadataParams(String message, BigInteger privateKey, BigInteger serverTimeOffset) {

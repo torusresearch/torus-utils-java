@@ -139,7 +139,7 @@ public class Utils {
 
     public static boolean isLegacyNetorkRouteMap(Web3AuthNetwork network) {
         // TODO: Fix this in fetchnodedetails, comparison should be against .legacy(network)
-        return !network.name().contains("sapphire");
+        return !network.name().toLowerCase().contains("sapphire");
     }
     public static KeyResult normalizeKeyResult(VerifierLookupResponse result) {
         Boolean isNewKey = false;
