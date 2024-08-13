@@ -1,7 +1,6 @@
 package org.torusresearch.torusutils.types.common;
 
 import org.torusresearch.torusutils.types.Point;
-import org.torusresearch.torusutils.types.TorusKeyType;
 import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 
 public class ImportedShare {

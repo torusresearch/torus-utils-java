@@ -1,4 +1,4 @@
-package org.torusresearch.torusutils.types;
+package org.torusresearch.torusutils.apis.requests;
 
 public class SetData {
         public final String data;

@@ -37,6 +37,7 @@ public class TorusPublicKey {
         return nodesData;
     }
 
+    // TODO: Check this
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -45,6 +46,7 @@ public class TorusPublicKey {
         return getoAuthKeyData().equals(that.getoAuthKeyData()) && getFinalKeyData().equals(that.getFinalKeyData()) && getMetadata().equals(that.getMetadata()) && getNodesData().equals(that.getNodesData());
     }
 
+    // TODO: Check this
     @Override
     public int hashCode() {
         return Objects.hash(getoAuthKeyData(), getFinalKeyData(), getMetadata(), getNodesData());

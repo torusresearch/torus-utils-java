@@ -1,9 +1,9 @@
-package org.torusresearch.torusutils.types.common.meta;
+package org.torusresearch.torusutils.apis.requests;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.torusresearch.torusutils.types.SetData;
-import org.torusresearch.torusutils.types.TorusKeyType;
+import org.torusresearch.torusutils.apis.requests.SetData;
+import org.torusresearch.torusutils.types.common.TorusKeyType;
 
 public class MetadataParams {
     @Nullable

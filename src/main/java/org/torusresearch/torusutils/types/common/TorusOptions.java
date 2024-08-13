@@ -5,7 +5,6 @@ import static org.torusresearch.fetchnodedetails.types.Utils.METADATA_MAP;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
-import org.torusresearch.torusutils.types.TorusKeyType;
 
 public class TorusOptions {
     public final String legacyMetadataHost;

@@ -26,6 +26,7 @@ public class FinalPubKeyData {
         return y;
     }
 
+    // TODO: Check this
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -34,6 +35,7 @@ public class FinalPubKeyData {
         return getWalletAddress().equals(that.getWalletAddress()) && getX().equals(that.getX()) && getY().equals(that.getY());
     }
 
+    // TODO: Check this
     @Override
     public int hashCode() {
         return Objects.hash(getWalletAddress(), getX(), getY());

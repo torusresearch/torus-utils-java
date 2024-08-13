@@ -24,7 +24,7 @@ import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
-import org.torusresearch.torusutils.types.TorusKeyType;
+import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.common.ImportedShare;
@@ -35,7 +35,7 @@ import org.torusresearch.torusutils.types.common.TorusKey;
 import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
-import org.torusresearch.torusutils.types.common.meta.GetMetadataParams;
+import org.torusresearch.torusutils.apis.requests.GetMetadataParams;
 
 import java.math.BigInteger;
 import java.security.PrivateKey;

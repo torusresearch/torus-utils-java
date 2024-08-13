@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.torusresearch.torusutils.types.VerifyParam;
 import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.apis.responses.CommitmentRequestResult;
-import org.torusresearch.torusutils.types.TorusKeyType;
+import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
 
 public class ShareRequestItem {

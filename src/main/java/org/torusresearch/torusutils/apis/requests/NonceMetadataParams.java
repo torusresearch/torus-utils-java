@@ -2,7 +2,7 @@ package org.torusresearch.torusutils.apis.requests;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.torusresearch.torusutils.types.TorusKeyType;
+import org.torusresearch.torusutils.types.common.TorusKeyType;
 
 import java.util.Objects;
 

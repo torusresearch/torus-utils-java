@@ -27,7 +27,7 @@ import org.torusresearch.torusutils.types.common.ecies.Ecies;
 import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.helpers.encryption.Encryption;
 import org.torusresearch.torusutils.types.common.ImportedShare;
-import org.torusresearch.torusutils.types.TorusKeyType;
+import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.apis.requests.NonceMetadataParams;
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
