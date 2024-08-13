@@ -22,7 +22,6 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
-import org.torusresearch.torusutils.helpers.encoding.Base64;
 import org.torusresearch.torusutils.types.common.ecies.Ecies;
 import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.helpers.encryption.Encryption;
@@ -51,6 +50,7 @@ import java.security.SecureRandom;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -226,13 +226,11 @@ public class KeyUtils {
         byte[] sigBytes = Hex.decode(sig);
 
         // Encode the signature bytes to Base64
-        // TODO: Consider java.util.Base64.getEncoder().encode(sigBytes); and remove Base64 class if fine
-        String finalSig = new String(Base64.encodeBytesToBytes(sigBytes), StandardCharsets.UTF_8);
+        String finalSig = new String(Base64.getEncoder().encode(sigBytes), StandardCharsets.UTF_8);
 
         // Return a new NonceMetadataParams object with the derived values
-        // TODO: Consider java.util.Base64.getEncoder().encode(sigBytes); and remove Base64 class if fine
         return new NonceMetadataParams(derivedPubKeyX, derivedPubKeyY, setNonceData,
-                Base64.encodeBytes(encodedData.getBytes(StandardCharsets.UTF_8)), finalSig, null, null, null);
+                Base64.getEncoder().encodeToString(encodedData.getBytes(StandardCharsets.UTF_8)), finalSig, null, null, null);
     }
 
     public static List<ImportedShare> generateShares(@NotNull TorusKeyType keyType, @NotNull Integer serverTimeOffset, @NotNull List<BigInteger> nodeIndexes, @NotNull List<TorusNodePub> nodePubKeys, @NotNull String privateKey) throws Exception {

@@ -49,6 +49,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -158,7 +159,7 @@ public class Utils {
         BigInteger[] signature = signer.generateSignature(hashedData);
 
         String sig = Utils.padLeft(signature[0].toString(16), '0', 64) + Utils.padLeft(signature[1].toString(16), '0', 64) + Utils.padLeft("", '0', 2);
-        byte[] sigBytes = java.util.Base64.getEncoder().encode(Hex.decode(sig));
+        byte[] sigBytes = Base64.getEncoder().encode(Hex.decode(sig));
         String finalSig = new String(sigBytes, StandardCharsets.UTF_8);
         return new MetadataParams(X, Y, setData, finalSig, null, keyType);
     }
