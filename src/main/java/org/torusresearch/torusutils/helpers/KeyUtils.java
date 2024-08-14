@@ -117,7 +117,9 @@ public class KeyUtils {
             publicKeyUnprefixed = Utils.strip04Prefix(publicKeyUnprefixed);
         }
 
-        if (publicKeyUnprefixed.length() != 128) {
+        if (publicKeyUnprefixed.length() <= 128) {
+            Utils.padLeft(publicKeyUnprefixed, '0', 128);
+        } else {
             throw new TorusUtilError("Invalid public key size");
         }
 
