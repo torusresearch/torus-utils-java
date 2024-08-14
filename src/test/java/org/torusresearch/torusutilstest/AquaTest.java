@@ -1,6 +1,3 @@
-// TODO: fetchnodedetails needs to be updated with the migration info for celeste, then celeste tests need to be added back in its own file.
-
-
 package org.torusresearch.torusutilstest;
 
 import static org.assertj.core.api.Assertions.assertThat;
