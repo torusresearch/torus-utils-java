@@ -128,7 +128,7 @@ public class TorusUtils {
     public static CompletableFuture<TorusKey> retrieveOrImportShare(@NotNull String legacyMetadataHost, @NotNull Integer serverTimeOffset,
                                                                     @NotNull Boolean enableOneKey, @NotNull String allowHost, @NotNull Web3AuthNetwork network,
                                                                     @NotNull String clientId, @NotNull String[] endpoints, @NotNull String verifier, @NotNull VerifierParams verifierParams,
-                                                             @NotNull String idToken, @Nullable ImportedShare[] importedShares, @Nullable String apiKey, @Nullable TorusUtilsExtraParams extraParams
+                                                             @NotNull String idToken, @Nullable ImportedShare[] importedShares, @Nullable String apiKey, @NotNull TorusUtilsExtraParams extraParams
                                                              ) {
         String finaApiKey = (apiKey == null) ? "torus-default" : apiKey;
 
@@ -836,18 +836,6 @@ public class TorusUtils {
         return null;
     }
 
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, String verifier, VerifierParams verifierParams, String idToken, @Nullable ImportedShare[] importedShares, TorusUtilsExtraParams extraParams) {
-        return TorusUtils.retrieveOrImportShare(this.defaultHost, this.options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId,endpoints, verifier, verifierParams, idToken, importedShares, this.apiKey, extraParams);
-    }
-
-    public CompletableFuture<TorusKey> retrieveShares(String[] endpoints, String verifier, VerifierParams verifierParams, String idToken, TorusUtilsExtraParams extraParams) {
-        if (extraParams.session_token_exp_second == null) {
-            extraParams.session_token_exp_second = this.sessionTime;
-        }
-
-        return TorusUtils.retrieveOrImportShare(this.defaultHost, this.options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId,endpoints, verifier, verifierParams, idToken, new ImportedShare[]{}, this.apiKey, extraParams);
-    }
-
     public static GetMetadataResponse getMetadata(String legacyMetadataHost, GetMetadataParams data) throws ExecutionException, InterruptedException {
             Gson gson = new Gson();
             String metadata = gson.toJson(data, GetMetadataParams.class);
@@ -1023,16 +1011,29 @@ public class TorusUtils {
         return getNewPublicAddress(endpoints, verifier, verifierId, extendedVerifierId, getNetworkInfo(), true);
     }
 
+    public CompletableFuture<TorusKey> retrieveShares(@NotNull String[] endpoints, @NotNull String verifier, @NotNull VerifierParams verifierParams, @NotNull String idToken, @Nullable TorusUtilsExtraParams extraParams) {
+        TorusUtilsExtraParams params = (extraParams == null) ? new TorusUtilsExtraParams() : extraParams;
+        if (params.session_token_exp_second == null) {
+            params.session_token_exp_second = this.sessionTime;
+        }
+
+        return TorusUtils.retrieveOrImportShare(this.defaultHost, (options.serverTimeOffset == null) ? 0 : options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId, endpoints, verifier, verifierParams, idToken, null, this.apiKey, params);
+    }
+
     public CompletableFuture<TorusKey> importPrivateKey(
-            String[] endpoints,
-            BigInteger[] nodeIndexes,
-            TorusNodePub[] nodePubKeys,
-            String verifier,
-            VerifierParams verifierParams,
-            String idToken,
-            String newPrivateKey,
-            TorusUtilsExtraParams extraParams
+            @NotNull String[] endpoints,
+            @NotNull BigInteger[] nodeIndexes,
+            @NotNull TorusNodePub[] nodePubKeys,
+            @NotNull String verifier,
+            @NotNull VerifierParams verifierParams,
+            @NotNull String idToken,
+            @NotNull String newPrivateKey,
+            @Nullable TorusUtilsExtraParams extraParams
     ) throws Exception {
+        TorusUtilsExtraParams params = (extraParams == null) ? new TorusUtilsExtraParams() : extraParams;
+        if (params.session_token_exp_second == null) {
+            params.session_token_exp_second = this.sessionTime;
+        }
 
         if (endpoints.length != nodeIndexes.length) {
             CompletableFuture<TorusKey> future = new CompletableFuture<>();
@@ -1040,17 +1041,8 @@ public class TorusUtils {
             return future;
         }
 
-        if (extraParams.session_token_exp_second == null) {
-            extraParams.session_token_exp_second = sessionTime;
-        }
+        List<ImportedShare> shares = KeyUtils.generateShares(this.keyType, (options.serverTimeOffset == null) ? 0 : options.serverTimeOffset, Arrays.asList(nodeIndexes), Arrays.asList(nodePubKeys), newPrivateKey);
 
-        List<ImportedShare> shares = KeyUtils.generateShares(this.keyType, options.serverTimeOffset, Arrays.asList(nodeIndexes), Arrays.asList(nodePubKeys), newPrivateKey);
-
-        return this.retrieveShares(
-                endpoints,
-                verifier,
-                verifierParams,
-                idToken,
-                shares.toArray(new ImportedShare[0]), extraParams);
+        return TorusUtils.retrieveOrImportShare(this.defaultHost, this.options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId, endpoints, verifier, verifierParams, idToken, shares.toArray(new ImportedShare[0]), this.apiKey, params);
     }
 }

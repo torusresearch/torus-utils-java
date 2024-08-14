@@ -105,7 +105,7 @@ public class KeyUtils {
         return kf.generatePublic(new ECPublicKeySpec(pubKeyPoint, params));
     }
     */
-    
+
     public static String generateAddressFromPrivKey(@NotNull String privateKey) throws Exception {
         PrivateKey privKey = deserializePrivateKey(Hex.decode(privateKey));
         return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.getEncoded())));
