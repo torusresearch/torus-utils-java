@@ -466,7 +466,7 @@ public class TorusUtils {
         } else {
             typeOfUser = TypeOfUser.v2;
             finalPublicKey = oAuthPublicKey;
-            if (thresholdNonceData != null && thresholdNonceData.pubNonce != null && (!(thresholdNonceData.pubNonce.x.isEmpty() || !thresholdNonceData.pubNonce.y.isEmpty()))) {
+            if (thresholdNonceData != null && thresholdNonceData.pubNonce != null && (!(thresholdNonceData.pubNonce.x.isEmpty() || thresholdNonceData.pubNonce.y.isEmpty()))) {
                 PubNonce pubNonceObject = thresholdNonceData.pubNonce;
                 String pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubNonceObject.x, pubNonceObject.y, true);
                 finalPublicKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPublicKey, pubNonceKey), false);

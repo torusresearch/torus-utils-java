@@ -49,7 +49,7 @@ public class Encryption {
         System.arraycopy(hash, 32, macKey, 0, 32);
         cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(aesKey, "AES"), new IvParameterSpec(iv));
 
-        byte[] cipherText = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
+        byte[] cipherText = cipher.doFinal(Hex.decode(plaintext));
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(iv); // 16 bytes
