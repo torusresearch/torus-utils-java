@@ -4,16 +4,20 @@ import org.torusresearch.torusutils.types.common.PubNonce;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
 
 import java.math.BigInteger;
+
+import io.reactivex.annotations.Nullable;
+
 public class Metadata {
 
     public PubNonce pubNonce;
     public BigInteger nonce;
-    public boolean upgraded;
+    @Nullable
+    public Boolean upgraded;
     public TypeOfUser typeOfUser;
 
     public Integer serverTimeOffset;
 
-    public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded, Integer serverTimeOffset) {
+    public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, @Nullable Boolean upgraded, Integer serverTimeOffset) {
         this.pubNonce = pubNonce;
         this.nonce = nonce;
         this.typeOfUser = typeOfUser;

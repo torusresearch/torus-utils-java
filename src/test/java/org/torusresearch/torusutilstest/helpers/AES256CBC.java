@@ -9,6 +9,7 @@ import org.torusresearch.torusutils.helpers.Utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +28,12 @@ public class AES256CBC {
     public void testEncryption() throws Exception {
         KeyPair keypair = KeyUtils.generateKeyPair();
         String payload =  "Hello World";
-
+        String hexEncoded = Hex.toHexString(payload.getBytes());
         Ecies encrypted = Encryption.encrypt(KeyUtils.serializePublicKey(keypair.getPublic(), false), payload);
-        String decrypted = Encryption.decrypt(Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())), encrypted);
+        String decrypted = new String(Encryption.decrypt(Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())), encrypted), StandardCharsets.UTF_8);
         String decryptedNodeData = Encryption.decryptNodeData(encrypted.omitCipherText(), encrypted.getCiphertext(), Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())));
 
         assertEquals(payload, decrypted);
-        assertEquals(payload, decryptedNodeData);
+        assertEquals(hexEncoded, decryptedNodeData);
     }
 }

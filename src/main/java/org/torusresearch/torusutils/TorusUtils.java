@@ -163,7 +163,7 @@ public class TorusUtils {
                 new Header("clientid", clientId), new Header("enablegating", "true")}, true).get();
 
         KeyPair sessionAuthKey = KeyUtils.generateKeyPair();
-        String sessionAuthKeySerialized = Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate()));
+        String sessionAuthKeySerialized = Utils.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate())),'0', 64);
         String pubKey = Hex.toHexString(KeyUtils.serializePublicKey(sessionAuthKey.getPublic(), false));
         String[] pubKeyCoords = KeyUtils.getPublicKeyCoords(pubKey);
         String pubKeyX = pubKeyCoords[0];

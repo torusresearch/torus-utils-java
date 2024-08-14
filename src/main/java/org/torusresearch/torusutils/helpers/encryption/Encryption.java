@@ -66,7 +66,7 @@ public class Encryption {
         return new Ecies(Hex.toHexString(iv), Hex.toHexString(KeyUtils.serializePublicKey(ephemeral.getPublic(),false)),Hex.toHexString(cipherText), Hex.toHexString(finalMac));
     }
 
-    public static String decrypt(@NotNull String privateKeyHex, @NotNull Ecies ecies) throws Exception {
+    public static byte[] decrypt(@NotNull String privateKeyHex, @NotNull Ecies ecies) throws Exception {
         byte[] shared = ecdh(Hex.decode(privateKeyHex), Hex.decode(ecies.getEphemPublicKey()));
         byte[] sha512hash = SHA512.digest(shared);
         SecretKeySpec aesKey = new SecretKeySpec(Arrays.copyOf(sha512hash, 32), "AES");
@@ -78,7 +78,7 @@ public class Encryption {
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", provider);
         cipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);
-        return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
+        return cipher.doFinal(cipherText);
     }
 
 
@@ -89,6 +89,6 @@ public class Encryption {
                 ciphertextHex,
                 eciesData.getMac()
         );
-        return decrypt(privKey, eciesOpts);
+        return Hex.toHexString(decrypt(privKey, eciesOpts));
     }
 }
