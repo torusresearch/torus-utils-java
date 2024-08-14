@@ -67,9 +67,9 @@ public class OneKeyTest {
         algorithmRs = Algorithm.ECDSA256(publicKey, privateKey);
     }
 
-    @DisplayName("Gets Public Address")
+    @DisplayName("should still fetch v1 address correctly")
     @Test
-    public void shouldGetPublicAddress() throws Exception {
+    public void shouldStillFetchV1AddressCorrectly() throws Exception {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google-lrc", "himanshu@tor.us").get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), "google-lrc", "himanshu@tor.us", null);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
