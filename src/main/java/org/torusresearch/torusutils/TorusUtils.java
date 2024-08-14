@@ -55,7 +55,6 @@ import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
-import org.web3j.abi.datatypes.Bool;
 import org.web3j.crypto.Hash;
 
 import java.math.BigInteger;
@@ -334,8 +333,8 @@ public class TorusUtils {
             isNewKeys.add(item.is_new_key.toString());
 
             if (item.session_token_sigs.length > 0) {
-                if (item.session_token_sigs_metadata.length > 0) {
-                    String decrypted = Encryption.decryptNodeData(item.session_token_sigs_metadata[0], item.session_token_sigs[0], sessionAuthKeySerialized);
+                if (item.session_token_sig_metadata.length > 0) {
+                    String decrypted = Encryption.decryptNodeData(item.session_token_sig_metadata[0], item.session_token_sigs[0], sessionAuthKeySerialized);
                     sessionTokenSigs.add(decrypted);
                 } else {
                     sessionTokenSigs.add(item.session_token_sigs[0]);
