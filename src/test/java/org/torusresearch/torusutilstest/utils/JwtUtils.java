@@ -6,22 +6,29 @@ import com.auth0.jwt.algorithms.Algorithm;
 import net.andreinc.mockneat.MockNeat;
 
 import java.math.BigInteger;
+import java.util.Calendar;
 import java.util.Date;
 
 public class JwtUtils {
     // TODO: Sanity check, check all fields
     public static String generateIdToken(String email, Algorithm alg) {
+
+        Date today = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(today);
+        calendar.add(Calendar.MINUTE, 2);
+        Date modifiedDate = calendar.getTime();
+
         return JWT.create()
                 .withSubject("email|" + email.split("@")[0])
+                .withExpiresAt(modifiedDate)
                 .withAudience("torus-key-test")
-                .withExpiresAt(new Date(System.currentTimeMillis() + 3600 * 1000))
-                .withIssuedAt(new Date())
+                .withClaim("isAdmin", false)
+                .withClaim("emailVerified", true)
                 .withIssuer("torus-key-test")
+                .withIssuedAt(today)
                 .withClaim("email", email)
-                .withClaim("nickname", email.split("@")[0])
                 .withClaim("name", email)
-                .withClaim("picture", "")
-                .withClaim("email_verified", true)
                 .sign(alg);
     }
 
