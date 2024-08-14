@@ -36,10 +36,12 @@ import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
 import org.torusresearch.torusutils.apis.requests.GetMetadataParams;
+import org.web3j.crypto.ECKeyPair;
 
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.Provider;
+import java.security.PublicKey;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -957,17 +959,16 @@ public class TorusUtils {
 
         if (enableOneKey) {
             nonceResult = Utils.getOrSetNonce(this.defaultHost, X, Y, finalServerTimeOffset, null, !isNewKey, null);
-            nonce = (nonceResult.nonce == null) ? BigInteger.ZERO : new BigInteger(nonceResult.nonce);
+            nonce = (nonceResult.nonce == null) ? BigInteger.ZERO : new BigInteger(nonceResult.nonce, 16);
             typeOfUser = (nonceResult.typeOfUser == null) ? TypeOfUser.v1 : nonceResult.typeOfUser;
 
             if (typeOfUser == TypeOfUser.v1) {
                 finalPubKey = oAuthPubKey;
                 GetMetadataResponse metadataResponse = getMetadata(this.defaultHost, new GetMetadataParams(X, Y));
-                nonce = new BigInteger(Utils.isEmpty(metadataResponse .message) ? "0" : metadataResponse .message, 16);
+                nonce = new BigInteger(Utils.isEmpty(metadataResponse.message) ? "0" : metadataResponse.message, 16);
 
                 if (nonce.compareTo(BigInteger.ZERO) > 0) {
-                    PrivateKey noncePrivate = KeyUtils.deserializePrivateKey(Hex.decode(Utils.padLeft(nonce.toString(16), '0', 64)));
-                    String noncePublicKey = Hex.toHexString(KeyUtils.serializePublicKey(KeyUtils.privateToPublic(noncePrivate), false));
+                    String noncePublicKey = "04" + ECKeyPair.create(nonce).getPublicKey().toString(16);
                     finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(finalPubKey, noncePublicKey), false);
                 }
             } else if (typeOfUser == TypeOfUser.v2) {
@@ -986,8 +987,7 @@ public class TorusUtils {
             GetMetadataResponse metadataResponse = getMetadata(this.defaultHost, new GetMetadataParams(X, Y));
             nonce = new BigInteger(Utils.isEmpty(metadataResponse .message) ? "0" : metadataResponse .message, 16);
             if (nonce.compareTo(BigInteger.ZERO) > 0) {
-                PrivateKey noncePrivate = KeyUtils.deserializePrivateKey(Hex.decode(Utils.padLeft(nonce.toString(16), '0', 64)));
-                String noncePublicKey = Hex.toHexString(KeyUtils.serializePublicKey(KeyUtils.privateToPublic(noncePrivate), false));
+                String noncePublicKey = "04" + ECKeyPair.create(nonce).getPublicKey().toString(16);
                 finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(finalPubKey, noncePublicKey), false);
             }
         }

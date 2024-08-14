@@ -97,12 +97,15 @@ public class KeyUtils {
         return params.getN();
     }
 
+    // TODO: Recheck and debug this
+    /*
     public static PublicKey privateToPublic(@NotNull PrivateKey key) throws NoSuchAlgorithmException, InvalidKeySpecException {
         ECPoint pubKeyPoint = params.getG().multiply(new BigInteger(key.getEncoded()));
         KeyFactory kf = KeyFactory.getInstance("ECDH", provider);
         return kf.generatePublic(new ECPublicKeySpec(pubKeyPoint, params));
     }
-
+    */
+    
     public static String generateAddressFromPrivKey(@NotNull String privateKey) throws Exception {
         PrivateKey privKey = deserializePrivateKey(Hex.decode(privateKey));
         return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.getEncoded())));
