@@ -107,8 +107,9 @@ public class SapphireMainnetTest {
     public void shouldKeyAssign() throws Exception {
         String verifier = "tkey-google-sapphire-mainnet";
         String email = JwtUtils.getRandomEmail();
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, email).get();
-        TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), verifier, email, null);
+        String verifierId = email;
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, verifierId).get();
+        TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), verifier, verifierId, null);
         assertNotEquals("", result.finalKeyData.walletAddress);
         assertNotNull(result.finalKeyData.walletAddress);
         assertNotEquals("", result.finalKeyData.walletAddress);
@@ -160,7 +161,7 @@ public class SapphireMainnetTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(HashEnabledVerifier, TORUS_TEST_EMAIL).get();
         String[] torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(torusNodeEndpoints, HashEnabledVerifier, TORUS_TEST_EMAIL, null);
-        //assertTrue(JwtUtils.getTimeDiff(torusPublicKey.getMetadata().getServerTimeOffset()) < 20);
+        assertTrue(torusPublicKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals("0xCb76F4C8cbAe524997787B57efeeD99f6D3BD5AB", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xeBe48BE7693a36Ff562D18c4494AC4496A45EaaC",

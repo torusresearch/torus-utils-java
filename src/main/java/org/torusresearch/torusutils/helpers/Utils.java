@@ -22,21 +22,21 @@ import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.apis.APIUtils;
 import org.torusresearch.torusutils.apis.JsonRPCRequest;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
-import org.torusresearch.torusutils.types.common.KeyLookup.KeyLookupResult;
-import org.torusresearch.torusutils.types.common.KeyLookup.KeyResult;
 import org.torusresearch.torusutils.apis.requests.GetNonceParams;
 import org.torusresearch.torusutils.apis.requests.GetNonceSetDataParams;
 import org.torusresearch.torusutils.apis.requests.GetOrSetKeyParams;
-import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.apis.requests.MetadataParams;
-import org.torusresearch.torusutils.types.common.PubNonce;
+import org.torusresearch.torusutils.apis.requests.SetData;
+import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierKey;
 import org.torusresearch.torusutils.apis.responses.VerifierLookupResponse.VerifierLookupResponse;
-import org.torusresearch.torusutils.apis.requests.SetData;
-import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
 import org.torusresearch.torusutils.types.Share;
+import org.torusresearch.torusutils.types.common.KeyLookup.KeyLookupResult;
+import org.torusresearch.torusutils.types.common.KeyLookup.KeyResult;
+import org.torusresearch.torusutils.types.common.PubNonce;
+import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
@@ -178,6 +178,9 @@ public class Utils {
 
         String postResult = APIUtils.post(legacyMetadataHost + "/get_or_set_nonce", data, true).get();
         JSONObject jsonObject = new JSONObject(postResult);
+        if (jsonObject.has("ipfs")) {
+            jsonObject.remove("ipfs");
+        }
         return gson.fromJson(jsonObject.toString(), GetOrSetNonceResult.class);
     }
 
@@ -297,7 +300,7 @@ public class Utils {
         if (key != null) {
             finalServerTimeOffset = calculateMedian(serverTimeOffsets);
         }
-        return new KeyLookupResult(key,nodeIndexes, finalServerTimeOffset, nonce, errResult);
+        return new KeyLookupResult(key, nodeIndexes, finalServerTimeOffset, nonce, errResult);
     }
 
     public static boolean isEmpty(@Nullable final CharSequence cs) {

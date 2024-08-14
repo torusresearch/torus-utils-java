@@ -71,16 +71,16 @@ public class MainnetTest {
     public void shouldGetPublicAddress() throws Exception {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("google", TORUS_TEST_EMAIL).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), "google", TORUS_TEST_EMAIL, null);
-        assertEquals("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E", publicAddress.getFinalKeyData().getWalletAddress());
+        assertEquals("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A", publicAddress.getFinalKeyData().getWalletAddress());
         assertTrue(publicAddress.getMetadata().getServerTimeOffset() < 20);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A",
                         "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
                         "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1"),
-                new FinalPubKeyData("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E",
-                        "72beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
-                        "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5"),
-                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new FinalPubKeyData("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A",
+                        "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
+                        "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1"),
+                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
     }

@@ -74,16 +74,16 @@ public class CyanTest {
     public void shouldGetPublicAddress() throws Exception {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-cyan", TORUS_TEST_EMAIL).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), "tkey-google-cyan", TORUS_TEST_EMAIL, null);
-        assertEquals("0x3507F0d192a44E436B8a6C32a37d57D022861b1a", publicAddress.getFinalKeyData().getWalletAddress());
+        assertEquals("0xA3767911A84bE6907f26C572bc89426dDdDB2825", publicAddress.getFinalKeyData().getWalletAddress());
         assertTrue(publicAddress.getMetadata().getServerTimeOffset() < 20);
         assertThat(publicAddress).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0xA3767911A84bE6907f26C572bc89426dDdDB2825",
                         "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a",
                         "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1"),
-                new FinalPubKeyData("0x3507F0d192a44E436B8a6C32a37d57D022861b1a",
-                        "8aaadab9530cb157d0b0dfb7b27d1a3aaca45274563c22c92c77ee2191779051",
-                        "d57b89d9f62bb6609d8542c3057943805c8c72f6f27d39781b820f27d7210f12"),
-                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new FinalPubKeyData("0xA3767911A84bE6907f26C572bc89426dDdDB2825",
+                        "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a",
+                        "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1"),
+                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.nodesData.nodeIndexes)
         ));
     }

@@ -78,11 +78,10 @@ public class TorusUtilsTest {
                 new OAuthPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
                         "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
                         "1cf2ea7ac63ee1a34da2330413692ba8538bf7cd6512327343d918e0102a1438"),
-                new FinalPubKeyData("0xf5804f608C233b9cdA5952E46EB86C9037fd6842",
-                        "ed737569a557b50722a8b5c0e4e5ca30cef1ede2f5674a0616b78246bb93dfd0",
-                        "d9e8e6c54c12c4da38c2f0d1047fcf6089036127738f4ef72a83431339586ca9"),
-                new Metadata(new PubNonce("f3f7caefd6540d923c9993113f34226371bd6714a5be6882dedc95a6a929a8",
-                        "f28620603601ce54fa0d70fd691fb72ff52f5bf164bf1a91617922eaad8cc7a5"), BigInteger.ZERO, TypeOfUser.v2, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new FinalPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
+                        "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
+                        "1cf2ea7ac63ee1a34da2330413692ba8538bf7cd6512327343d918e0102a1438"),
+                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.getNodesData().getNodeIndexes())
         ));
         assertTrue(publicAddress.getMetadata().getServerTimeOffset() < 20);
