@@ -8,6 +8,8 @@ import org.torusresearch.torusutils.apis.responses.CommitmentRequestResult;
 import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
 
+import java.util.List;
+
 public class ShareRequestItem {
     public final String verifieridentifier;
     @Nullable

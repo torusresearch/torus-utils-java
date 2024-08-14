@@ -23,7 +23,6 @@ import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
-import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.VerifyParam;
 import org.torusresearch.torusutils.types.common.PubNonce;
@@ -104,7 +103,7 @@ public class OneKeyTest {
 
     @DisplayName("Login test v1")
     @Test
-    public void shouldLoginV1() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldLoginV1() throws Exception {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, null, null);
 
@@ -132,7 +131,7 @@ public class OneKeyTest {
 
     @DisplayName("Login test v2")
     @Test
-    public void shouldLoginV2() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldLoginV2() throws Exception {
         String email = "Jonathan.Nolan@hotmail.com";
         VerifierParams verifierParams = new VerifierParams(email, null, null, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
@@ -161,7 +160,7 @@ public class OneKeyTest {
 
     @DisplayName("Aggregate Login test")
     @Test
-    public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldAggregateLogin() throws Exception {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParam[]{new VerifyParam(idToken, TORUS_TEST_EMAIL)});

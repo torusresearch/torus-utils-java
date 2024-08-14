@@ -24,7 +24,6 @@ import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
-import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.VerifyParam;
 import org.torusresearch.torusutils.types.common.PubNonce;
@@ -162,7 +161,7 @@ public class TorusUtilsTest {
 
     @DisplayName("Login test")
     @Test
-    public void shouldLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldLogin() throws Exception {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, null, null);
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER,
@@ -186,7 +185,7 @@ public class TorusUtilsTest {
 
     @DisplayName("Aggregate Login test")
     @Test
-    public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldAggregateLogin() throws Exception {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParam[]{new VerifyParam(idToken, TORUS_TEST_EMAIL)});

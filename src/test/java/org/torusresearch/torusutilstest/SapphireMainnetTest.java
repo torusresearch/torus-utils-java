@@ -25,7 +25,6 @@ import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
-import org.torusresearch.torusutils.types.TorusException;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.VerifyParam;
 import org.torusresearch.torusutils.types.common.PubNonce;
@@ -257,7 +256,7 @@ public class SapphireMainnetTest {
 
     @DisplayName("should be able to aggregate login")
     @Test
-    public void shouldAggregateLogin() throws ExecutionException, InterruptedException, TorusException {
+    public void shouldAggregateLogin() throws Exception {
         String email = JwtUtils.getRandomEmail();
         String idToken = JwtUtils.generateIdToken(email, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
