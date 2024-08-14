@@ -1,6 +1,7 @@
 package org.torusresearch.torusutils;
 
 import static org.torusresearch.fetchnodedetails.types.Utils.METADATA_MAP;
+import static org.torusresearch.torusutils.helpers.KeyUtils.getOrderOfCurve;
 import static org.torusresearch.torusutils.helpers.Utils.calculateMedian;
 import static org.torusresearch.torusutils.helpers.Utils.getOrSetNonce;
 import static org.torusresearch.torusutils.helpers.Utils.getOrSetSapphireMetadataNonce;
@@ -488,7 +489,7 @@ public class TorusUtils {
         String finalPrivKey = "";
 
         if (typeOfUser == TypeOfUser.v1 || (typeOfUser == TypeOfUser.v2 && metadataNonce.compareTo(BigInteger.ZERO) > 0)) {
-            BigInteger privateKeyWithNonce = new BigInteger(Utils.padLeft(oAuthKey, '0', 64), 16).add(metadataNonce);
+            BigInteger privateKeyWithNonce = privateKey.add(metadataNonce).mod(getOrderOfCurve());
             finalPrivKey = Utils.padLeft(privateKeyWithNonce.toString(16), '0', 64);
         }
 

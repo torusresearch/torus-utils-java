@@ -351,7 +351,7 @@ public class SapphireDevnetTest {
                 verifierParams,
                 jwt,
                 privateKey,
-                new TorusUtilsExtraParams()
+                null
         );
 
         assertEquals(val.getFinalKeyData().getPrivKey(), privateKey);
