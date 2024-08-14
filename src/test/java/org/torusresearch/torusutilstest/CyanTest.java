@@ -162,7 +162,7 @@ public class CyanTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, null, null);
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER,
-                verifierParams, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null).get();
+                verifierParams, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null);
         System.out.println(torusKey.getFinalKeyData().getPrivKey());
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"));
@@ -189,7 +189,7 @@ public class CyanTest {
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParam[]{new VerifyParam(idToken, TORUS_TEST_EMAIL)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
-                verifierParams, hashedIdToken, null).get();
+                verifierParams, hashedIdToken, null);
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals("0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04", torusKey.getoAuthKeyData().getWalletAddress());
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(

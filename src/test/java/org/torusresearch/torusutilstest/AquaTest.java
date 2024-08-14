@@ -46,7 +46,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.concurrent.ExecutionException;
 
 public class AquaTest {
 
@@ -164,11 +163,11 @@ public class AquaTest {
 
     @DisplayName("Login test")
     @Test
-    public void shouldLogin() throws ExecutionException, InterruptedException {
+    public void shouldLogin() throws Exception {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, TORUS_TEST_EMAIL).get();
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, null, null);
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER, verifierParams,
-                JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null).get();
+                JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null);
         System.out.println(torusKey.getFinalKeyData().getPrivKey());
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assert (torusKey.getFinalKeyData().getPrivKey().equals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"));
@@ -195,7 +194,7 @@ public class AquaTest {
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParam[]{new VerifyParam(idToken, TORUS_TEST_EMAIL)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER, verifierParams,
-                hashedIdToken, null).get();
+                hashedIdToken, null);
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", torusKey.getoAuthKeyData().walletAddress);
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
