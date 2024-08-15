@@ -493,7 +493,7 @@ public class TorusUtils {
             finalPrivKey = Utils.padLeft(privateKeyWithNonce.toString(16), '0', 64);
         }
 
-        Boolean isUpgraded = null;
+        Boolean isUpgraded = false;
 
         if (typeOfUser == TypeOfUser.v2) {
             isUpgraded = metadataNonce.equals(BigInteger.ZERO);
