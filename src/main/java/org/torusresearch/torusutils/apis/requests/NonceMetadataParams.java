@@ -30,11 +30,5 @@ public class NonceMetadataParams {
         this.keyType = keyType;
         this.seed = seed;
     }
-
-    // TODO: Check this
-    @Override
-    public int hashCode() {
-        return Objects.hash(namespace, pub_key_X, pub_key_Y, set_data, keyType, signature, encodedData, seed);
-    }
 }
 

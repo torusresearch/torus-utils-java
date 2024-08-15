@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.apis.APIUtils;
-import org.torusresearch.torusutils.apis.JsonRPCRequest;
+import org.torusresearch.torusutils.apis.JsonRPCErrorInfo;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.PubKey;
 import org.torusresearch.torusutils.apis.requests.CommitmentRequestParams;
@@ -517,12 +517,12 @@ public class TorusUtils {
     public TorusPublicKey getNewPublicAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId, Web3AuthNetwork network, @NotNull Boolean enableOneKey) throws Exception {
         KeyLookupResult keyAssignResult = Utils.getPubKeyOrKeyAssign(endpoints, network, verifier, verifierId, this.defaultHost, this.options.serverTimeOffset, extendedVerifierId);
 
-        JsonRPCRequest.JRPCResponse.ErrorInfo errorResult = keyAssignResult.errorResult;
+        JsonRPCErrorInfo errorResult = keyAssignResult.errorResult;
         if (errorResult != null) {
-            if (errorResult.getMessage().toLowerCase().contains("verifier not supported")) {
+            if (errorResult.message.toLowerCase().contains("verifier not supported")) {
                 throw new RuntimeException("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
             } else {
-                throw new RuntimeException(errorResult.getMessage());
+                throw new RuntimeException(errorResult.message);
             }
         }
 

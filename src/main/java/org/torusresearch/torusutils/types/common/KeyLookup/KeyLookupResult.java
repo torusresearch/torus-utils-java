@@ -2,7 +2,7 @@ package org.torusresearch.torusutils.types.common.KeyLookup;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.torusresearch.torusutils.apis.JsonRPCRequest;
+import org.torusresearch.torusutils.apis.JsonRPCErrorInfo;
 import org.torusresearch.torusutils.apis.responses.GetOrSetNonceResult;
 
 import java.util.List;
@@ -17,9 +17,9 @@ public class KeyLookupResult {
     public final GetOrSetNonceResult nonceResult;
 
     @Nullable
-    public final JsonRPCRequest.JRPCResponse.ErrorInfo errorResult;
+    public final JsonRPCErrorInfo errorResult;
 
-    public KeyLookupResult(@Nullable KeyResult keyResult, @NotNull List<Integer> nodeIndexes, @NotNull Integer server_time_offset, @Nullable GetOrSetNonceResult nonceResult, @Nullable JsonRPCRequest.JRPCResponse.ErrorInfo errorResult) {
+    public KeyLookupResult(@Nullable KeyResult keyResult, @NotNull List<Integer> nodeIndexes, @NotNull Integer server_time_offset, @Nullable GetOrSetNonceResult nonceResult, @Nullable JsonRPCErrorInfo errorResult) {
         this.keyResult = keyResult;
         this.nodeIndexes = nodeIndexes;
         this.server_time_offset = server_time_offset;

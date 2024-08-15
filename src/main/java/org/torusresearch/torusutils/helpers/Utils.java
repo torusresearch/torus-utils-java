@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.apis.APIUtils;
-import org.torusresearch.torusutils.apis.JsonRPCRequest;
+import org.torusresearch.torusutils.apis.JsonRPCErrorInfo;
 import org.torusresearch.torusutils.apis.JsonRPCResponse;
 import org.torusresearch.torusutils.apis.requests.GetNonceParams;
 import org.torusresearch.torusutils.apis.requests.GetNonceSetDataParams;
@@ -218,7 +218,7 @@ public class Utils {
 
         ArrayList<JsonRPCResponse<VerifierLookupResponse>> collected = new ArrayList<>();
 
-        JsonRPCRequest.JRPCResponse.ErrorInfo errResult = null;
+        JsonRPCErrorInfo errResult = null;
         KeyResult key = null;
         List<JsonRPCResponse<VerifierLookupResponse>> lookupPubKeys = null;
         GetOrSetNonceResult nonce = null;
@@ -232,7 +232,7 @@ public class Utils {
                 JsonRPCResponse<VerifierLookupResponse> response = json.fromJson(result, JsonRPCResponse.class);
                 collected.add(response);
                 lookupPubKeys = collected.stream().filter(item -> item.getError() == null && item.getTypedResult(VerifierLookupResponse.class) != null).collect(Collectors.toList());
-                errResult = (JsonRPCRequest.JRPCResponse.ErrorInfo) Utils.thresholdSame(collected.stream().filter(item -> item.getError() != null).toArray(), threshold);
+                errResult = (JsonRPCErrorInfo) Utils.thresholdSame(collected.stream().filter(item -> item.getError() != null).toArray(), threshold);
                 ArrayList<KeyResult> normalizedKeys = new ArrayList<>();
                 for (JsonRPCResponse<VerifierLookupResponse> item : lookupPubKeys) {
                     VerifierLookupResponse vlr = item.getTypedResult(VerifierLookupResponse.class);
