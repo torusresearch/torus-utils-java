@@ -147,7 +147,6 @@ public class CyanTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-cyan", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), "tkey-google-cyan", email, null);
-        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
         assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
         assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
         assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
@@ -162,7 +161,6 @@ public class CyanTest {
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, null, null);
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER,
                 verifierParams, JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null);
-        System.out.println(torusKey.getFinalKeyData().getPrivKey());
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assert ((torusKey.getFinalKeyData().getPrivKey() != null) && torusKey.getFinalKeyData().getPrivKey().equals("5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(

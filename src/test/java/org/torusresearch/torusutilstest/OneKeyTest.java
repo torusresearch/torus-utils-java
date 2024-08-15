@@ -91,7 +91,6 @@ public class OneKeyTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER, email, null);
-        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
         assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
         assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
         assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
@@ -136,7 +135,6 @@ public class OneKeyTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER,
                 verifierParams, JwtUtils.generateIdToken(email, algorithmRs), null);
-        System.out.println(torusKey.getFinalKeyData().getPrivKey() + " priv key " + torusKey.getFinalKeyData().getWalletAddress() + " nonce " + torusKey.getMetadata().getNonce());
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals(torusKey.getFinalKeyData().getPrivKey(), "9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075");
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(

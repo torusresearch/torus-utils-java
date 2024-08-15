@@ -169,7 +169,6 @@ public class SapphireDevnetTest {
         String email = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_VERIFIER, email, null);
-        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
         assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
         assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
     }

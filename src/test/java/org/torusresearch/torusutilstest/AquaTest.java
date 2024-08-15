@@ -149,7 +149,6 @@ public class AquaTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails("tkey-google-aqua", email).get();
         TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
                 "tkey-google-aqua", email, "");
-        System.out.println(email + " -> " + publicAddress.getFinalKeyData().getWalletAddress());
         assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
         assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
         assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
@@ -164,7 +163,6 @@ public class AquaTest {
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, null, null);
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER, verifierParams,
                 JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null);
-        System.out.println(torusKey.getFinalKeyData().getPrivKey());
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assert ((torusKey.getFinalKeyData().getPrivKey() != null) && torusKey.getFinalKeyData().getPrivKey().equals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
