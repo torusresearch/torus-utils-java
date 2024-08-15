@@ -141,16 +141,17 @@ public class Utils {
     public static MetadataParams generateMetadataParams(@NotNull Integer serverTimeOffset, @NotNull String message, @NotNull String privateKey, @NotNull String X, @NotNull String Y, @Nullable TorusKeyType keyType) throws Exception {
         int timeStamp = serverTimeOffset + (int) (System.currentTimeMillis() / 1000L);
         SetData setData = new SetData(message, String.valueOf(timeStamp));
-        PrivateKey key = KeyUtils.deserializePrivateKey(Hex.decode(privateKey));
 
         Gson gson = new Gson();
         String setDataString = gson.toJson(setData);
         ECParameterSpec params = ECNamedCurveTable.getParameterSpec("secp256k1");
-        ECDomainParameters domainParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH(), params.getSeed());
-        ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(new BigInteger(KeyUtils.serializePrivateKey(key)), domainParams);
+        BigInteger key = new BigInteger(privateKey, 16);
         byte[] hashedData = Hash.sha3(setDataString.getBytes(StandardCharsets.UTF_8));
+        // Sign the hashed data using ECDSA with the private key
         SecureRandom random = new SecureRandom();
         ECDSASigner signer = new ECDSASigner();
+        ECDomainParameters domainParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH(), params.getSeed());
+        ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(key, domainParams);
         signer.init(true, new ParametersWithRandom(privKeyParams, random));
         BigInteger[] signature = signer.generateSignature(hashedData);
 
