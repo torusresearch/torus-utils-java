@@ -163,14 +163,14 @@ public class MainnetTest {
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
-                        "ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
+                        "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
                         "0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
                 new OAuthKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
                         "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
                         "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
@@ -180,7 +180,7 @@ public class MainnetTest {
     public void shouldAggregateLogin() throws Exception {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
-        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
+        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(TORUS_TEST_EMAIL, idToken)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null);
@@ -196,7 +196,7 @@ public class MainnetTest {
                         "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
                         "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }

@@ -186,7 +186,7 @@ public class CyanTest {
     public void shouldAggregateLogin() throws Exception {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
-        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
+        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(TORUS_TEST_EMAIL, idToken)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null);
@@ -202,7 +202,7 @@ public class CyanTest {
                         "e557a5ee879632727f5979d6b9cea69d87e3dab54a8c1b6685d86dfbfcd785dd",
                         "45a5b62c4ff5490baa75d33bf4f03ba6c5b0095678b0f4055312eef7b780b7bf"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.metadata.getServerTimeOffset()),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.metadata.getServerTimeOffset()),
                 new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }

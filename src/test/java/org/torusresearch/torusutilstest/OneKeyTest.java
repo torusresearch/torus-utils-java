@@ -152,7 +152,7 @@ public class OneKeyTest {
                 new Metadata(new PubNonce(
                         "f494a5bf06a2f0550aafb6aabeb495bd6ea3ef92eaa736819b5b0ad6bfbf1aab",
                         "35df3d3a14f88cbba0cfd092a1e5a0e4e725ba52a8d45719614555542d701f18"
-                ), new BigInteger("aa0dcf552fb5be7a5c52b783c1b61c1aca7113872e172a5818994715c8a5497c", 16), TypeOfUser.v2, false, torusKey.getMetadata().getServerTimeOffset()),
+                ), new BigInteger("aa0dcf552fb5be7a5c52b783c1b61c1aca7113872e172a5818994715c8a5497c", 16), TypeOfUser.v2, null, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
@@ -162,7 +162,7 @@ public class OneKeyTest {
     public void shouldAggregateLogin() throws Exception {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
-        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(idToken, TORUS_TEST_EMAIL)});
+        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(TORUS_TEST_EMAIL, idToken)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null);
@@ -181,7 +181,7 @@ public class OneKeyTest {
                 new Metadata(new PubNonce(
                         "376c0ac5e15686633061cf5833dd040365f91377686d7ab5338c5202bd963a2f",
                         "794d7edb6a5ec0307dd40789274b377f37f293b0410a6cbd303db309536099b7"
-                ), new BigInteger("d3d455dcab49dc700319244e9e187f443596f2acbce238cff1c215d8809fa1f9", 16), TypeOfUser.v2, false, torusKey.getMetadata().getServerTimeOffset()),
+                ), new BigInteger("d3d455dcab49dc700319244e9e187f443596f2acbce238cff1c215d8809fa1f9", 16), TypeOfUser.v2, null, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
