@@ -8,7 +8,7 @@ import org.torusresearch.torusutils.helpers.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class kCombinationsTest {
+public class TestKCombinations {
     @Test
     public void testKCombinations() {
         List<Integer> set = new ArrayList<>();

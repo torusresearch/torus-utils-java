@@ -10,7 +10,7 @@ import org.torusresearch.torusutils.types.Polynomial;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-public class LagrangeInterpolationTest {
+public class TestLagrangeInterpolation {
     @Test
     public void testLagrangeInterpolation() {
         ArrayList<Point> points = new ArrayList<>();

@@ -12,7 +12,7 @@ import org.torusresearch.torusutils.types.common.ecies.Ecies;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 
-public class AES256CBC {
+public class TestAES256CBC {
     @Test
     public void testECDH() throws Exception {
         KeyPair secret = KeyUtils.generateKeyPair();
