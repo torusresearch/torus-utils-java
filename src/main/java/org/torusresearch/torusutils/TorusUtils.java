@@ -160,7 +160,7 @@ public class TorusUtils {
     ) throws Exception {
         int threshold = (endpoints.length / 2) + 1;
 
-        String ignoredResult = APIUtils.get(legacyMetadataHost, new Header[]{new Header("x-api-key", apiKey), new Header("Origin", verifier), new Header("verifier", verifier), new Header("verifierid", verifierParams.verifier_id), new Header("network", network.name().toLowerCase()),
+        APIUtils.get(allowHost, new Header[]{new Header("x-api-key", apiKey), new Header("Origin", verifier), new Header("verifier", verifier), new Header("verifierid", verifierParams.verifier_id), new Header("network", network.name().toLowerCase()),
                 new Header("clientid", clientId), new Header("enablegating", "true")}, true).get();
 
         KeyPair sessionAuthKey = KeyUtils.generateKeyPair();
@@ -172,14 +172,14 @@ public class TorusUtils {
         String tokenCommitment = Hash.sha3String(idToken);
 
         boolean isImportShareReq = false;
-        int importShareCount = 0;
+        int importedShareCount = 0;
 
         if (importedShares != null && importedShares.length > 0) {
             if (importedShares.length != endpoints.length) {
                 throw new Error("Invalid imported shares length");
             }
             isImportShareReq = true;
-            importShareCount = importedShares.length;
+            importedShareCount = importedShares.length;
         }
 
         int minRequiredCommitmments = (endpoints.length * 3 / 4) + 1;
@@ -217,7 +217,7 @@ public class TorusUtils {
             }
         }
 
-        if ((importedShares != null) && (importedShares.length > 0) && (nodeSigs.size() != endpoints.length)) {
+        if (importedShareCount > 0 && (nodeSigs.size() != endpoints.length)) {
             throw TorusUtilError.COMMITMENT_REQUEST_FAILED;
         }
 

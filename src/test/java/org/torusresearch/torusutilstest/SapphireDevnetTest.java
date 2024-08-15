@@ -343,8 +343,8 @@ public class SapphireDevnetTest {
         String jwt = JwtUtils.generateIdToken(fakeEmail, algorithmRs);
         String privateKey = Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate()));
         VerifierParams verifierParams = new VerifierParams(fakeEmail, null, null, null);
-
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, fakeEmail).get();
+
         TorusKey val = torusUtils.importPrivateKey(
                 nodeDetails.getTorusNodeSSSEndpoints(),
                 nodeDetails.getTorusIndexes(),
