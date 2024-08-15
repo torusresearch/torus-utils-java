@@ -3,7 +3,7 @@ package org.torusresearch.torusutilstest.helpers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.torusresearch.torusutils.helpers.Utils;
+import org.torusresearch.torusutils.helpers.Common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ public class TestKCombinations {
     @Test
     public void testKCombinations() {
         List<Integer> set = new ArrayList<>();
-        List<List<Integer>> allCombis = Utils.kCombinations(set, 0);
+        List<List<Integer>> allCombis = Common.kCombinations(set, 0);
         assertEquals(allCombis.size(), 0);
 
         set.add(0);
@@ -23,20 +23,20 @@ public class TestKCombinations {
         set.add(5);
 
 
-        allCombis = Utils.kCombinations(set, 10);
+        allCombis = Common.kCombinations(set, 10);
         assertEquals(allCombis.size(), 0);
 
-        allCombis = Utils.kCombinations(set, 6);
+        allCombis = Common.kCombinations(set, 6);
         assertEquals(allCombis.size(), 1);
 
-        allCombis = Utils.kCombinations(set, 1);
+        allCombis = Common.kCombinations(set, 1);
         assertEquals(allCombis.size(), 6);
 
-        allCombis = Utils.kCombinations(set, 2);
+        allCombis = Common.kCombinations(set, 2);
         assertEquals(allCombis.size(), 15);
 
         set.remove(0);
-        allCombis = Utils.kCombinations(set, 3);
+        allCombis = Common.kCombinations(set, 3);
         assertEquals(allCombis.size(), 10);
     }
 }

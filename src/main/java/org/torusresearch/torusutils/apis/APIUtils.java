@@ -3,7 +3,7 @@ package org.torusresearch.torusutils.apis;
 import com.google.gson.Gson;
 
 import org.jetbrains.annotations.NotNull;
-import org.torusresearch.torusutils.helpers.Utils;
+import org.torusresearch.torusutils.helpers.Common;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -94,7 +94,7 @@ public class APIUtils {
         for (Header header : headers) {
             requestBuilder.addHeader(header.name.utf8(), header.value.utf8());
         }
-        if (useApiKey && !Utils.isEmpty(apiKey))
+        if (useApiKey && !Common.isEmpty(apiKey))
             requestBuilder.addHeader("x-api-key", apiKey);
         Request request = requestBuilder.build();
         CompletableFuture<String> future = new CompletableFuture<>();
@@ -107,7 +107,7 @@ public class APIUtils {
         for (Header header : headers) {
             requestBuilder.addHeader(header.name.utf8(), header.value.utf8());
         }
-        if (useApiKey && !Utils.isEmpty(apiKey))
+        if (useApiKey && !Common.isEmpty(apiKey))
             requestBuilder.addHeader("x-api-key", apiKey);
         Request request = requestBuilder.build();
         CompletableFuture<String> future = new CompletableFuture<>();

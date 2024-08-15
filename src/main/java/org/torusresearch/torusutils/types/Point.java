@@ -5,8 +5,8 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
+import org.torusresearch.torusutils.helpers.Common;
 import org.torusresearch.torusutils.helpers.KeyUtils;
-import org.torusresearch.torusutils.helpers.Utils;
 
 import java.math.BigInteger;
 
@@ -40,8 +40,8 @@ public class Point {
 
     @SuppressWarnings("unused")
     public byte[] encode(@NotNull String enc) throws Exception {
-        String xPadded = Utils.padLeft(this.x.toString(16),'0', 64);
-        String yPadded = Utils.padLeft(this.y.toString(16),'0', 64);
+        String xPadded = Common.padLeft(this.x.toString(16),'0', 64);
+        String yPadded = Common.padLeft(this.y.toString(16),'0', 64);
         switch (enc) {
             case "arr":
                 return Hex.decode("04"+ xPadded + yPadded);

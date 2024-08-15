@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
 import org.torusresearch.torusutils.helpers.KeyUtils;
+import org.torusresearch.torusutils.helpers.MetadataUtils;
 import org.torusresearch.torusutils.helpers.encryption.Encryption;
 import org.torusresearch.torusutils.types.common.ecies.Ecies;
 
@@ -29,7 +30,7 @@ public class TestAES256CBC {
         String hexEncoded = Hex.toHexString(payload.getBytes());
         Ecies encrypted = Encryption.encrypt(KeyUtils.serializePublicKey(keypair.getPublic(), false), hexEncoded);
         String decrypted = new String(Encryption.decrypt(Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())), encrypted), StandardCharsets.UTF_8);
-        String decryptedNodeData = Encryption.decryptNodeData(encrypted.omitCipherText(), encrypted.ciphertext, Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())));
+        String decryptedNodeData = MetadataUtils.decryptNodeData(encrypted.omitCipherText(), encrypted.ciphertext, Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())));
 
         assertEquals(payload, decrypted);
         assertEquals(hexEncoded, decryptedNodeData);

@@ -1,6 +1,5 @@
 package org.torusresearch.torusutils.helpers;
 
-import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
 import static org.torusresearch.torusutils.helpers.KeyUtils.getOrderOfCurve;
 
 import org.bouncycastle.util.encoders.Hex;
@@ -14,21 +13,17 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import io.reactivex.annotations.Nullable;
 
 public class Lagrange {
 
     public static BigInteger generatePrivateExcludingIndexes(@NotNull List<BigInteger> shareIndexes) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
-        BigInteger key = new BigInteger(Utils.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate())), '0', 64), 16);
+        BigInteger key = new BigInteger(Common.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate())), '0', 64), 16);
 
         if (shareIndexes.contains(key)) {
             return generatePrivateExcludingIndexes(shareIndexes);
@@ -89,6 +84,12 @@ public class Lagrange {
         Point[] pointsClone = Arrays.copyOf(innerPoints, innerPoints.length);
         Arrays.sort(pointsClone, Comparator.comparing(Point::getX));
         return pointsClone;
+    }
+    @SuppressWarnings("unused")
+    private static List<Point> pointSort(@NotNull List<Point> innerPoints) {
+        List<Point> pointArrClone = new ArrayList<>(innerPoints);
+        pointArrClone.sort(Comparator.comparing(Point::getX));
+        return pointArrClone;
     }
 
     public static Polynomial lagrange(@NotNull Point[] unsortedPoints) {
@@ -176,7 +177,7 @@ public class Lagrange {
 
         // Add deterministic shares to points map
         for (Share share : deterministicShares) {
-            points.put(Utils.padLeft(share.getShareIndex().toString(16), '0', 64), new Point(share.getShareIndex(), share.getShare()));
+            points.put(Common.padLeft(share.getShareIndex().toString(16), '0', 64), new Point(share.getShareIndex(), share.getShare()));
         }
 
         // Calculate remaining shares to fill the polynomial
@@ -187,12 +188,12 @@ public class Lagrange {
             BigInteger shareIndex = generatePrivateExcludingIndexes(excludeList);
 
             // Ensure unique share index
-            while (points.containsKey(Utils.padLeft(shareIndex.toString(16),'0', 64))) {
+            while (points.containsKey(Common.padLeft(shareIndex.toString(16),'0', 64))) {
                 shareIndex = generatePrivateExcludingIndexes(excludeList);
             }
 
-            String serializedKey = Utils.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate())),'0',64);
-            points.put(Utils.padLeft(shareIndex.toString(16),'0',64),
+            String serializedKey = Common.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate())),'0',64);
+            points.put(Common.padLeft(shareIndex.toString(16),'0',64),
                     new Point(shareIndex, new BigInteger(serializedKey, 16)));
         }
 

@@ -1,14 +1,8 @@
 package org.torusresearch.torusutils.helpers;
-
-import static org.torusresearch.torusutils.helpers.Utils.addLeading0sForLength64;
-import static org.torusresearch.torusutils.helpers.Utils.padLeft;
-
 import com.google.gson.Gson;
-
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
-import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.params.ParametersWithRandom;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -45,6 +39,7 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
@@ -91,7 +86,7 @@ public class KeyUtils {
 
     private static String randomNonce() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
         KeyPair keyPair = generateKeyPair();
-        return Utils.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(keyPair.getPrivate())), '0', 64);
+        return Common.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(keyPair.getPrivate())), '0', 64);
     }
 
     public static BigInteger getOrderOfCurve() {
@@ -102,6 +97,12 @@ public class KeyUtils {
         return  "04" + ECKeyPair.create(key).getPublicKey().toString(16);
     }
 
+    @SuppressWarnings("unused")
+    public static BigInteger generatePrivate() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        return Keys.createEcKeyPair().getPrivateKey();
+    }
+
+    @SuppressWarnings("unused")
     public static String generateAddressFromPrivKey(@NotNull String privateKey) throws Exception {
         PrivateKey privKey = deserializePrivateKey(Hex.decode(privateKey));
         return Keys.toChecksumAddress(Keys.getAddress(ECKeyPair.create(privKey.getEncoded())));
@@ -115,11 +116,11 @@ public class KeyUtils {
     public static String[] getPublicKeyCoords(@NotNull String pubKey) throws TorusUtilError {
         String publicKeyUnprefixed = pubKey;
         if (publicKeyUnprefixed.length() > 128) {
-            publicKeyUnprefixed = Utils.strip04Prefix(publicKeyUnprefixed);
+            publicKeyUnprefixed = Common.strip04Prefix(publicKeyUnprefixed);
         }
 
         if (publicKeyUnprefixed.length() <= 128) {
-            Utils.padLeft(publicKeyUnprefixed, '0', 128);
+            Common.padLeft(publicKeyUnprefixed, '0', 128);
         } else {
             throw new TorusUtilError("Invalid public key size");
         }
@@ -131,8 +132,8 @@ public class KeyUtils {
     }
 
     public static String getPublicKeyFromCoords(@NotNull String pubKeyX, @NotNull String pubKeyY, boolean prefixed) {
-        String X = addLeading0sForLength64(pubKeyX);
-        String Y = addLeading0sForLength64(pubKeyY);
+        String X = Common.padLeft(pubKeyX, '0', 64);
+        String Y = Common.padLeft(pubKeyY,'0', 64);
 
         return prefixed ? "04" + X + Y : X + Y;
     }
@@ -169,12 +170,12 @@ public class KeyUtils {
         BigInteger oAuthKey = scalar.subtract(randomNonce).mod(getOrderOfCurve());
 
         return new PrivateKeyData(
-                padLeft(oAuthKey.toString(16), '0', 64),
+                Common.padLeft(oAuthKey.toString(16), '0', 64),
                 KeyUtils.privateToPublic(oAuthKey),
-                padLeft(randomNonce.toString(16), '0', 64),
-                padLeft(oAuthKey.toString(16), '0', 64),
+                Common.padLeft(randomNonce.toString(16), '0', 64),
+                Common.padLeft(oAuthKey.toString(16), '0', 64),
                 KeyUtils.privateToPublic(oAuthKey),
-                padLeft(scalar.toString(16), '0', 64),
+                Common.padLeft(scalar.toString(16), '0', 64),
                 KeyUtils.privateToPublic(scalar)
         );
     }
@@ -189,7 +190,7 @@ public class KeyUtils {
         String derivedPubKeyY = derivedPubKeyString.substring(66);
 
         // Create SetNonceData object with operation and timestamp
-        SetNonceData setNonceData = new SetNonceData(operation, (nonce != null) ? Utils.padLeft(nonce.toString(16), '0', 64) : null, null, timestamp.toString(16));
+        SetNonceData setNonceData = new SetNonceData(operation, (nonce != null) ? Common.padLeft(nonce.toString(16), '0', 64) : null, null, timestamp.toString(16));
 
         // Convert SetNonceData object to JSON string
         Gson gson = new Gson();
@@ -207,9 +208,9 @@ public class KeyUtils {
         BigInteger[] signature = signer.generateSignature(hashedData);
 
         // Format the signature into a padded hexadecimal string
-        String sig = Utils.padLeft(signature[0].toString(16), '0', 64) +
-                Utils.padLeft(signature[1].toString(16), '0', 64) +
-                Utils.padLeft("", '0', 2); // Assuming padding to ensure consistent length
+        String sig = Common.padLeft(signature[0].toString(16), '0', 64) +
+                Common.padLeft(signature[1].toString(16), '0', 64) +
+                Common.padLeft("", '0', 2); // Assuming padding to ensure consistent length
 
         // Convert the hexadecimal signature string to bytes
         byte[] sigBytes = Hex.decode(sig);
@@ -243,7 +244,7 @@ public class KeyUtils {
             String indexHex = String.format("%064x", nodeIndexes.get(i));
             Share shareInfo = shares.get(indexHex);
             String nodePub = KeyUtils.getPublicKeyFromCoords(nodePubKeys.get(i).getX(), nodePubKeys.get(i).getY(), true);
-            String share = Utils.padLeft(shareInfo.getShare().toString(16), '0', 64);
+            String share = Common.padLeft(shareInfo.getShare().toString(16), '0', 64);
             Ecies encryptedMsg = Encryption.encrypt(Hex.decode(nodePub), share);
             encShares.add(encryptedMsg);
         }

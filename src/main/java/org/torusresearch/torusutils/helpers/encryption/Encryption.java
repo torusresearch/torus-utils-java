@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.hashing.SHA512;
 import org.torusresearch.torusutils.types.common.ecies.Ecies;
-import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
@@ -79,16 +78,5 @@ public class Encryption {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", provider);
         cipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);
         return cipher.doFinal(cipherText);
-    }
-
-
-    public static String decryptNodeData(@NotNull EciesHexOmitCipherText eciesData, @NotNull String ciphertextHex, @NotNull String privKey) throws Exception {
-        Ecies eciesOpts = new Ecies(
-                eciesData.iv,
-                eciesData.ephemPublicKey,
-                ciphertextHex,
-                eciesData.mac
-        );
-        return Hex.toHexString(decrypt(privKey, eciesOpts));
     }
 }

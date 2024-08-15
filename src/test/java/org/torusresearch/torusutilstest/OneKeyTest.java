@@ -2,6 +2,7 @@ package org.torusresearch.torusutilstest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -97,7 +98,7 @@ public class OneKeyTest {
         assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
         assertNotEquals(publicAddress.getoAuthKeyData().getWalletAddress(), "");
         assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v2);
-        assertEquals(publicAddress.getMetadata().isUpgraded(), false);
+        assertFalse(publicAddress.getMetadata().isUpgraded());
     }
 
     @DisplayName("Login test v1")

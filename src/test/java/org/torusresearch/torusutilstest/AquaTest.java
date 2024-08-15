@@ -167,7 +167,7 @@ public class AquaTest {
                 JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs), null);
         System.out.println(torusKey.getFinalKeyData().getPrivKey());
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
-        assert (torusKey.getFinalKeyData().getPrivKey().equals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"));
+        assert ((torusKey.getFinalKeyData().getPrivKey() != null) && torusKey.getFinalKeyData().getPrivKey().equals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"));
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x9EBE51e49d8e201b40cAA4405f5E0B86d9D27195",
                         "c7bcc239f0957bb05bda94757eb4a5f648339424b22435da5cf7a0f2b2323664",
