@@ -67,14 +67,14 @@ public class Encryption {
     }
 
     public static byte[] decrypt(@NotNull String privateKeyHex, @NotNull Ecies ecies) throws Exception {
-        byte[] shared = ecdh(Hex.decode(privateKeyHex), Hex.decode(ecies.getEphemPublicKey()));
+        byte[] shared = ecdh(Hex.decode(privateKeyHex), Hex.decode(ecies.ephemPublicKey));
         byte[] sha512hash = SHA512.digest(shared);
         SecretKeySpec aesKey = new SecretKeySpec(Arrays.copyOf(sha512hash, 32), "AES");
 
-        byte[] iv = Hex.decode(ecies.getIv());
+        byte[] iv = Hex.decode(ecies.iv);
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
-        byte[] cipherText = Hex.decode(ecies.getCiphertext());
+        byte[] cipherText = Hex.decode(ecies.ciphertext);
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", provider);
         cipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);

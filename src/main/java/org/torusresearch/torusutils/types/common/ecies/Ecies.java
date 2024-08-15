@@ -4,11 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class Ecies {
 
-    private final String iv;
-    private final String ephemPublicKey;
-    private final String mac;
-    private final String mode;
-    private final String ciphertext;
+    public final String iv;
+    public final String ephemPublicKey;
+    public final String mac;
+    public final String mode;
+    public final String ciphertext;
 
     @SuppressWarnings("unused")
     public Ecies(@NotNull String iv, @NotNull String ephemPublicKey, @NotNull String ciphertext, @NotNull String mac, @NotNull String mode) {
@@ -25,26 +25,6 @@ public class Ecies {
         this.mac = mac;
         this.ciphertext = ciphertext;
         this.mode = "AES256";
-    }
-
-    public String getIv() {
-        return iv;
-    }
-
-    public String getEphemPublicKey() {
-        return ephemPublicKey;
-    }
-
-    public String getMac() {
-        return mac;
-    }
-
-    public String getMode() {
-        return mode;
-    }
-
-    public String getCiphertext() {
-        return ciphertext;
     }
 
     public EciesHexOmitCipherText omitCipherText() {

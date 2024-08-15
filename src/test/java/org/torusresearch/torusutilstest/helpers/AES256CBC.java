@@ -29,7 +29,7 @@ public class AES256CBC {
         String hexEncoded = Hex.toHexString(payload.getBytes());
         Ecies encrypted = Encryption.encrypt(KeyUtils.serializePublicKey(keypair.getPublic(), false), hexEncoded);
         String decrypted = new String(Encryption.decrypt(Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())), encrypted), StandardCharsets.UTF_8);
-        String decryptedNodeData = Encryption.decryptNodeData(encrypted.omitCipherText(), encrypted.getCiphertext(), Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())));
+        String decryptedNodeData = Encryption.decryptNodeData(encrypted.omitCipherText(), encrypted.ciphertext, Hex.toHexString(KeyUtils.serializePrivateKey(keypair.getPrivate())));
 
         assertEquals(payload, decrypted);
         assertEquals(hexEncoded, decryptedNodeData);

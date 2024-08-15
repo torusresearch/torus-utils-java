@@ -272,8 +272,8 @@ public class KeyUtils {
 
             ImportedShare importShare = new ImportedShare(
                     oAuthPub[0], oAuthPub[1], finalPoint,
-                    signingPub[0], signingPub[1], encrypted.getCiphertext(),
-                    new EciesHexOmitCipherText(encrypted.getIv(), encrypted.getEphemPublicKey(), encrypted.getMac(), "AES256"),
+                    signingPub[0], signingPub[1], encrypted.ciphertext,
+                    new EciesHexOmitCipherText(encrypted.iv, encrypted.ephemPublicKey, encrypted.mac, "AES256"),
                     Integer.parseInt(nodeIndexes.get(i).toString(16), 16), keyType,
                     nonceParams.encodedData, nonceParams.signature);
 
