@@ -79,7 +79,7 @@ public class TorusUtilsTest {
                 new FinalPubKeyData("0x9bcBAde70546c0796c00323CD1b97fa0a425A506",
                         "894f633b3734ddbf08867816bc55da60803c1e7c2a38b148b7fb2a84160a1bb5",
                         "1cf2ea7ac63ee1a34da2330413692ba8538bf7cd6512327343d918e0102a1438"),
-                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
                 new NodesData(publicAddress.getNodesData().getNodeIndexes())
         ));
         assertTrue(publicAddress.getMetadata().getServerTimeOffset() < 20);
@@ -103,7 +103,7 @@ public class TorusUtilsTest {
                 new NodesData(key.getNodesData().getNodeIndexes())
         ));
         assertEquals("0xf5804f608C233b9cdA5952E46EB86C9037fd6842", key.getFinalKeyData().getWalletAddress());
-        assertEquals(TypeOfUser.v2, key.getMetadata().typeOfUser);
+        assertEquals(TypeOfUser.v2, key.getMetadata().getTypeOfUser());
 
         String v2Verifier = "tkey-google-lrc";
         // 1/1 user
@@ -118,8 +118,8 @@ public class TorusUtilsTest {
                         "a605e52b65d3635f89654519dfa7e31f7b45f206ef4189866ad0c2240d40f97f"),
                 new Metadata(new PubNonce("ad121b67fa550da814bbbd54ec7070705d058c941e04c03e07967b07b2f90345",
                         "bfe2395b177a72ebb836aaf24cedff2f14cd9ed49047990f5cdb99e4981b5753"),
-                        BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().serverTimeOffset),
-                new NodesData(key2.getNodesData().nodeIndexes)
+                        BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().getServerTimeOffset()),
+                new NodesData(key2.getNodesData().getNodeIndexes())
         ));
         assertEquals("0xE91200d82029603d73d6E307DbCbd9A7D0129d8D", key2.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
@@ -136,8 +136,8 @@ public class TorusUtilsTest {
                         "1c47f5faccec6cf57c36919f6f0941fe3d8d65033cf2cc78f209304386044222"),
                 new Metadata(new PubNonce("4f86b0e69992d1551f1b16ceb0909453dbe17b9422b030ee6c5471c2e16b65d0",
                         "640384f3d39debb04c4e9fe5a5ec6a1b494b0ad66d00ac9be6f166f21d116ca4"),
-                        BigInteger.ZERO, TypeOfUser.v2, true, key3.getMetadata().serverTimeOffset),
-                new NodesData(key3.getNodesData().nodeIndexes)
+                        BigInteger.ZERO, TypeOfUser.v2, true, key3.getMetadata().getServerTimeOffset()),
+                new NodesData(key3.getNodesData().getNodeIndexes())
         ));
         assertEquals("0x1016DA7c47A04C76036637Ea02AcF1d29c64a456", key3.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
@@ -178,7 +178,7 @@ public class TorusUtilsTest {
                         "9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.nodeIndexes)
+                new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
 
@@ -204,7 +204,7 @@ public class TorusUtilsTest {
                         "3cbfa57d702327ec1af505adc88ad577804a1a7780bc013ed9e714c547fb5cb1"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.nodeIndexes)
+                new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
 }

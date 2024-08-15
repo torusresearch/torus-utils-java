@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public class OAuthPubKeyData {
 
-    public String walletAddress;
-    public String x;
-    public String y;
+    private final String walletAddress;
+    private final String x;
+    private final String y;
 
     public OAuthPubKeyData(String walletAddress, String x, String y) {
         this.walletAddress = walletAddress;

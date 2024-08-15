@@ -81,8 +81,8 @@ public class AquaTest {
                 new FinalPubKeyData("0xDfA967285AC699A70DA340F60d00DB19A272639d",
                         "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d",
                         "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c"),
-                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().serverTimeOffset),
-                new NodesData(publicAddress.nodesData.nodeIndexes)
+                new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new NodesData(publicAddress.nodesData.getNodeIndexes())
         ));
     }
 
@@ -100,8 +100,8 @@ public class AquaTest {
                 new FinalPubKeyData("0x79F06350eF34Aeed4BE68e26954D405D573f1438",
                         "99df45abc8e6ee03d2f94df33be79e939eadfbed20c6b88492782fdc3ef1dfd3",
                         "12bf3e54599a177fdb88f8b22419df7ddf1622e1d2344301edbe090890a72b16"),
-                new Metadata(key.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().serverTimeOffset),
-                new NodesData(key.nodesData.nodeIndexes)
+                new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().getServerTimeOffset()),
+                new NodesData(key.nodesData.getNodeIndexes())
         ));
 
         String v2Verifier = "tkey-google-aqua";
@@ -121,8 +121,8 @@ public class AquaTest {
                         "c2f7871f61ee71b4486ac9fb40ec759099800e737139dc5dfaaaed8c9d77c3c1"),
                         BigInteger.ZERO, TypeOfUser.v2,
                         false,
-                        key2.getMetadata().serverTimeOffset),
-                new NodesData(key2.nodesData.nodeIndexes)
+                        key2.getMetadata().getServerTimeOffset()),
+                new NodesData(key2.nodesData.getNodeIndexes())
         ));
 
         // 2/n user
@@ -137,8 +137,8 @@ public class AquaTest {
                 new FinalPubKeyData("0x5469C5aCB0F30929226AfF4622918DA8E1424a8D",
                         "c20fac685bb67169e92f1d5d8894d4eea18753c0ef3b7b1b2224233b2dfa3539",
                         "c4f080b5c8d5c55c8eaba4bec70f668f36db4126f358b491d631fefea7c19d21"),
-                new Metadata(key3.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().serverTimeOffset),
-                new NodesData(key3.nodesData.nodeIndexes)
+                new Metadata(key3.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().getServerTimeOffset()),
+                new NodesData(key3.nodesData.getNodeIndexes())
         ));
     }
 
@@ -176,9 +176,9 @@ public class AquaTest {
                         "c7bcc239f0957bb05bda94757eb4a5f648339424b22435da5cf7a0f2b2323664",
                         "63795690a33e575ee12d832935d563c2b5f2e1b1ffac63c32a4674152f68cb3f",
                         "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d"),
-                new SessionData(torusKey.sessionData.sessionTokenData, torusKey.sessionData.sessionAuthKey),
+                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.nodeIndexes)
+                new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
 
@@ -191,7 +191,7 @@ public class AquaTest {
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER, verifierParams,
                 idToken, null);
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
-        assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", torusKey.getoAuthKeyData().walletAddress);
+        assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", torusKey.getoAuthKeyData().getWalletAddress());
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
                 new FinalKeyData("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D",
                         "37a4ac8cbef68e88bcec5909d9b6fffb539187365bb723f3d7bffe56ae80e31d",
@@ -201,9 +201,9 @@ public class AquaTest {
                         "37a4ac8cbef68e88bcec5909d9b6fffb539187365bb723f3d7bffe56ae80e31d",
                         "f963f2d08ed4dd0da9b8a8d74c6fdaeef7bdcde31f84fcce19fa2173d40b2c10",
                         "488d39ac548e15cfb0eaf161d86496e1645b09437df21311e24a56c4efd76355"),
-                new SessionData(torusKey.sessionData.sessionTokenData, torusKey.sessionData.sessionAuthKey),
+                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.nodeIndexes)
+                new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
 }

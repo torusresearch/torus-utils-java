@@ -9,13 +9,13 @@ import io.reactivex.annotations.Nullable;
 
 public class Metadata {
 
-    public PubNonce pubNonce;
-    public BigInteger nonce;
+    private final PubNonce pubNonce;
+    private final BigInteger nonce;
     @Nullable
-    public Boolean upgraded;
-    public TypeOfUser typeOfUser;
+    private final Boolean upgraded;
+    private final TypeOfUser typeOfUser;
 
-    public Integer serverTimeOffset;
+    private final Integer serverTimeOffset;
 
     public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, @Nullable Boolean upgraded, Integer serverTimeOffset) {
         this.pubNonce = pubNonce;
@@ -30,6 +30,7 @@ public class Metadata {
         this.nonce = nonce;
         this.typeOfUser = typeOfUser;
         this.upgraded = upgraded;
+        this.serverTimeOffset = 0;
     }
 
     public PubNonce getPubNonce() {

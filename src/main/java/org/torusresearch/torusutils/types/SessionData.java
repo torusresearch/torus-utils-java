@@ -6,8 +6,8 @@ import java.util.List;
 
 public class SessionData {
 
-    public final List<SessionToken> sessionTokenData;
-    public final String sessionAuthKey;
+    private final List<SessionToken> sessionTokenData;
+    private final String sessionAuthKey;
 
     public SessionData(List<SessionToken> sessionTokenData, String sessionAuthKey) {
         this.sessionTokenData = sessionTokenData;

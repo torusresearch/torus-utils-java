@@ -2,9 +2,9 @@ package org.torusresearch.torusutils.types;
 
 public class FinalPubKeyData {
 
-    public String walletAddress;
-    public String x;
-    public String y;
+    private final String walletAddress;
+    private final String x;
+    private final String y;
 
     public FinalPubKeyData(String walletAddress, String x, String y) {
         this.walletAddress = walletAddress;

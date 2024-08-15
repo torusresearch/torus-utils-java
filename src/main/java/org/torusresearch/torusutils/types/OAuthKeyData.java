@@ -2,10 +2,10 @@ package org.torusresearch.torusutils.types;
 
 public class OAuthKeyData {
 
-    public String walletAddress;
-    public String X;
-    public String Y;
-    public String privKey;
+    private final String walletAddress;
+    private final String X;
+    private final String Y;
+    private final String privKey;
 
     public OAuthKeyData(String walletAddress, String X, String Y, String privKey) {
         this.walletAddress = walletAddress;

@@ -1,17 +1,18 @@
 package org.torusresearch.torusutils.types;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FinalKeyData {
 
-    public String walletAddress;
-    public String X;
-    public String Y;
+    private final String walletAddress;
+    private final String X;
+    private final String Y;
 
     @Nullable
-    public String privKey;
+    private final String privKey;
 
-    public FinalKeyData(String walletAddress, String X, String Y, @Nullable String privKey) {
+    public FinalKeyData(@NotNull String walletAddress, @NotNull String X, @NotNull String Y, @Nullable String privKey) {
         this.walletAddress = walletAddress;
         this.X = X;
         this.Y = Y;

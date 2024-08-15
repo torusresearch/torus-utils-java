@@ -79,8 +79,8 @@ public class MainnetTest {
                 new FinalPubKeyData("0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A",
                         "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
                         "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1"),
-                new Metadata(publicAddress.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
-                new NodesData(publicAddress.nodesData.nodeIndexes)
+                new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
+                new NodesData(publicAddress.nodesData.getNodeIndexes())
         ));
     }
 
@@ -98,8 +98,8 @@ public class MainnetTest {
                 new FinalPubKeyData("0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E",
                         "072beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
                         "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5"),
-                new Metadata(key.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().serverTimeOffset),
-                new NodesData(key.nodesData.nodeIndexes)
+                new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().getServerTimeOffset()),
+                new NodesData(key.nodesData.getNodeIndexes())
         ));
 
         String v2Verifier = "tkey-google";
@@ -115,9 +115,9 @@ public class MainnetTest {
                 new FinalPubKeyData("0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526",
                         "bbfd26b1e61572c4e991a21b64f12b313cb6fce6b443be92d4d5fd8f311e8f33",
                         "df2c905356ec94faaa111a886be56ed6fa215b7facc1d1598486558355123c25"),
-                new Metadata(key2.getMetadata().pubNonce,
+                new Metadata(key2.getMetadata().getPubNonce(),
                         BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().getServerTimeOffset()),
-                new NodesData(key2.getNodesData().nodeIndexes)
+                new NodesData(key2.getNodesData().getNodeIndexes())
         ));
 
         // v1 user
@@ -132,8 +132,8 @@ public class MainnetTest {
                 new FinalPubKeyData("0x40A4A04fDa1f29a3667152C8830112FBd6A77BDD",
                         "6779af3031d9e9eec6b4133b0ae13e367c83a614f92d2008e10c7f3b8e6723bc",
                         "80edc4502abdfb220dd6e2fcfa2dbb058125dc95873e4bfa6877f9c26da7fdff"),
-                new Metadata(key3.getMetadata().pubNonce, BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().serverTimeOffset),
-                new NodesData(key3.getNodesData().nodeIndexes)
+                new Metadata(key3.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().getServerTimeOffset()),
+                new NodesData(key3.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -169,9 +169,9 @@ public class MainnetTest {
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
                         "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
                         "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
-                new SessionData(torusKey.sessionData.sessionTokenData, torusKey.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().serverTimeOffset),
-                new NodesData(torusKey.nodesData.nodeIndexes)
+                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
+                new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
 
@@ -195,9 +195,9 @@ public class MainnetTest {
                         "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",
                         "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
                         "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
-                new SessionData(torusKey.sessionData.sessionTokenData, torusKey.sessionData.sessionAuthKey),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().serverTimeOffset),
-                new NodesData(torusKey.nodesData.nodeIndexes)
+                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
+                new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }
 }
