@@ -11,9 +11,9 @@ public class VerifierParams {
     @Nullable
     public final String[] sub_verifier_ids;
     @Nullable
-    public final VerifyParam[] verify_params;
+    public final VerifyParams[] verify_params;
 
-    public VerifierParams(@NotNull String verifierId, @Nullable String extendedVerifierId, @Nullable String[] subVerifierIds, @Nullable VerifyParam[] verifyParams) {
+    public VerifierParams(@NotNull String verifierId, @Nullable String extendedVerifierId, @Nullable String[] subVerifierIds, @Nullable VerifyParams[] verifyParams) {
         this.verifier_id = verifierId;
         this.extended_verifier_id = extendedVerifierId;
         this.verify_params = verifyParams;

@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.torusresearch.torusutils.apis.responses.CommitmentRequestResult;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
-import org.torusresearch.torusutils.types.VerifyParam;
+import org.torusresearch.torusutils.types.VerifyParams;
 import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 
@@ -41,7 +41,7 @@ public class ShareRequestItem {
     public final String[] sub_verifier_ids;
     public Integer session_token_exp_second = 86400;
     @Nullable
-    public final VerifyParam[] verify_params;
+    public final VerifyParams[] verify_params;
     @Nullable
     public final String sss_endpoint;
     @Nullable
@@ -67,7 +67,7 @@ public class ShareRequestItem {
 
     public ShareRequestItem(@NotNull String verifieridentifier, @Nullable String verifier_id, @Nullable String extended_verifier_id, @NotNull String idtoken, @NotNull TorusUtilsExtraParams extraParams, @Nullable CommitmentRequestResult[] nodesignatures, @Nullable String pub_key_x,
                             @Nullable String pub_key_y, @Nullable String signing_pub_key_x, @Nullable String signing_pub_key_y, @Nullable String encrypted_share, @Nullable EciesHexOmitCipherText encrypted_share_metadata, @Nullable Integer node_index,
-                            @Nullable TorusKeyType key_type, @Nullable String nonce_data, @Nullable String nonce_signature, @Nullable String[] sub_verifier_ids, @Nullable VerifyParam[] verifyParams, @Nullable String sss_endpoint ) {
+                            @Nullable TorusKeyType key_type, @Nullable String nonce_data, @Nullable String nonce_signature, @Nullable String[] sub_verifier_ids, @Nullable VerifyParams[] verifyParams, @Nullable String sss_endpoint ) {
         this.verifieridentifier = verifieridentifier;
         this.verifier_id = verifier_id;
         this.extended_verifier_id = extended_verifier_id;

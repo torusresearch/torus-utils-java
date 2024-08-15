@@ -25,7 +25,7 @@ import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.VerifierParams;
-import org.torusresearch.torusutils.types.VerifyParam;
+import org.torusresearch.torusutils.types.VerifyParams;
 import org.torusresearch.torusutils.types.common.PubNonce;
 import org.torusresearch.torusutils.types.common.TorusKey;
 import org.torusresearch.torusutils.types.common.TorusOptions;
@@ -33,6 +33,7 @@ import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
+import org.web3j.crypto.Hash;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -186,10 +187,11 @@ public class AquaTest {
     @Test
     public void shouldAggregateLogin() throws Exception {
         String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
-        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParam[]{new VerifyParam(idToken, TORUS_TEST_EMAIL)});
+        String hashedIdToken = Hash.sha3String(idToken).replace("0x","");
+        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(TORUS_TEST_EMAIL, idToken)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
         TorusKey torusKey = torusUtils.retrieveShares(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER, verifierParams,
-                idToken, null);
+                hashedIdToken, null);
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals("0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D", torusKey.getoAuthKeyData().getWalletAddress());
         assertThat(torusKey).isEqualToComparingFieldByFieldRecursively(new TorusKey(
@@ -202,7 +204,7 @@ public class AquaTest {
                         "f963f2d08ed4dd0da9b8a8d74c6fdaeef7bdcde31f84fcce19fa2173d40b2c10",
                         "488d39ac548e15cfb0eaf161d86496e1645b09437df21311e24a56c4efd76355"),
                 new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.nodesData.getNodeIndexes())
         ));
     }

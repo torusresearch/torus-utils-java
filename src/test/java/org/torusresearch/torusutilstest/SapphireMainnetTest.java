@@ -26,7 +26,7 @@ import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
 import org.torusresearch.torusutils.types.VerifierParams;
-import org.torusresearch.torusutils.types.VerifyParam;
+import org.torusresearch.torusutils.types.VerifyParams;
 import org.torusresearch.torusutils.types.common.PubNonce;
 import org.torusresearch.torusutils.types.common.SessionToken;
 import org.torusresearch.torusutils.types.common.TorusKey;
@@ -258,7 +258,7 @@ public class SapphireMainnetTest {
         String email = JwtUtils.getRandomEmail();
         String idToken = JwtUtils.generateIdToken(email, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).substring(2);
-        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParam[]{new VerifyParam(idToken, email)});
+        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(idToken, email)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, email).get();
         TorusKey result = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null);
