@@ -56,6 +56,7 @@ import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
+import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 
 import java.math.BigInteger;
@@ -360,7 +361,6 @@ public class TorusUtils {
                 String decryped = Encryption.decryptNodeData(latestKey.share_metadata, decoded, sessionAuthKeySerialized);
                 shares.add(decryped);
             }
-
         }
 
         if (verifierParams.extended_verifier_id == null && sessionTokenSigs.size() < threshold) {
@@ -491,7 +491,9 @@ public class TorusUtils {
         if (typeOfUser == TypeOfUser.v1 || (typeOfUser == TypeOfUser.v2 && metadataNonce.compareTo(BigInteger.ZERO) > 0)) {
             BigInteger privateKeyWithNonce = privateKey.add(metadataNonce).mod(getOrderOfCurve());
             finalPrivKey = Utils.padLeft(privateKeyWithNonce.toString(16), '0', 64);
+
         }
+        // TODO: Should actually just pass the new private key for this function, if it is not null, it can then be checked against the final private key if it has been imported, as an added safety check for import.
 
         Boolean isUpgraded = null;
 

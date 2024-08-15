@@ -21,6 +21,7 @@ import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
 import org.torusresearch.torusutils.apis.requests.NonceMetadataParams;
 import org.torusresearch.torusutils.apis.requests.SetNonceData;
@@ -178,22 +179,17 @@ public class KeyUtils {
         );
     }
 
-    public static NonceMetadataParams generateNonceMetadataParams(@NotNull String operation, @NotNull BigInteger privateKey, @NotNull BigInteger nonce, @NotNull Integer serverTimeOffset) {
-        ECDomainParameters domainParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH(), params.getSeed());
-        ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(privateKey, domainParams);
-        ECPoint oAuthPubPoint = domainParams.getG().multiply(privKeyParams.getD());
-        ECPublicKeyParameters publicKeyParams = new ECPublicKeyParameters(oAuthPubPoint, domainParams);
-
+    public static NonceMetadataParams generateNonceMetadataParams(@NotNull String operation, @NotNull BigInteger privateKey, @Nullable BigInteger nonce, @NotNull Integer serverTimeOffset) {
         BigInteger timeSeconds = BigInteger.valueOf(System.currentTimeMillis() / 1000L);
         BigInteger timestamp = timeSeconds.add(BigInteger.valueOf(serverTimeOffset));
 
         // Serialize public key into padded X and Y coordinates
-        String derivedPubKeyString = Hex.toHexString(publicKeyParams.getQ().getEncoded(false));
+        String derivedPubKeyString = KeyUtils.privateToPublic(privateKey);
         String derivedPubKeyX = derivedPubKeyString.substring(2, 66);
         String derivedPubKeyY = derivedPubKeyString.substring(66);
 
         // Create SetNonceData object with operation and timestamp
-        SetNonceData setNonceData = new SetNonceData(operation, timestamp.toString(16), null, Utils.padLeft(nonce.toString(16), '0', 64));
+        SetNonceData setNonceData = new SetNonceData(operation, (nonce != null) ? Utils.padLeft(nonce.toString(16), '0', 64) : null, null, timestamp.toString(16));
 
         // Convert SetNonceData object to JSON string
         Gson gson = new Gson();
@@ -205,6 +201,8 @@ public class KeyUtils {
         // Sign the hashed data using ECDSA with the private key
         SecureRandom random = new SecureRandom();
         ECDSASigner signer = new ECDSASigner();
+        ECDomainParameters domainParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH(), params.getSeed());
+        ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(privateKey, domainParams);
         signer.init(true, new ParametersWithRandom(privKeyParams, random));
         BigInteger[] signature = signer.generateSignature(hashedData);
 

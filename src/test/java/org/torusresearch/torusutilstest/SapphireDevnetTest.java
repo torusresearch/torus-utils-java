@@ -20,6 +20,7 @@ import org.torusresearch.fetchnodedetails.types.Web3AuthNetwork;
 import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
+import org.torusresearch.torusutils.helpers.Utils;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
 import org.torusresearch.torusutils.types.Metadata;
@@ -341,7 +342,7 @@ public class SapphireDevnetTest {
     public void testShouldBeAbleToImportKeyForANewUser() throws Exception {
         String fakeEmail = JwtUtils.getRandomEmail();
         String jwt = JwtUtils.generateIdToken(fakeEmail, algorithmRs);
-        String privateKey = Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate()));
+        String privateKey = Utils.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate())), '0', 64);
         VerifierParams verifierParams = new VerifierParams(fakeEmail, null, null, null);
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, fakeEmail).get();
 
