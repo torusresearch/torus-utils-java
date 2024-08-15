@@ -13,8 +13,7 @@ public class JsonRPCResponse<T> {
 
     public T getTypedResult(Class<T> clazz) {
         Gson gson = new Gson();
-        TypeToken type = TypeToken.get(clazz);
-        return gson.fromJson(gson.toJson(result), type.getType());
+        return gson.fromJson(gson.toJson(result), TypeToken.get(clazz).getType());
     }
 
     public JsonRPCResponse(JsonRPCRequest.JRPCResponse.ErrorInfo error, T result) {
