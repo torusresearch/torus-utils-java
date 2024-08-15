@@ -257,7 +257,7 @@ public class SapphireMainnetTest {
     public void shouldAggregateLogin() throws Exception {
         String email = JwtUtils.getRandomEmail();
         String idToken = JwtUtils.generateIdToken(email, algorithmRs);
-        String hashedIdToken = Hash.sha3String(idToken).substring(2);
+        String hashedIdToken = Hash.sha3String(idToken).replace("0x","");
         VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(email, idToken)});
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, email).get();
         TorusKey result = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
