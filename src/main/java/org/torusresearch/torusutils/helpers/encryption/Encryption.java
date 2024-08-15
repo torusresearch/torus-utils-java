@@ -84,10 +84,10 @@ public class Encryption {
 
     public static String decryptNodeData(@NotNull EciesHexOmitCipherText eciesData, @NotNull String ciphertextHex, @NotNull String privKey) throws Exception {
         Ecies eciesOpts = new Ecies(
-                eciesData.getIv(),
-                eciesData.getEphemPublicKey(),
+                eciesData.iv,
+                eciesData.ephemPublicKey,
                 ciphertextHex,
-                eciesData.getMac()
+                eciesData.mac
         );
         return Hex.toHexString(decrypt(privKey, eciesOpts));
     }
