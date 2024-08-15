@@ -82,7 +82,7 @@ public class CyanTest {
                         "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a",
                         "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1"),
                 new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
-                new NodesData(publicAddress.nodesData.getNodeIndexes())
+                new NodesData(publicAddress.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -101,7 +101,7 @@ public class CyanTest {
                         "8aaadab9530cb157d0b0dfb7b27d1a3aaca45274563c22c92c77ee2191779051",
                         "d57b89d9f62bb6609d8542c3057943805c8c72f6f27d39781b820f27d7210f12"),
                 new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().getServerTimeOffset()),
-                new NodesData(key.nodesData.getNodeIndexes())
+                new NodesData(key.getNodesData().getNodeIndexes())
         ));
 
         String v2Verifier = "tkey-google-cyan";
@@ -118,7 +118,7 @@ public class CyanTest {
                 new Metadata(new PubNonce("da0039dd481e140090bed9e777ce16c0c4a16f30f47e8b08b73ac77737dd2d4",
                         "7fecffd2910fa47dbdbc989f5c119a668fc922937175974953cbb51c49268265"
                 ), BigInteger.ZERO, TypeOfUser.v2, false, key2.getMetadata().getServerTimeOffset()),
-                new NodesData(key2.nodesData.getNodeIndexes())
+                new NodesData(key2.getNodesData().getNodeIndexes())
         ));
         assertEquals("0x8EA83Ace86EB414747F2b23f03C38A34E0217814", key2.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key2.getMetadata().getTypeOfUser());
@@ -136,7 +136,7 @@ public class CyanTest {
                 new Metadata(new PubNonce("50e250cc6ac1d50d32d2b0f85f11c6625a917a115ced4ef24f4eac183e1525c7",
                         "8067a52d02b8214bf82e91b66ce5009f674f4c3998b103059c46c386d0c17f90"
                 ), BigInteger.ZERO, TypeOfUser.v2, false, key3.getMetadata().getServerTimeOffset()),
-                new NodesData(key3.nodesData.getNodeIndexes())
+                new NodesData(key3.getNodesData().getNodeIndexes())
         ));
         assertEquals("0xCC1f953f6972a9e3d685d260399D6B85E2117561", key3.getFinalKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, key3.getMetadata().getTypeOfUser());
@@ -175,7 +175,7 @@ public class CyanTest {
                         "e2ed6033951af2851d1bea98799e62fb1ff24b952c1faea17922684678ba42d1",
                         "beef0efad88e81385952c0068ca48e8b9c2121be87cb0ddf18a68806db202359",
                         "5db51619684b32a2ff2375b4c03459d936179dfba401cb1c176b621e8a2e4ac8"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, false, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
@@ -201,9 +201,9 @@ public class CyanTest {
                         "afd12f2476006ef6aa8778190b29676a70039df8688f9dee69c779bdc8ff0223",
                         "e557a5ee879632727f5979d6b9cea69d87e3dab54a8c1b6685d86dfbfcd785dd",
                         "45a5b62c4ff5490baa75d33bf4f03ba6c5b0095678b0f4055312eef7b780b7bf"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
-                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.metadata.getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
+                new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 }

@@ -8,10 +8,10 @@ import org.torusresearch.torusutils.types.OAuthPubKeyData;
 
 public class TorusPublicKey {
 
-    public OAuthPubKeyData oAuthKeyData;
-    public FinalPubKeyData finalKeyData;
-    public Metadata metadata;
-    public NodesData nodesData;
+    private final OAuthPubKeyData oAuthKeyData;
+    private final FinalPubKeyData finalKeyData;
+    private final Metadata metadata;
+    private final NodesData nodesData;
 
     public TorusPublicKey(@NotNull OAuthPubKeyData oAuthKeyData, @NotNull FinalPubKeyData finalKeyData, @NotNull Metadata metadata, @NotNull NodesData nodesData) {
         this.oAuthKeyData = oAuthKeyData;

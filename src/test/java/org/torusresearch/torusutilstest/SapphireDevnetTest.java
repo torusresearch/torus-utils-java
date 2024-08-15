@@ -109,8 +109,8 @@ public class SapphireDevnetTest {
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, TORUS_TEST_EMAIL).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), verifier, TORUS_TEST_EMAIL, null);
         assertTrue(torusPublicKey.getMetadata().getServerTimeOffset() < 20);
-        assertEquals("0x137B3607958562D03Eb3C6086392D1eFa01aA6aa", torusPublicKey.oAuthKeyData.getWalletAddress());
-        assertEquals("0x462A8BF111A55C9354425F875F89B22678c0Bc44", torusPublicKey.finalKeyData.getWalletAddress());
+        assertEquals("0x137B3607958562D03Eb3C6086392D1eFa01aA6aa", torusPublicKey.getoAuthKeyData().getWalletAddress());
+        assertEquals("0x462A8BF111A55C9354425F875F89B22678c0Bc44", torusPublicKey.getFinalKeyData().getWalletAddress());
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
                 new OAuthPubKeyData("0x137B3607958562D03Eb3C6086392D1eFa01aA6aa",
                         "118a674da0c68f16a1123de9611ba655f4db1e336fe1b2d746028d65d22a3c6b",
@@ -164,12 +164,12 @@ public class SapphireDevnetTest {
                         "118a674da0c68f16a1123de9611ba655f4db1e336fe1b2d746028d65d22a3c6b",
                         "8325432b3a3418d632b4fe93db094d6d83250eea60fe512897c0ad548737f8a5",
                         "6b3c872a269aa8994a5acc8cdd70ea3d8d182d42f8af421c0c39ea124e9b66fa"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(new PubNonce("5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc",
                         "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed"),
                         new BigInteger("b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a", 16), TypeOfUser.v2,
-                        false, torusKey.metadata.getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                        false, torusKey.getMetadata().getServerTimeOffset()),
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -250,10 +250,10 @@ public class SapphireDevnetTest {
         String[] endpoints = nodeDetails.getTorusNodeSSSEndpoints();
         TorusKey result = torusUtils.retrieveShares(endpoints, TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null);
-        assertNotNull(result.finalKeyData.getWalletAddress());
-        assertNotNull(result.oAuthKeyData.getWalletAddress());
-        assertEquals(TypeOfUser.v2, result.metadata.getTypeOfUser());
-        assertNotNull(result.metadata.getNonce());
+        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.getoAuthKeyData().getWalletAddress());
+        assertEquals(TypeOfUser.v2, result.getMetadata().getTypeOfUser());
+        assertNotNull(result.getMetadata().getNonce());
     }
 
     @DisplayName("should be able to login when verifierID hash enabled")
@@ -274,12 +274,12 @@ public class SapphireDevnetTest {
                         "72d9172d7edc623266d6c625db91505e6b64a5524e6d7c7c0184b1bbdea1e986",
                         "8c26d557a0a9cb22dc2a30d36bf67de93a0eb6d4ef503a849c7de2d14dcbdaaa",
                         "62e110d9d698979c1966d14b2759006cf13be7dfc86a63ff30812e2032163f2f"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(new PubNonce("5712d789f7ecf3435dd9bf1136c2daaa634f0222d64e289d2abe30a729a6a22b",
                         "2d2b4586fd5fd9d15c22f66b61bc475742754a8b96d1edb7b2590e4c4f97b3f0"),
                         new BigInteger("8e80e560ae59319938f7ef727ff2c5346caac1c7f5be96d3076e3342ad1d20b7", 16), TypeOfUser.v2,
-                        false, torusKey.metadata.getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                        false, torusKey.getMetadata().getServerTimeOffset()),
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -292,10 +292,10 @@ public class SapphireDevnetTest {
         String tssVerifierId = email + "\u0015" + tssTag + "\u0016" + nonce;
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_VERIFIER, email, tssVerifierId);
-        assertNotNull(result.finalKeyData.getWalletAddress());
-        assertNotNull(result.oAuthKeyData.getWalletAddress());
-        assertEquals(TypeOfUser.v2, result.metadata.getTypeOfUser());
-        assertFalse(result.metadata.isUpgraded());
+        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.getoAuthKeyData().getWalletAddress());
+        assertEquals(TypeOfUser.v2, result.getMetadata().getTypeOfUser());
+        assertFalse(result.getMetadata().isUpgraded());
     }
 
     @DisplayName("should be able to update the `sessionTime` of the token signature data")

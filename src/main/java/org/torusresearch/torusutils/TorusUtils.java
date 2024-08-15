@@ -147,10 +147,10 @@ public class TorusUtils {
     }
 
     public static String getPostboxKey(TorusKey torusKey) {
-        if (torusKey.metadata.getTypeOfUser() == TypeOfUser.v1) {
-            return (torusKey.finalKeyData.getPrivKey() == null || torusKey.finalKeyData.getPrivKey().isEmpty()) ? torusKey.oAuthKeyData.getPrivKey() : torusKey.finalKeyData.getPrivKey();
+        if (torusKey.getMetadata().getTypeOfUser() == TypeOfUser.v1) {
+            return (torusKey.getFinalKeyData().getPrivKey() == null || torusKey.getFinalKeyData().getPrivKey().isEmpty()) ? torusKey.getoAuthKeyData().getPrivKey() : torusKey.getFinalKeyData().getPrivKey();
         }
-        return torusKey.oAuthKeyData.getPrivKey();
+        return torusKey.getoAuthKeyData().getPrivKey();
     }
 
     public static TorusKey retrieveOrImportShare(@NotNull String legacyMetadataHost, @Nullable Integer serverTimeOffset,

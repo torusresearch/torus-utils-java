@@ -107,12 +107,12 @@ public class SapphireMainnetTest {
         String verifierId = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, verifierId).get();
         TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), verifier, verifierId, null);
-        assertNotEquals("", result.finalKeyData.getWalletAddress());
-        assertNotNull(result.finalKeyData.getWalletAddress());
-        assertNotEquals("", result.finalKeyData.getWalletAddress());
-        assertNotNull(result.finalKeyData.getWalletAddress());
-        assertEquals(TypeOfUser.v2, result.metadata.getTypeOfUser());
-        assertFalse(result.metadata.isUpgraded());
+        assertNotEquals("", result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertNotEquals("", result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertEquals(TypeOfUser.v2, result.getMetadata().getTypeOfUser());
+        assertFalse(result.getMetadata().isUpgraded());
     }
 
     @DisplayName("should fetch pubic address of tssVerifierId")
@@ -146,10 +146,10 @@ public class SapphireMainnetTest {
         String tssVerifierId = email + "\u0015" + tssTag + "\u0016" + nonce;
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
         TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_VERIFIER, email, tssVerifierId);
-        assertNotNull(result.finalKeyData.getWalletAddress());
-        assertNotNull(result.oAuthKeyData.getWalletAddress());
-        assertEquals(TypeOfUser.v2, result.metadata.getTypeOfUser());
-        assertFalse(result.metadata.isUpgraded());
+        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.getoAuthKeyData().getWalletAddress());
+        assertEquals(TypeOfUser.v2, result.getMetadata().getTypeOfUser());
+        assertFalse(result.getMetadata().isUpgraded());
     }
 
     @DisplayName("should fetch public address when verifierID hash enabled")
@@ -216,12 +216,12 @@ public class SapphireMainnetTest {
                         "147d0a97d498ac17172dd92546617e06f2c32c405d414dfc06632b8fbcba93d8",
                         "cc6e57662c3866c4316c05b0fe902db9aaf5541fbf5fda854c3b4634eceeb43c",
                         "d768b327cbde681e5850a7d14f1c724bba2b8f8ab7fe2b1c4f1ee6979fc25478"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(new PubNonce("498ed301af25a3b7136f478fa58677c79a6d6fe965bc13002a6f459b896313bd",
                         "d6feb9a1e0d6d0627fbb1ce75682bc09ab4cf0e2da4f0f7fcac0ba9d07596c8f"),
                         new BigInteger("3c2b6ba5b54ca0ba4ae978eb48429a84c47b7b3e526b35e7d46dd716887f52bf", 16), TypeOfUser.v2,
                         false, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -248,7 +248,7 @@ public class SapphireMainnetTest {
                         "ad35db2679dfad4b62d77cf753d7b98f73c902e5d101cc2c3c1209ece6d94382"),
                         new BigInteger("4f1181d8689f0d0960f1a6f9fe26e03e557bdfba11f4b6c8d7b1285e9c271b13", 16),
                         TypeOfUser.v2, false, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -265,10 +265,10 @@ public class SapphireMainnetTest {
         String[] endpoints = nodeDetails.getTorusNodeSSSEndpoints();
         TorusKey result = torusUtils.retrieveShares(endpoints, TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null);
-        assertNotNull(result.finalKeyData.getWalletAddress());
-        assertNotNull(result.oAuthKeyData.getWalletAddress());
-        assertEquals(TypeOfUser.v2, result.metadata.getTypeOfUser());
-        assertNotNull(result.metadata.getNonce());
+        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.getoAuthKeyData().getWalletAddress());
+        assertEquals(TypeOfUser.v2, result.getMetadata().getTypeOfUser());
+        assertNotNull(result.getMetadata().getNonce());
     }
 
     @DisplayName("Should fetch user type and public address when verifierID hash enabled")

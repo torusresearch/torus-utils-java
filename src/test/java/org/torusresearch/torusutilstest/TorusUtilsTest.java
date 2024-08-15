@@ -176,9 +176,9 @@ public class TorusUtilsTest {
                         "6de2e34d488dd6a6b596524075b032a5d5eb945bcc33923ab5b88fd4fd04b5fd",
                         "d5fb7b51b846e05362461357ec6e8ca075ea62507e2d5d7253b72b0b960927e9",
                         "9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -202,9 +202,9 @@ public class TorusUtilsTest {
                         "1c50e34ef5b7afcf5b0c6501a6ae00ec3a09a321dd885c5073dd122e2a251b95",
                         "2cc74beb28f2c4a7c4034f80836d51b2781b36fefbeafb4eb1cd055bdf73b1e6",
                         "3cbfa57d702327ec1af505adc88ad577804a1a7780bc013ed9e714c547fb5cb1"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 }

@@ -80,7 +80,7 @@ public class MainnetTest {
                         "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4",
                         "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1"),
                 new Metadata(publicAddress.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v1, false, publicAddress.getMetadata().getServerTimeOffset()),
-                new NodesData(publicAddress.nodesData.getNodeIndexes())
+                new NodesData(publicAddress.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -99,7 +99,7 @@ public class MainnetTest {
                         "072beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55",
                         "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5"),
                 new Metadata(key.getMetadata().getPubNonce(), BigInteger.ZERO, TypeOfUser.v2, false, key.getMetadata().getServerTimeOffset()),
-                new NodesData(key.nodesData.getNodeIndexes())
+                new NodesData(key.getNodesData().getNodeIndexes())
         ));
 
         String v2Verifier = "tkey-google";
@@ -169,9 +169,9 @@ public class MainnetTest {
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
                         "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
                         "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 
@@ -195,9 +195,9 @@ public class MainnetTest {
                         "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236",
                         "5e57e251db2c95c874f7ec852439302a62ef9592c8c50024e3d48018a6f77c7e",
                         "f55d89088a0c491d797c00da5b2ed6dc9c269c960ff121e45f255d06a91c6534"),
-                new SessionData(torusKey.sessionData.getSessionTokenData(), torusKey.sessionData.getSessionAuthKey()),
+                new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
-                new NodesData(torusKey.nodesData.getNodeIndexes())
+                new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
 }

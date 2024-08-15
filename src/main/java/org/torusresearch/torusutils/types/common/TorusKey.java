@@ -9,12 +9,12 @@ import org.torusresearch.torusutils.types.Metadata;
 
 public class TorusKey {
 
-    public FinalKeyData finalKeyData;
-    public OAuthKeyData oAuthKeyData;
-    public SessionData sessionData;
+    private final FinalKeyData finalKeyData;
+    private final OAuthKeyData oAuthKeyData;
+    private final SessionData sessionData;
 
-    public Metadata metadata;
-    public NodesData nodesData;
+    private final Metadata metadata;
+    private final NodesData nodesData;
 
     public TorusKey(@NotNull FinalKeyData finalKeyData, @NotNull OAuthKeyData oAuthKeyData, @NotNull SessionData sessionData, @NotNull Metadata metadata, @NotNull NodesData nodesData) {
         this.finalKeyData = finalKeyData;
