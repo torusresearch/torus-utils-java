@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Header;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
@@ -60,14 +60,13 @@ public class SapphireMainnetTest {
     static String TORUS_TEST_VERIFIER = "torus-test-health";
     static String TORUS_TEST_AGGREGATE_VERIFIER = "torus-aggregate-sapphire-mainnet";
 
-    static String TORUS_IMPORT_EMAIL = "importeduser5@tor.us";
     static String TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com";
     static String HashEnabledVerifier = "torus-test-verifierid-hash";
 
     static String TORUS_TEST_EMAIL = "hello@tor.us";
 
-    @BeforeAll
-    static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
+    @BeforeEach
+    void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.SAPPHIRE_MAINNET);
         TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.SAPPHIRE_MAINNET, null, 0, true);

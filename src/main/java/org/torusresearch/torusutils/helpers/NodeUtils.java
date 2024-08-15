@@ -164,10 +164,10 @@ public class NodeUtils {
         return new KeyLookupResult(key, nodeIndexes, finalServerTimeOffset, nonce, errResult);
     }
 
-    public static TorusKey retrieveOrImportShare(@NotNull String legacyMetadataHost, @io.reactivex.annotations.Nullable Integer serverTimeOffset,
+    public static TorusKey retrieveOrImportShare(@NotNull String legacyMetadataHost, @Nullable Integer serverTimeOffset,
                                                  @NotNull Boolean enableOneKey, @NotNull String allowHost, @NotNull Web3AuthNetwork network,
                                                  @NotNull String clientId, @NotNull String[] endpoints, @NotNull String verifier, @NotNull VerifierParams verifierParams,
-                                                 @NotNull String idToken, @io.reactivex.annotations.Nullable ImportedShare[] importedShares, @NotNull String apiKey, @NotNull TorusUtilsExtraParams extraParams
+                                                 @NotNull String idToken, @Nullable ImportedShare[] importedShares, @NotNull String apiKey, @Nullable String newPrivateKey, @NotNull TorusUtilsExtraParams extraParams
     ) throws Exception {
         int threshold = (endpoints.length / 2) + 1;
 
@@ -498,7 +498,17 @@ public class NodeUtils {
             finalPrivKey = Common.padLeft(privateKeyWithNonce.toString(16), '0', 64);
 
         }
-        // TODO: Should actually just pass the new private key for this function, if it is not null, it can then be checked against the final private key if it has been imported, as an added safety check for import.
+
+        // This is a sanity check to make doubly sure we are returning the correct private key after importing a share
+        if (isImportShareReq) {
+            if (newPrivateKey == null) {
+                throw TorusUtilError.RETRIEVE_OR_IMPORT_SHARE_ERROR;
+            } else {
+                if (!finalPrivKey.equalsIgnoreCase(Common.padLeft(newPrivateKey, '0', 64))) {
+                    throw  TorusUtilError.RETRIEVE_OR_IMPORT_SHARE_ERROR;
+                }
+            }
+        }
 
         Boolean isUpgraded = null;
 

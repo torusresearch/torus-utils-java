@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
@@ -56,8 +56,8 @@ public class TorusUtilsTest {
 
     static String TORUS_TEST_EMAIL = "archit1@tor.us";
 
-    @BeforeAll
-    static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
+    @BeforeEach
+    void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
         TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.TESTNET, null, 0, false);

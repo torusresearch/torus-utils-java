@@ -125,7 +125,7 @@ public class TorusUtils {
             params.session_token_exp_second = this.sessionTime;
         }
 
-        return NodeUtils.retrieveOrImportShare(this.defaultHost, (options.serverTimeOffset == null) ? 0 : options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId, endpoints, verifier, verifierParams, idToken, null, this.apiKey, params);
+        return NodeUtils.retrieveOrImportShare(this.defaultHost, (options.serverTimeOffset == null) ? 0 : options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId, endpoints, verifier, verifierParams, idToken, null, this.apiKey, null, params);
     }
 
     public TorusPublicKey getPublicAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId) throws Exception {
@@ -153,7 +153,7 @@ public class TorusUtils {
 
         List<ImportedShare> shares = KeyUtils.generateShares(this.keyType, (options.serverTimeOffset == null) ? 0 : options.serverTimeOffset, Arrays.asList(nodeIndexes), Arrays.asList(nodePubKeys), newPrivateKey);
 
-        return NodeUtils.retrieveOrImportShare(this.defaultHost, this.options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId, endpoints, verifier, verifierParams, idToken, shares.toArray(new ImportedShare[0]), this.apiKey, params);
+        return NodeUtils.retrieveOrImportShare(this.defaultHost, this.options.serverTimeOffset, this.options.enableOneKey, this.defaultHost, this.options.network, this.options.clientId, endpoints, verifier, verifierParams, idToken, shares.toArray(new ImportedShare[0]), this.apiKey, newPrivateKey, params);
     }
 
     public TorusPublicKey getUserTypeAndAddress(@NotNull String[] endpoints, @NotNull String verifier, @NotNull String verifierId, @Nullable String extendedVerifierId) throws Exception {

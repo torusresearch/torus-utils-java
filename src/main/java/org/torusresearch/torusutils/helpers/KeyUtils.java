@@ -94,7 +94,7 @@ public class KeyUtils {
     }
 
     public static String privateToPublic(@NotNull BigInteger key) {
-        return  "04" + ECKeyPair.create(key).getPublicKey().toString(16);
+        return  "04" + Common.padLeft(ECKeyPair.create(key).getPublicKey().toString(16), '0', 128);
     }
 
     @SuppressWarnings("unused")

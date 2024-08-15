@@ -10,7 +10,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Header;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.torusresearch.fetchnodedetails.FetchNodeDetails;
@@ -66,8 +66,8 @@ public class SapphireDevnetTest {
     static String TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com";
     static String HashEnabledVerifier = "torus-test-verifierid-hash";
 
-    @BeforeAll
-    static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
+    @BeforeEach
+    void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.SAPPHIRE_DEVNET);
         TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.SAPPHIRE_DEVNET, null, 0, true);
