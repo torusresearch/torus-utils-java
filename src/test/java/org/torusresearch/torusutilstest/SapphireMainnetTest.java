@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.auth0.jwt.algorithms.Algorithm;
-import com.google.gson.Gson;
+import com.auth0.jwt.interfaces.Header;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -39,17 +39,15 @@ import org.web3j.crypto.Hash;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class SapphireMainnetTest {
@@ -305,28 +303,15 @@ public class SapphireMainnetTest {
         TorusKey torusKey = torusUtils.retrieveShares(torusNodeEndpoints, TORUS_TEST_VERIFIER,
                 verifierParams, idToken, null);
 
-        List<Map<String, String>> signatures = new ArrayList<>();
         for (SessionToken sessionToken : torusKey.getSessionData().getSessionTokenData()) {
-            Map<String, String> signature = new HashMap<>();
-            signature.put("data", sessionToken.getToken());
-            signature.put("sig", sessionToken.getSignature());
-            signatures.add(signature);
-        }
-
-        // TODO: Check this
-        List<Map<String, Object>> parsedSigsData = new ArrayList<>();
-        for (Map<String, String> sig : signatures) {
-            byte[] decodedBytes = Base64.getDecoder().decode(sig.get("data"));
-            String decodedString = new String(decodedBytes);
-            HashMap parsedSigData = new Gson().fromJson(decodedString, HashMap.class);
-            // parsedSigsData.add(parsedSigData);
-        }
-
-        long currentTimeSec = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-        for (Map<String, Object> ps : parsedSigsData) {
-            long sessionTime = ((Number) ps.get("exp")).longValue() - currentTimeSec;
-            assert sessionTime > (customSessionTime - 5);
-            assert customSessionTime <= sessionTime;
+            String decodedToken = new String(Base64.getDecoder().decode(sessionToken.getToken()), StandardCharsets.UTF_8);
+            Header jwt = JwtUtils.parseTokenHeader(decodedToken);
+            Date expiry = jwt.getHeaderClaim("exp").asDate();
+            Date now = new Date();
+            long diffInMillis = Math.abs(expiry.getTime() - now.getTime());
+            long diff = TimeUnit.SECONDS.convert(diffInMillis, TimeUnit.MILLISECONDS);
+            assert (diff > (customSessionTime - 30));
+            assert (customSessionTime <= diff);
         }
     }
 }

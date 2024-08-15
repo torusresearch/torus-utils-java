@@ -2,6 +2,9 @@ package org.torusresearch.torusutilstest.utils;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.impl.JWTParser;
+import com.auth0.jwt.interfaces.Header;
+import com.auth0.jwt.interfaces.JWTPartsParser;
 
 import net.andreinc.mockneat.MockNeat;
 
@@ -28,6 +31,11 @@ public class JwtUtils {
                 .withIssuer("torus-key-test") // iss
                 .withIssuedAt(today) // iat
                 .sign(alg);
+    }
+
+    public static Header parseTokenHeader(String token) {
+        JWTPartsParser parts = new JWTParser();
+        return parts.parseHeader(token);
     }
 
     public static String getRandomEmail() {
