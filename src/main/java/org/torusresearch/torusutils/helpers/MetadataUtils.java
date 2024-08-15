@@ -102,7 +102,7 @@ public class MetadataUtils {
 
 
     public static GetOrSetNonceResult getOrSetSapphireMetadataNonce(@NotNull String metadataHost, @NotNull Web3AuthNetwork network, @NotNull String X, @NotNull String Y, @Nullable Integer serverTimeOffset, @Nullable String privateKey, Boolean getOnly, @Nullable TorusKeyType keyType) throws Exception {
-        // fix this comparision in fetchnodedetails, comparision should be against .sapphire()
+        // fix this comparison in fetchnodedetails, comparison should be against .sapphire()
         int timeOffset = 0;
         if (serverTimeOffset != null) {
             timeOffset = serverTimeOffset;

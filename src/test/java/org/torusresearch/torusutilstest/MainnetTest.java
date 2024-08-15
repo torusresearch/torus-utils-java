@@ -57,7 +57,6 @@ public class MainnetTest {
 
     @BeforeEach
     void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
-        System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.MAINNET);
         TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.MAINNET, null, 0, false);
         torusUtils = new TorusUtils(opts);

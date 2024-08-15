@@ -2,8 +2,6 @@ package org.torusresearch.torusutils.types.common;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
 public class SessionToken {
 
     private final String token;
@@ -22,14 +20,17 @@ public class SessionToken {
         return token;
     }
 
+    @SuppressWarnings("unused")
     public String getSignature() {
         return signature;
     }
 
+    @SuppressWarnings("unused")
     public String getNode_pubx() {
         return node_pubx;
     }
 
+    @SuppressWarnings("unused")
     public String getNode_puby() {
         return node_puby;
     }

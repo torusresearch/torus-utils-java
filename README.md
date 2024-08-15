@@ -9,7 +9,7 @@ Since Torus nodes operate on a threshold assumption, we need to ensure that API 
 This is to prevent malicious nodes from withholding shares, or deliberately slowing down the entire process.
 
 This utility library allows for early exits in optimistic scenarios, while handling rejection of invalid inputs from nodes in malicious/offline scenarios.
-The general approach is to evaluate predicates against a list of (potentially incomplete) results, and exit when the predicate passes.
+The general approach is to evaluate a threshold number of results instead of a list of (potentially incomplete) results, and then exit once a threshold number of valid results have been evaluated.
 
 README.md
 ## Features

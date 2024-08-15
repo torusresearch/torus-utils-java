@@ -58,7 +58,6 @@ public class CelesteTest {
 
     @BeforeEach
     void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
-        System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.CELESTE);
         TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.CELESTE, null, 0, false);
         torusUtils = new TorusUtils(opts);

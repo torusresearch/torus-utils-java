@@ -46,7 +46,7 @@ public class TorusUtilsExtraParams {
     @SuppressWarnings("unused")
     public TorusUtilsExtraParams(
             @Nullable Integer session_token_exp_second,
-            @Nullable String nonce, String message, @Nullable String signature, @Nullable String clientDataJson, @Nullable String authenticatorData,
+            @Nullable String nonce, @Nullable String message, @Nullable String signature, @Nullable String clientDataJson, @Nullable String authenticatorData,
             @Nullable String publicKey, @Nullable String challenge, @Nullable String rpOrigin, @Nullable String rpId, @Nullable Integer timestamp) {
         this.nonce = nonce;
         this.message = message;

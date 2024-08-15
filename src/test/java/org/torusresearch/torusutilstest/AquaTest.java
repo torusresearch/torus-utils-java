@@ -58,7 +58,6 @@ public class AquaTest {
 
     @BeforeEach
     void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
-        System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.AQUA);
         TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.AQUA, null, 0, false);
         torusUtils = new TorusUtils(opts);

@@ -29,11 +29,11 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
-
     retry {
         maxRetries = 3
     }
+
+    useJUnitPlatform()
 }
 
 // We don't want any compiler warnings

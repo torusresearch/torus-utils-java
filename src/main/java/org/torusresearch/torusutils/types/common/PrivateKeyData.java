@@ -41,6 +41,7 @@ public class PrivateKeyData {
         return signingPubKey;
     }
 
+    @SuppressWarnings("unused")
     public String getFinalKey() {
         return finalKey;
     }

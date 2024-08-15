@@ -171,8 +171,12 @@ public class NodeUtils {
     ) throws Exception {
         int threshold = (endpoints.length / 2) + 1;
 
-        APIUtils.get(allowHost, new Header[]{new Header("x-api-key", apiKey), new Header("Origin", verifier), new Header("verifier", verifier), new Header("verifierid", verifierParams.verifier_id), new Header("network", network.name().toLowerCase()),
-                new Header("clientid", clientId), new Header("enablegating", "true")}, true).get();
+        try {
+            APIUtils.get(allowHost, new Header[]{new Header("x-api-key", apiKey), new Header("Origin", verifier), new Header("verifier", verifier), new Header("verifierid", verifierParams.verifier_id), new Header("network", network.name().toLowerCase()),
+                    new Header("clientid", clientId), new Header("enablegating", "true")}, true).get();
+        } catch (Exception e) {
+            throw TorusUtilError.GATING_ERROR;
+        }
 
         KeyPair sessionAuthKey = KeyUtils.generateKeyPair();
         String sessionAuthKeySerialized = Common.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(sessionAuthKey.getPrivate())),'0', 64);
@@ -324,8 +328,7 @@ public class NodeUtils {
         Integer serverOffsetResponse = (serverTimeOffset != null) ? serverTimeOffset : Common.calculateMedian(serverOffsetTimes);
 
         if (thresholdNonceData == null && verifierParams.extended_verifier_id == null && !TorusUtils.isLegacyNetorkRouteMap(network)) {
-            GetOrSetNonceResult metadataNonce = MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost, network, thresholdPublicKey.getX(), thresholdPublicKey.getY(), serverOffsetResponse, null, false, null);
-            thresholdNonceData = metadataNonce;
+            thresholdNonceData = MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost, network, thresholdPublicKey.getX(), thresholdPublicKey.getY(), serverOffsetResponse, null, false, null);
         }
 
         int thresholdReqCount = (importedShares != null && importedShares.length > 0) ? endpoints.length : threshold;
@@ -376,7 +379,7 @@ public class NodeUtils {
         }
 
         if (verifierParams.extended_verifier_id == null && sessionTokens.size() < threshold) {
-            throw new RuntimeException("Insufficient number of signatures from nodes");
+            throw TorusUtilError.RUNTIME_ERROR("Insufficient number of signatures from nodes");
         }
 
         for (int i = 0; i < sessionTokens.size(); i++) {
@@ -455,7 +458,7 @@ public class NodeUtils {
                         String pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubNonce.x, pubNonce.y, true);
                         finalPublicKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPublicKey, pubNonceKey), false);
                     } else {
-                        throw new RuntimeException("Public nonce is missing");
+                        throw TorusUtilError.RUNTIME_ERROR("Public nonce is missing");
                     }
                 } else {
                     typeOfUser = TypeOfUser.v1;
@@ -478,7 +481,7 @@ public class NodeUtils {
                 finalPublicKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPublicKey, pubNonceKey), false);
                 pubNonce = pubNonceObject;
             } else {
-                throw TorusUtilError.METADATA_NONCE_MISSING; // TODO: Fix this
+                throw TorusUtilError.PUB_NONCE_MISSING; // TODO: Fix this
             }
         }
 

@@ -225,7 +225,7 @@ public class KeyUtils {
 
     public static List<ImportedShare> generateShares(@NotNull TorusKeyType keyType, @NotNull Integer serverTimeOffset, @NotNull List<BigInteger> nodeIndexes, @NotNull List<TorusNodePub> nodePubKeys, @NotNull String privateKey) throws Exception {
         if (keyType != TorusKeyType.secp256k1) {
-            throw new RuntimeException("Unsupported key type");
+            throw TorusUtilError.RUNTIME_ERROR("Unsupported key type");
         }
 
         PrivateKeyData keyData = generateKeyData(privateKey);

@@ -2,8 +2,6 @@ package org.torusresearch.torusutils.types;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
 public class OAuthPubKeyData {
 
     private final String walletAddress;

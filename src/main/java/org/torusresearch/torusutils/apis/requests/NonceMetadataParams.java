@@ -4,8 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.torusresearch.torusutils.types.common.TorusKeyType;
 
-import java.util.Objects;
-
 public class NonceMetadataParams {
     @Nullable
     public final String namespace;

@@ -67,7 +67,7 @@ public class TorusUtils {
                 } else if (options.network.name().equalsIgnoreCase("sapphire_devnet")) {
                     this.defaultHost = "https://node-1.dev-node.web3auth.io/metadata";
                 } else {
-                    throw TorusUtilError.CONFIGURATION_ERROR;
+                    throw TorusUtilError.INVALID_INPUT;
                 }
             }
         } else {
@@ -80,11 +80,13 @@ public class TorusUtils {
         return !network.name().toLowerCase().contains("sapphire");
     }
 
+    @SuppressWarnings("unused")
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
         APIUtils.setApiKey(apiKey);
     }
 
+    @SuppressWarnings("unused")
     public void removeApiKey() {
         this.apiKey = "torus-default";
         APIUtils.setApiKey("torus-default");
@@ -112,6 +114,7 @@ public class TorusUtils {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
+    @SuppressWarnings("unused")
     public static String getPostboxKey(TorusKey torusKey) {
         if (torusKey.getMetadata().getTypeOfUser() == TypeOfUser.v1) {
             return (torusKey.getFinalKeyData().getPrivKey() == null || torusKey.getFinalKeyData().getPrivKey().isEmpty()) ? torusKey.getoAuthKeyData().getPrivKey() : torusKey.getFinalKeyData().getPrivKey();
@@ -148,7 +151,7 @@ public class TorusUtils {
         }
 
         if (endpoints.length != nodeIndexes.length) {
-            throw new RuntimeException("Length of endpoints must be the same as length of nodeIndexes");
+            throw TorusUtilError.RUNTIME_ERROR("Length of endpoints must be the same as length of nodeIndexes");
         }
 
         List<ImportedShare> shares = KeyUtils.generateShares(this.keyType, (options.serverTimeOffset == null) ? 0 : options.serverTimeOffset, Arrays.asList(nodeIndexes), Arrays.asList(nodePubKeys), newPrivateKey);
@@ -166,20 +169,20 @@ public class TorusUtils {
         JsonRPCErrorInfo errorResult = keyAssignResult.errorResult;
         if (errorResult != null) {
             if (errorResult.message.toLowerCase().contains("verifier not supported")) {
-                throw new RuntimeException("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
+                throw TorusUtilError.RUNTIME_ERROR("Verifier not supported. Check if you:\n1. Are on the right network (Torus testnet/mainnet)\n2. Have setup a verifier on dashboard.web3auth.io?");
             } else {
-                throw new RuntimeException(errorResult.message);
+                throw TorusUtilError.RUNTIME_ERROR(errorResult.message);
             }
         }
 
         KeyResult keyResult = keyAssignResult.keyResult;
         if (keyResult == null || keyResult.keys.length == 0) {
-            throw new RuntimeException("node results do not match at first lookup " + keyResult + ", " + errorResult);
+            throw TorusUtilError.RUNTIME_ERROR("node results do not match at first lookup");
         }
 
         GetOrSetNonceResult nonceResult = keyAssignResult.nonceResult;
         if (nonceResult == null && extendedVerifierId == null && !isLegacyNetorkRouteMap(network)) {
-            throw new RuntimeException("metadata nonce is missing in share response");
+            throw TorusUtilError.RUNTIME_ERROR("metadata nonce is missing in share response");
         }
 
         String pubKey = KeyUtils.getPublicKeyFromCoords(keyResult.keys[0].pub_key_X, keyResult.keys[0].pub_key_Y, false);
@@ -224,7 +227,7 @@ public class TorusUtils {
                 finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPubKey, pubNonceKey), false);
 
             } else {
-                throw new RuntimeException("Public nonce is missing");
+                throw TorusUtilError.METADATA_NONCE_MISSING;
             }
         }
 
@@ -278,13 +281,13 @@ public class TorusUtils {
                 }
             } else if (typeOfUser == TypeOfUser.v2) {
                 if (nonceResult.pubNonce == null) {
-                    throw new RuntimeException("getOrSetNonce should always return typeOfUser.");
+                    throw TorusUtilError.RUNTIME_ERROR("getOrSetNonce should always return typeOfUser.");
                 }
                 String pubNonceKey = KeyUtils.getPublicKeyFromCoords(nonceResult.pubNonce.x, nonceResult.pubNonce.y, true);
                 finalPubKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPubKey, pubNonceKey), false);
                 pubNonce = nonceResult.pubNonce;
             } else {
-                throw new RuntimeException("getOrSetNonce should always return typeOfUser.");
+                throw TorusUtilError.RUNTIME_ERROR("getOrSetNonce should always return typeOfUser.");
             }
         } else {
             typeOfUser = TypeOfUser.v1;

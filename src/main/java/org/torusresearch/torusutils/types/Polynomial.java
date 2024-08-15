@@ -5,7 +5,6 @@ import static org.torusresearch.torusutils.helpers.KeyUtils.getOrderOfCurve;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,6 +15,7 @@ public class Polynomial {
         this.polynomial = polynomial;
     }
 
+    @SuppressWarnings("unused")
     public int getThreshold() {
         return polynomial.length;
     }
@@ -36,9 +36,9 @@ public class Polynomial {
 
     public Map<String, Share> generateShares(@NotNull BigInteger[] shareIndexes) {
         Map<String, Share> shares = new LinkedHashMap<>();
-        for (int x = 0; x < shareIndexes.length; x++) {
-            String hexString = String.format("%064x", shareIndexes[x]);
-            shares.put(hexString, new Share(shareIndexes[x], polyEval(shareIndexes[x])));
+        for (BigInteger shareIndex : shareIndexes) {
+            String hexString = String.format("%064x", shareIndex);
+            shares.put(hexString, new Share(shareIndex, polyEval(shareIndex)));
         }
         return shares;
     }
