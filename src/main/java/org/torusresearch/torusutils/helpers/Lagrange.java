@@ -110,7 +110,7 @@ public class Lagrange {
         return lagrange(points);
     }
 
-    public static BigInteger lagrangeInterpolation(BigInteger[] shares, BigInteger[] nodeIndex) {
+    public static BigInteger lagrangeInterpolation(@NotNull BigInteger[] shares, @NotNull BigInteger[] nodeIndex) {
         if (shares.length != nodeIndex.length) {
             return null;
         }

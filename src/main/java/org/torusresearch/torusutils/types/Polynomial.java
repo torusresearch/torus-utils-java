@@ -2,13 +2,15 @@ package org.torusresearch.torusutils.types;
 
 import static org.torusresearch.torusutils.helpers.KeyUtils.getOrderOfCurve;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigInteger;
 import java.util.HashMap;
 
 public class Polynomial {
     private final BigInteger[] polynomial;
 
-    public Polynomial(BigInteger[] polynomial) {
+    public Polynomial(@NotNull BigInteger[] polynomial) {
         this.polynomial = polynomial;
     }
 
@@ -16,7 +18,7 @@ public class Polynomial {
         return polynomial.length;
     }
 
-    public BigInteger polyEval(BigInteger x) {
+    public BigInteger polyEval(@NotNull BigInteger x) {
         BigInteger xi = x;
         BigInteger sum = BigInteger.ZERO;
         sum = sum.add(polynomial[0]);
@@ -30,7 +32,7 @@ public class Polynomial {
         return sum;
     }
 
-    public HashMap<String, Share> generateShares(BigInteger[] shareIndexes) {
+    public HashMap<String, Share> generateShares(@NotNull BigInteger[] shareIndexes) {
         HashMap<String, Share> shares = new HashMap<>();
 
         for (BigInteger shareIndex : shareIndexes) {

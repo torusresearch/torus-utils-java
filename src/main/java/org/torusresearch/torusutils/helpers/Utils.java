@@ -62,10 +62,6 @@ public class Utils {
     private Utils() {
     }
 
-    public static double trunc(double value) {
-        return value<0 ? Math.ceil(value) : Math.floor(value);
-    }
-
     public static <T> T thresholdSame(@NotNull T[] arr, int threshold) throws JsonProcessingException {
         HashMap<String, Integer> hashMap = new HashMap<>();
         for (T s : arr) {

@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
 public class OAuthPubKeyData {
@@ -8,7 +10,7 @@ public class OAuthPubKeyData {
     private final String x;
     private final String y;
 
-    public OAuthPubKeyData(String walletAddress, String x, String y) {
+    public OAuthPubKeyData(@NotNull String walletAddress, @NotNull String x, @NotNull String y) {
         this.walletAddress = walletAddress;
         this.x = x;
         this.y = y;

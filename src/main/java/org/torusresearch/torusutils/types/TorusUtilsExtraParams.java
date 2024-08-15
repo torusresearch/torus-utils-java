@@ -2,17 +2,30 @@ package org.torusresearch.torusutils.types;
 
 // TODO: This class is a bit of a mess for legacy reasons and should be cleaned up in future.
 
+import org.jetbrains.annotations.Nullable;
+
 public class TorusUtilsExtraParams {
+    @Nullable
     public final  String nonce; // farcaster
+    @Nullable
     public final String message; // farcaster
+    @Nullable
     public final String signature; // farcaster, passkey, webauthn
+    @Nullable
     public final String clientDataJson; // passkey, webauthn
+    @Nullable
     public final String authenticatorData; // passkey, webauthn
+    @Nullable
     public final String publicKey; // passkey, webauthn
+    @Nullable
     public final String challenge; // passkey, webauthn
+    @Nullable
     public final String rpOrigin; // passkey, webauthn
+    @Nullable
     public final String rpId; // passkey, webauthn
+    @Nullable
     public Integer session_token_exp_second;
+    @Nullable
     public final Integer timestamp; // signature
 
     // Default constructor
@@ -32,10 +45,9 @@ public class TorusUtilsExtraParams {
 
     @SuppressWarnings("unused")
     public TorusUtilsExtraParams(
-            Integer session_token_exp_second,
-            String nonce, String message,
-            String signature, String clientDataJson, String authenticatorData, String publicKey, String challenge,
-            String rpOrigin, String rpId, Integer timestamp) {
+            @Nullable Integer session_token_exp_second,
+            @Nullable String nonce, String message, @Nullable String signature, @Nullable String clientDataJson, @Nullable String authenticatorData,
+            @Nullable String publicKey, @Nullable String challenge, @Nullable String rpOrigin, @Nullable String rpId, @Nullable Integer timestamp) {
         this.nonce = nonce;
         this.message = message;
         this.signature = signature;

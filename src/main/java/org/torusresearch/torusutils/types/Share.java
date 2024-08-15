@@ -1,5 +1,6 @@
 package org.torusresearch.torusutils.types;
 
+import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
 
 import java.math.BigInteger;
@@ -9,7 +10,7 @@ public class Share {
     private final BigInteger shareIndex;
 
     @SuppressWarnings("unused")
-    public Share(String shareIndex, String share) throws Exception {
+    public Share(@NotNull String shareIndex, @NotNull String share) throws Exception {
         try {
             this.shareIndex = new BigInteger(shareIndex, 16);
         } catch (NumberFormatException e) {
@@ -23,7 +24,7 @@ public class Share {
         }
     }
 
-    public Share(BigInteger shareIndex, BigInteger share) {
+    public Share(@NotNull BigInteger shareIndex, @NotNull BigInteger share) {
         this.shareIndex = shareIndex;
         this.share = share;
     }

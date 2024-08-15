@@ -1,11 +1,10 @@
 package org.torusresearch.torusutils.types.common;
 
+import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.types.FinalPubKeyData;
+import org.torusresearch.torusutils.types.Metadata;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
-import org.torusresearch.torusutils.types.Metadata;
-
-import java.util.Objects;
 
 public class TorusPublicKey {
 
@@ -14,7 +13,7 @@ public class TorusPublicKey {
     public Metadata metadata;
     public NodesData nodesData;
 
-    public TorusPublicKey(OAuthPubKeyData oAuthKeyData, FinalPubKeyData finalKeyData, Metadata metadata, NodesData nodesData) {
+    public TorusPublicKey(@NotNull OAuthPubKeyData oAuthKeyData, @NotNull FinalPubKeyData finalKeyData, @NotNull Metadata metadata, @NotNull NodesData nodesData) {
         this.oAuthKeyData = oAuthKeyData;
         this.finalKeyData = finalKeyData;
         this.metadata = metadata;

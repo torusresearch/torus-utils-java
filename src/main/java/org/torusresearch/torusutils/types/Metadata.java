@@ -1,5 +1,6 @@
 package org.torusresearch.torusutils.types;
 
+import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.types.common.PubNonce;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
 
@@ -17,7 +18,7 @@ public class Metadata {
 
     private final Integer serverTimeOffset;
 
-    public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, @Nullable Boolean upgraded, Integer serverTimeOffset) {
+    public Metadata(@NotNull PubNonce pubNonce, @NotNull BigInteger nonce, @NotNull TypeOfUser typeOfUser, @Nullable Boolean upgraded, @NotNull Integer serverTimeOffset) {
         this.pubNonce = pubNonce;
         this.nonce = nonce;
         this.typeOfUser = typeOfUser;
@@ -25,7 +26,7 @@ public class Metadata {
         this.serverTimeOffset = serverTimeOffset;
     }
 
-    public Metadata(PubNonce pubNonce, BigInteger nonce, TypeOfUser typeOfUser, boolean upgraded) {
+    public Metadata(@NotNull PubNonce pubNonce, @NotNull BigInteger nonce, @NotNull TypeOfUser typeOfUser, @NotNull Boolean upgraded) {
         this.pubNonce = pubNonce;
         this.nonce = nonce;
         this.typeOfUser = typeOfUser;

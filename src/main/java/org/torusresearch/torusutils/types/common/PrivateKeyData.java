@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types.common;
 
+import org.jetbrains.annotations.NotNull;
+
 public class PrivateKeyData {
     private final String oAuthKey;
     private final String oAuthPubKey;
@@ -9,7 +11,7 @@ public class PrivateKeyData {
     private final String finalKey;
     private final String finalPubKey;
 
-    public PrivateKeyData(String oAuthKey, String oAuthPubKey, String nonce, String signingKey, String signingPubKey, String finalKey, String finalPubKey) {
+    public PrivateKeyData(@NotNull String oAuthKey, @NotNull String oAuthPubKey, @NotNull String nonce, @NotNull String signingKey, @NotNull String signingPubKey, @NotNull String finalKey, @NotNull String finalPubKey) {
         this.oAuthKey = oAuthKey;
         this.oAuthPubKey = oAuthPubKey;
         this.nonce = nonce;

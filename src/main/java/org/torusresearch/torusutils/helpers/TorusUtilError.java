@@ -1,4 +1,7 @@
 package org.torusresearch.torusutils.helpers;
+
+import org.jetbrains.annotations.NotNull;
+
 // TODO: Properly use and return all error types where applicable
 public class TorusUtilError extends Exception {
 
@@ -21,7 +24,7 @@ public class TorusUtilError extends Exception {
     private String message;
 
     // Constructor with message
-    public TorusUtilError(String message) {
+    public TorusUtilError(@NotNull String message) {
         super(message);
         this.message = message;
     }

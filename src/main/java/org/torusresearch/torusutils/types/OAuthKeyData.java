@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.types;
 
+import org.jetbrains.annotations.NotNull;
+
 public class OAuthKeyData {
 
     private final String walletAddress;
@@ -7,7 +9,7 @@ public class OAuthKeyData {
     private final String Y;
     private final String privKey;
 
-    public OAuthKeyData(String walletAddress, String X, String Y, String privKey) {
+    public OAuthKeyData(@NotNull String walletAddress, @NotNull String X, @NotNull String Y, @NotNull String privKey) {
         this.walletAddress = walletAddress;
         this.X = X;
         this.Y = Y;

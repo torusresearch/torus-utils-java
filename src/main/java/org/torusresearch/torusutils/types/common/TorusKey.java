@@ -1,5 +1,6 @@
 package org.torusresearch.torusutils.types.common;
 
+import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.types.FinalKeyData;
 import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
@@ -15,7 +16,7 @@ public class TorusKey {
     public Metadata metadata;
     public NodesData nodesData;
 
-    public TorusKey(FinalKeyData finalKeyData, OAuthKeyData oAuthKeyData, SessionData sessionData, Metadata metadata, NodesData nodesData) {
+    public TorusKey(@NotNull FinalKeyData finalKeyData, @NotNull OAuthKeyData oAuthKeyData, @NotNull SessionData sessionData, @NotNull Metadata metadata, @NotNull NodesData nodesData) {
         this.finalKeyData = finalKeyData;
         this.oAuthKeyData = oAuthKeyData;
         this.sessionData = sessionData;
