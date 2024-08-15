@@ -182,7 +182,7 @@ public class OneKeyTest {
                 new Metadata(new PubNonce(
                         "376c0ac5e15686633061cf5833dd040365f91377686d7ab5338c5202bd963a2f",
                         "794d7edb6a5ec0307dd40789274b377f37f293b0410a6cbd303db309536099b7"
-                ), new BigInteger("d3d455dcab49dc700319244e9e187f443596f2acbce238cff1c215d8809fa1f9", 16), TypeOfUser.v2, null, torusKey.getMetadata().getServerTimeOffset()),
+                ), new BigInteger("d3d455dcab49dc700319244e9e187f443596f2acbce238cff1c215d8809fa1f9", 16), TypeOfUser.v2, false, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
