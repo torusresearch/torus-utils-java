@@ -359,7 +359,7 @@ public class SapphireDevnetTest {
 
         assertEquals(val.getFinalKeyData().getPrivKey(), privateKey);
 
-        jwt = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
+        jwt = JwtUtils.generateIdToken(fakeEmail, algorithmRs);
         TorusKey shareRetrieval = torusUtils.retrieveShares(
                 nodeDetails.getTorusNodeSSSEndpoints(),
                 TORUS_TEST_VERIFIER,
@@ -367,9 +367,10 @@ public class SapphireDevnetTest {
                 jwt, null
         );
         assertEquals(shareRetrieval.getFinalKeyData().getPrivKey(), privateKey);
+
         TorusPublicKey addressRetrieval = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(),
                 TORUS_TEST_VERIFIER, fakeEmail, null);
-        String publicAddress = KeyUtils.generateAddressFromPrivKey(privateKey);
+        String publicAddress = KeyUtils.privateToPublic(new BigInteger(privateKey, 16));
         String retrievedAddress = KeyUtils.getPublicKeyFromCoords(
                 addressRetrieval.getFinalKeyData().getX(),
                 addressRetrieval.getFinalKeyData().getY(), true

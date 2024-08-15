@@ -56,7 +56,6 @@ import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.common.TorusOptions;
 import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
-import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 
 import java.math.BigInteger;
@@ -709,7 +708,7 @@ public class TorusUtils {
         }
 
         if (endpoints.length != nodeIndexes.length) {
-            throw TorusUtilError.CONFIGURATION_ERROR; // TOOD: Fix this
+            throw new RuntimeException("Length of endpoints must be the same as length of nodeIndexes");
         }
 
         List<ImportedShare> shares = KeyUtils.generateShares(this.keyType, (options.serverTimeOffset == null) ? 0 : options.serverTimeOffset, Arrays.asList(nodeIndexes), Arrays.asList(nodePubKeys), newPrivateKey);
