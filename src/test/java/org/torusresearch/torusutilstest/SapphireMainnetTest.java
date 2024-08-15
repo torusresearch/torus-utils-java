@@ -46,12 +46,8 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class SapphireMainnetTest {
@@ -306,14 +302,6 @@ public class SapphireMainnetTest {
         torusUtils.setSessionTime(customSessionTime);
         TorusKey torusKey = torusUtils.retrieveShares(torusNodeEndpoints, TORUS_TEST_VERIFIER,
                 verifierParams, idToken, null);
-
-        List<Map<String, String>> signatures = new ArrayList<>();
-        for (SessionToken sessionToken : torusKey.getSessionData().getSessionTokenData()) {
-            Map<String, String> signature = new HashMap<>();
-            signature.put("data", sessionToken.getToken());
-            signature.put("sig", sessionToken.getSignature());
-            signatures.add(signature);
-        }
 
         for (SessionToken sessionToken : torusKey.getSessionData().getSessionTokenData()) {
             String decodedToken = new String(Base64.getDecoder().decode(sessionToken.getToken()), StandardCharsets.UTF_8);
