@@ -29,7 +29,7 @@ public class APIUtils {
             .connectionPool(new ConnectionPool(64, 5, TimeUnit.SECONDS))
             .dispatcher(createDispatcher())
             .build();
-    private static String apiKey;
+    public static String apiKey;
 
     private static Dispatcher createDispatcher() {
         final Dispatcher dispatcher = new Dispatcher(Executors.newCachedThreadPool());
@@ -39,10 +39,6 @@ public class APIUtils {
     }
 
     private APIUtils() {
-    }
-
-    public static String getApiKey() {
-        return apiKey;
     }
 
     public static void setApiKey(String apiKey) {
@@ -77,6 +73,7 @@ public class APIUtils {
         return _post(url, data, new Header[0], useApiKey);
     }
 
+    @SuppressWarnings("unused")
     public static CompletableFuture<String> post(String url, String data, Header[] headers, Boolean useApiKey) {
         return _post(url, data, headers, useApiKey);
     }
