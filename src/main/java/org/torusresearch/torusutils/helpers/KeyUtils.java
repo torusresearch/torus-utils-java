@@ -88,9 +88,9 @@ public class KeyUtils {
         return kf.generatePrivate(prvkey);
     }
 
-    public static byte[] randomNonce() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+    private static String randomNonce() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
         KeyPair keyPair = generateKeyPair();
-        return KeyUtils.serializePrivateKey(keyPair.getPrivate());
+        return Utils.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(keyPair.getPrivate())), '0', 64);
     }
 
     public static BigInteger getOrderOfCurve() {
@@ -162,28 +162,19 @@ public class KeyUtils {
     }
 
     public static PrivateKeyData generateKeyData(@NotNull String privateKey) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
-        BigInteger scalar = new BigInteger(Hex.decode(privateKey));
-        BigInteger randomNonce = new BigInteger(randomNonce());
+        BigInteger scalar = new BigInteger(privateKey,16);
+        BigInteger randomNonce = new BigInteger(randomNonce(), 16);
 
-        ECDomainParameters domainParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH(), params.getSeed());
-        BigInteger oAuthKey = scalar.subtract(randomNonce).mod(params.getN());
-
-        ECPrivateKeyParameters oAuthPrivKey = new ECPrivateKeyParameters(oAuthKey, domainParams);
-        ECPoint oAuthPubPoint = domainParams.getG().multiply(oAuthPrivKey.getD());
-        ECPublicKeyParameters oAuthPubKey = new ECPublicKeyParameters(oAuthPubPoint, domainParams);
-
-        ECPrivateKeyParameters finalPrivKey = new ECPrivateKeyParameters(scalar, domainParams);
-        ECPoint finalPubPoint = domainParams.getG().multiply(finalPrivKey.getD());
-        ECPublicKeyParameters finalPubKey = new ECPublicKeyParameters(finalPubPoint, domainParams);
+        BigInteger oAuthKey = scalar.subtract(randomNonce).mod(getOrderOfCurve());
 
         return new PrivateKeyData(
                 padLeft(oAuthKey.toString(16), '0', 64),
-                Hex.toHexString(oAuthPubKey.getQ().getEncoded(false)),
+                KeyUtils.privateToPublic(oAuthKey),
                 padLeft(randomNonce.toString(16), '0', 64),
                 padLeft(oAuthKey.toString(16), '0', 64),
-                Hex.toHexString(oAuthPubKey.getQ().getEncoded(false)),
-                padLeft(privateKey, '0', 64),
-                Hex.toHexString(finalPubKey.getQ().getEncoded(false))
+                KeyUtils.privateToPublic(oAuthKey),
+                padLeft(scalar.toString(16), '0', 64),
+                KeyUtils.privateToPublic(scalar)
         );
     }
 
@@ -242,10 +233,7 @@ public class KeyUtils {
 
         int threshold = (nodePubKeys.size() / 2) + 1;
         int degree = threshold - 1;
-        List<BigInteger> nodeIndexesBN = new ArrayList<>();
-        for (BigInteger index : nodeIndexes) {
-            nodeIndexesBN.add(new BigInteger(String.valueOf(index)));
-        }
+        List<BigInteger> nodeIndexesBN = new ArrayList<>(nodeIndexes);
 
         Polynomial poly = Lagrange.generateRandomPolynomial(degree, new BigInteger(keyData.getOAuthKey(), 16), null);
         Map<String, Share> shares = poly.generateShares(nodeIndexesBN.toArray(new BigInteger[0]));

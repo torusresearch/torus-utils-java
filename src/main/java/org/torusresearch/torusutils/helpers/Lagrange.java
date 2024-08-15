@@ -1,17 +1,24 @@
 package org.torusresearch.torusutils.helpers;
 
 import static org.torusresearch.torusutils.TorusUtils.secp256k1N;
+import static org.torusresearch.torusutils.helpers.KeyUtils.getOrderOfCurve;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.torusresearch.torusutils.types.Point;
 import org.torusresearch.torusutils.types.Polynomial;
 import org.torusresearch.torusutils.types.Share;
 
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -20,11 +27,12 @@ import io.reactivex.annotations.Nullable;
 
 public class Lagrange {
 
-    public static BigInteger generatePrivateExcludingIndexes(@NotNull List<BigInteger> shareIndexes) {
-        BigInteger key;
-        do {
-            key = new BigInteger(256, new Random());
-        } while (shareIndexes.contains(key));
+    public static BigInteger generatePrivateExcludingIndexes(@NotNull List<BigInteger> shareIndexes) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+        BigInteger key = new BigInteger(Utils.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate())), '0', 64), 16);
+
+        if (shareIndexes.contains(key)) {
+            return generatePrivateExcludingIndexes(shareIndexes);
+        }
 
         return key;
     }
@@ -38,44 +46,38 @@ public class Lagrange {
     public static BigInteger denominator(int i, @NotNull Point[] innerPoints) {
         BigInteger result = BigInteger.ONE;
         BigInteger xi = innerPoints[i].getX();
-
-        for (int j = innerPoints.length - 1; j >= 0; j--) {
+        for (int j = 0; j < innerPoints.length; j++) {
             if (i != j) {
-                BigInteger tmp = xi.subtract(innerPoints[j].getX()).mod(KeyUtils.getOrderOfCurve());
-                result = result.multiply(tmp).mod(KeyUtils.getOrderOfCurve());
+                BigInteger tmp = xi;
+                tmp = (tmp.subtract(innerPoints[j].getX()).mod(getOrderOfCurve()));
+                result = result.multiply(tmp).mod(getOrderOfCurve());
             }
         }
-
         return result;
     }
 
     public static BigInteger[] interpolationPoly(int i, @NotNull Point[] innerPoints) {
         BigInteger[] coefficients = generateEmptyBNArray(innerPoints.length);
         BigInteger d = denominator(i, innerPoints);
-
         if (d.equals(BigInteger.ZERO)) {
             throw new IllegalArgumentException("Denominator for interpolationPoly is 0");
         }
 
-        coefficients[0] = d.modInverse(KeyUtils.getOrderOfCurve());
+        coefficients[0] = d.modInverse(getOrderOfCurve());
 
         for (int k = 0; k < innerPoints.length; k++) {
             BigInteger[] newCoefficients = generateEmptyBNArray(innerPoints.length);
-
             if (k != i) {
                 int j = (k < i) ? k + 1 : k;
                 j -= 1;
 
                 while (j >= 0) {
-                    newCoefficients[j + 1] = newCoefficients[j + 1].add(coefficients[j]).mod(KeyUtils.getOrderOfCurve());
-
+                    newCoefficients[j + 1] = newCoefficients[j + 1].add(coefficients[j]).mod(getOrderOfCurve());
                     BigInteger tmp = innerPoints[k].getX();
-                    tmp = tmp.multiply(coefficients[j]).mod(KeyUtils.getOrderOfCurve());
-
-                    newCoefficients[j] = newCoefficients[j].subtract(tmp).mod(KeyUtils.getOrderOfCurve());
-                    j--;
+                    tmp = tmp.multiply(coefficients[j]).mod(getOrderOfCurve());
+                    newCoefficients[j] = newCoefficients[j].subtract(tmp).mod(getOrderOfCurve());
+                    j -= 1;
                 }
-
                 coefficients = newCoefficients;
             }
         }
@@ -84,25 +86,22 @@ public class Lagrange {
     }
 
     public static Point[] pointSort(@NotNull Point[] innerPoints) {
-        Point[] pointArrClone = Arrays.copyOf(innerPoints, innerPoints.length);
-        Arrays.sort(pointArrClone, Comparator.comparing(Point::getX));
-        return pointArrClone;
+        Point[] pointsClone = Arrays.copyOf(innerPoints, innerPoints.length);
+        Arrays.sort(pointsClone, Comparator.comparing(Point::getX));
+        return pointsClone;
     }
 
     public static Polynomial lagrange(@NotNull Point[] unsortedPoints) {
         Point[] sortedPoints = pointSort(unsortedPoints);
         BigInteger[] polynomial = generateEmptyBNArray(sortedPoints.length);
-
         for (int i = 0; i < sortedPoints.length; i++) {
             BigInteger[] coefficients = interpolationPoly(i, sortedPoints);
-
             for (int k = 0; k < sortedPoints.length; k++) {
                 BigInteger tmp = sortedPoints[i].getY();
-                tmp = tmp.multiply(coefficients[k]).mod(KeyUtils.getOrderOfCurve());
-                polynomial[k] = polynomial[k].add(tmp).mod(KeyUtils.getOrderOfCurve());
+                tmp = tmp.multiply(coefficients[k]).mod(getOrderOfCurve());
+                polynomial[k] = polynomial[k].add(tmp).mod(getOrderOfCurve());
             }
         }
-
         return new Polynomial(polynomial);
     }
 
@@ -110,36 +109,48 @@ public class Lagrange {
         return lagrange(points);
     }
 
-    public static BigInteger lagrangeInterpolation(@NotNull BigInteger[] shares, @NotNull BigInteger[] nodeIndex) {
+    public static BigInteger lagrangeInterpolation(@NotNull BigInteger[] shares, @NotNull BigInteger[] nodeIndex) throws TorusUtilError {
         if (shares.length != nodeIndex.length) {
             return null;
         }
-        BigInteger secret = new BigInteger("0");
+
+        int sharesDecrypt = 0;
+
+        BigInteger secret = BigInteger.ZERO;
         for (int i = 0; i < shares.length; i++) {
-            BigInteger upper = new BigInteger("1");
-            BigInteger lower = new BigInteger("1");
+            BigInteger upper = BigInteger.ONE;
+            BigInteger lower = BigInteger.ONE;
             for (int j = 0; j < shares.length; j++) {
                 if (i != j) {
-                    upper = upper.multiply(nodeIndex[j].negate());
-                    upper = upper.mod(secp256k1N);
-                    BigInteger temp = nodeIndex[i].subtract(nodeIndex[j]);
-                    temp = temp.mod(secp256k1N);
-                    lower = lower.multiply(temp).mod(secp256k1N);
+                    upper = upper.multiply(nodeIndex[j].negate()).mod(getOrderOfCurve());
+                    BigInteger temp = nodeIndex[i].subtract(nodeIndex[j]).mod(getOrderOfCurve());
+                    lower = lower.multiply(temp).mod(getOrderOfCurve());
                 }
             }
-            BigInteger delta = upper.multiply(lower.modInverse(secp256k1N)).mod(secp256k1N);
-            delta = delta.multiply(shares[i]).mod(secp256k1N);
-            secret = secret.add(delta);
+            BigInteger inverse = lower.modInverse(getOrderOfCurve());
+            BigInteger delta = upper.multiply(inverse).mod(getOrderOfCurve());
+            delta = delta.multiply(shares[i]).mod(getOrderOfCurve());
+            secret = secret.add(delta).mod(getOrderOfCurve());
+            sharesDecrypt += 1;
         }
-        return secret.mod(secp256k1N);
+
+        if (secret.equals(BigInteger.ZERO)) {
+            throw TorusUtilError.INTERPOLATION_FAILED;
+        }
+
+        if (sharesDecrypt == shares.length) {
+            return secret;
+        }
+
+        throw TorusUtilError.INTERPOLATION_FAILED;
     }
 
-    public static Polynomial generateRandomPolynomial(int degree, @NotNull BigInteger secret, @Nullable List<Share> deterministicShares) throws Exception {
+    public static Polynomial generateRandomPolynomial(int degree, @Nullable BigInteger secret, @Nullable List<Share> deterministicShares) throws Exception {
         BigInteger actualS = secret;
-
-        // Generate a random secret if not provided
         if (actualS == null) {
-            actualS = generatePrivateExcludingIndexes(new ArrayList<>());
+            List<BigInteger> excludeList = new ArrayList<>();
+            excludeList.add(actualS);
+            actualS = generatePrivateExcludingIndexes(excludeList);
         }
 
         // If no deterministic shares provided, generate random shares
@@ -161,27 +172,28 @@ public class Lagrange {
         }
 
         // Initialize points map
-        Map<String, Point> points = new HashMap<>();
+        Map<String, Point> points = new LinkedHashMap<>();
 
         // Add deterministic shares to points map
         for (Share share : deterministicShares) {
-            points.put(Utils.addLeadingZerosForLength64(share.getShareIndex().toString(16)), new Point(share.getShareIndex(), share.getShare()));
+            points.put(Utils.padLeft(share.getShareIndex().toString(16), '0', 64), new Point(share.getShareIndex(), share.getShare()));
         }
 
         // Calculate remaining shares to fill the polynomial
         int remainingDegree = degree - deterministicShares.size();
         for (int i = 0; i < remainingDegree; i++) {
-            BigInteger shareIndex = generatePrivateExcludingIndexes(new ArrayList<>());
+            List<BigInteger> excludeList = new ArrayList<>();
+            excludeList.add(BigInteger.ZERO);
+            BigInteger shareIndex = generatePrivateExcludingIndexes(excludeList);
 
             // Ensure unique share index
-            while (points.containsKey(Utils.addLeadingZerosForLength64(shareIndex.toString(16)))) {
-                shareIndex = generatePrivateExcludingIndexes(new ArrayList<>());
+            while (points.containsKey(Utils.padLeft(shareIndex.toString(16),'0', 64))) {
+                shareIndex = generatePrivateExcludingIndexes(excludeList);
             }
 
-            byte[] serializedKey = KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate());
-            String serializedHex = Utils.serializeHex(serializedKey);
-            points.put(Utils.addLeadingZerosForLength64(shareIndex.toString(16)),
-                    new Point(shareIndex, new BigInteger(serializedHex, 16)));
+            String serializedKey = Utils.padLeft(Hex.toHexString(KeyUtils.serializePrivateKey(KeyUtils.generateKeyPair().getPrivate())),'0',64);
+            points.put(Utils.padLeft(shareIndex.toString(16),'0',64),
+                    new Point(shareIndex, new BigInteger(serializedKey, 16)));
         }
 
         // Add point for zero index
