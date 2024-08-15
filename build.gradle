@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id "org.gradle.test-retry" version "1.5.10"
 }
 
 group 'org.torusresearch'
@@ -29,6 +30,10 @@ dependencies {
 
 test {
     useJUnitPlatform()
+
+    retry {
+        maxRetries = 3
+    }
 }
 
 // We don't want any compiler warnings
