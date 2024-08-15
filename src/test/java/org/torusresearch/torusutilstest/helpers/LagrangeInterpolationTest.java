@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class LagrangeInterpolationTest {
     @Test
-    public void testLagrangeInterpolation() throws Exception {
+    public void testLagrangeInterpolation() {
         ArrayList<Point> points = new ArrayList<>();
         points.add(new Point(BigInteger.ONE, new BigInteger(String.valueOf(2))));
         points.add(new Point(new BigInteger(String.valueOf(2)), new BigInteger(String.valueOf(5))));

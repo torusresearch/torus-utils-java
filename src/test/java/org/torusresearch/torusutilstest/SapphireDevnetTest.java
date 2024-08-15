@@ -27,7 +27,6 @@ import org.torusresearch.torusutils.types.NodesData;
 import org.torusresearch.torusutils.types.OAuthKeyData;
 import org.torusresearch.torusutils.types.OAuthPubKeyData;
 import org.torusresearch.torusutils.types.SessionData;
-import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
 import org.torusresearch.torusutils.types.VerifierParams;
 import org.torusresearch.torusutils.types.VerifyParam;
 import org.torusresearch.torusutils.types.common.PubNonce;
@@ -109,7 +108,7 @@ public class SapphireDevnetTest {
         String verifier = TORUS_TEST_VERIFIER;
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, TORUS_TEST_EMAIL).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), verifier, TORUS_TEST_EMAIL, null);
-        assertTrue(torusPublicKey.getMetadata().getServerTimeOffset().intValue() < 20);
+        assertTrue(torusPublicKey.getMetadata().getServerTimeOffset() < 20);
         assertEquals("0x137B3607958562D03Eb3C6086392D1eFa01aA6aa", torusPublicKey.oAuthKeyData.walletAddress);
         assertEquals("0x462A8BF111A55C9354425F875F89B22678c0Bc44", torusPublicKey.finalKeyData.walletAddress);
         assertThat(torusPublicKey).isEqualToComparingFieldByFieldRecursively(new TorusPublicKey(
@@ -319,6 +318,7 @@ public class SapphireDevnetTest {
             signatures.add(signature);
         }
 
+        // TODO: Check this
         List<Map<String, Object>> parsedSigsData = new ArrayList<>();
         for (Map<String, String> sig : signatures) {
             byte[] decodedBytes = Base64.getDecoder().decode(sig.get("data"));

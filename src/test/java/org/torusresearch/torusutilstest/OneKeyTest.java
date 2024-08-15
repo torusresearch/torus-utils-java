@@ -42,7 +42,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.concurrent.ExecutionException;
 
 public class OneKeyTest {
 
@@ -57,7 +56,7 @@ public class OneKeyTest {
     static String TORUS_TEST_EMAIL = "hello@tor.us";
 
     @BeforeAll
-    static void setup() throws ExecutionException, InterruptedException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
+    static void setup() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, TorusUtilError {
         System.out.println("Setup Starting");
         fetchNodeDetails = new FetchNodeDetails(Web3AuthNetwork.TESTNET);
         TorusOptions opts = new TorusOptions("YOUR_CLIENT_ID", Web3AuthNetwork.TESTNET, null, 0, true);

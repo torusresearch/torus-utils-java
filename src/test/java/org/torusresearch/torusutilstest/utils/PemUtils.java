@@ -58,11 +58,6 @@ public class PemUtils {
         return privateKey;
     }
 
-    public static PublicKey readPublicKeyFromFile(String filepath, String algorithm) throws IOException {
-        byte[] bytes = PemUtils.parsePEMFile(new File(filepath));
-        return PemUtils.getPublicKey(bytes, algorithm);
-    }
-
     public static PrivateKey readPrivateKeyFromFile(String filepath, String algorithm) throws IOException {
         byte[] bytes = PemUtils.parsePEMFile(new File(filepath));
         return PemUtils.getPrivateKey(bytes, algorithm);

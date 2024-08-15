@@ -1,18 +1,16 @@
 package org.torusresearch.torusutilstest.helpers;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
-import org.torusresearch.torusutils.types.common.ecies.Ecies;
-import org.torusresearch.torusutils.helpers.encryption.Encryption;
 import org.torusresearch.torusutils.helpers.KeyUtils;
-import org.torusresearch.torusutils.helpers.Utils;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.torusresearch.torusutils.helpers.encryption.Encryption;
+import org.torusresearch.torusutils.types.common.ecies.Ecies;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AES256CBC {
     @Test

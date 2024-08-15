@@ -104,8 +104,7 @@ public class SapphireMainnetTest {
     @Test
     public void shouldKeyAssign() throws Exception {
         String verifier = "tkey-google-sapphire-mainnet";
-        String email = JwtUtils.getRandomEmail();
-        String verifierId = email;
+        String verifierId = JwtUtils.getRandomEmail();
         NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, verifierId).get();
         TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), verifier, verifierId, null);
         assertNotEquals("", result.finalKeyData.walletAddress);
@@ -311,6 +310,7 @@ public class SapphireMainnetTest {
             signatures.add(signature);
         }
 
+        // TODO: Check this
         List<Map<String, Object>> parsedSigsData = new ArrayList<>();
         for (Map<String, String> sig : signatures) {
             byte[] decodedBytes = Base64.getDecoder().decode(sig.get("data"));

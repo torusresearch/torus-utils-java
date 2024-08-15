@@ -10,7 +10,7 @@ import java.util.List;
 
 public class kCombinationsTest {
     @Test
-    public void testKCombinations() throws Exception {
+    public void testKCombinations() {
         List<Integer> set = new ArrayList<>();
         List<List<Integer>> allCombis = Utils.kCombinations(set, 0);
         assertEquals(allCombis.size(), 0);
