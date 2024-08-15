@@ -168,7 +168,7 @@ public class MainnetTest {
                 new OAuthKeyData("0x90A926b698047b4A87265ba1E9D8b512E8489067",
                         "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f",
                         "0ad1ffaecb2178b02a37c455975368be9b967ead1b281202cc8d48c77618bff1",
-                        "129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
+                        "0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44"),
                 new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(null, BigInteger.ZERO, TypeOfUser.v1, null, torusKey.getMetadata().getServerTimeOffset()),
                 new NodesData(torusKey.getNodesData().getNodeIndexes())

@@ -116,7 +116,7 @@ public class OneKeyTest {
                 new OAuthKeyData("0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4",
                         "18409385c38e9729eb6b7837dc8f234256233ffab1ed7eeb1c23b230333396b4",
                         "17d35ffc722d7a8dd88353815e9553cacf567c5f3b8d082adac9d653367ce47a",
-                        "68ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25"),
+                        "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25"),
                 new SessionData(torusKey.getSessionData().getSessionTokenData(), torusKey.getSessionData().getSessionAuthKey()),
                 new Metadata(new PubNonce(
                         "8e8c399d8ba00ff88e6c42eb40c10661f822868ba2ad8fe12a8830e996b1e25d",
