@@ -242,13 +242,15 @@ public class SapphireDevnetTest {
     @DisplayName("should be able to aggregate login")
     @Test
     public void shouldAggregateLogin() throws Exception {
-        String idToken = JwtUtils.generateIdToken(TORUS_TEST_EMAIL, algorithmRs);
+        String email = JwtUtils.getRandomEmail();
+        String idToken = JwtUtils.generateIdToken(email, algorithmRs);
         String hashedIdToken = Hash.sha3String(idToken).replace("0x","");
-        VerifierParams verifierParams = new VerifierParams(TORUS_TEST_EMAIL, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(TORUS_TEST_EMAIL, idToken)});
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, TORUS_TEST_EMAIL).get();
-        TorusKey result = torusUtils.retrieveShares(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_AGGREGATE_VERIFIER,
+        VerifierParams verifierParams = new VerifierParams(email, null, new String[]{TORUS_TEST_VERIFIER}, new VerifyParams[]{new VerifyParams(email, idToken)});
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_AGGREGATE_VERIFIER, email).get();
+        String[] endpoints = nodeDetails.getTorusNodeSSSEndpoints();
+        TorusKey result = torusUtils.retrieveShares(endpoints, TORUS_TEST_AGGREGATE_VERIFIER,
                 verifierParams, hashedIdToken, null);
-        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.finalKeyData.getWalletAddress());
         assertNotNull(result.oAuthKeyData.getWalletAddress());
         assertEquals(TypeOfUser.v2, result.metadata.getTypeOfUser());
         assertNotNull(result.metadata.getNonce());
