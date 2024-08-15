@@ -10,6 +10,7 @@ public class Ecies {
     private final String mode;
     private final String ciphertext;
 
+    @SuppressWarnings("unused")
     public Ecies(@NotNull String iv, @NotNull String ephemPublicKey, @NotNull String ciphertext, @NotNull String mac, @NotNull String mode) {
         this.iv = iv;
         this.ephemPublicKey = ephemPublicKey;

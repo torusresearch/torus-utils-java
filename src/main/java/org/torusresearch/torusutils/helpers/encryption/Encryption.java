@@ -7,12 +7,12 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
-import org.torusresearch.torusutils.types.common.ecies.Ecies;
-import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.helpers.KeyUtils;
 import org.torusresearch.torusutils.helpers.hashing.SHA512;
+import org.torusresearch.torusutils.types.common.ecies.Ecies;
+import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
+
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.Provider;
 import java.security.SecureRandom;

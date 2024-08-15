@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import io.reactivex.annotations.Nullable;
+
 public class Lagrange {
 
     public static BigInteger generatePrivateExcludingIndexes(@NotNull List<BigInteger> shareIndexes) {
@@ -132,7 +134,7 @@ public class Lagrange {
         return secret.mod(secp256k1N);
     }
 
-    public static Polynomial generateRandomPolynomial(int degree, @NotNull BigInteger secret, @NotNull  List<Share> deterministicShares) throws Exception {
+    public static Polynomial generateRandomPolynomial(int degree, @NotNull BigInteger secret, @Nullable List<Share> deterministicShares) throws Exception {
         BigInteger actualS = secret;
 
         // Generate a random secret if not provided

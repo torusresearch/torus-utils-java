@@ -2,13 +2,11 @@ package org.torusresearch.torusutils.apis.requests;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.torusresearch.torusutils.types.VerifyParam;
-import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 import org.torusresearch.torusutils.apis.responses.CommitmentRequestResult;
-import org.torusresearch.torusutils.types.common.TorusKeyType;
 import org.torusresearch.torusutils.types.TorusUtilsExtraParams;
-
-import java.util.List;
+import org.torusresearch.torusutils.types.VerifyParam;
+import org.torusresearch.torusutils.types.common.TorusKeyType;
+import org.torusresearch.torusutils.types.common.ecies.EciesHexOmitCipherText;
 
 public class ShareRequestItem {
     public final String verifieridentifier;

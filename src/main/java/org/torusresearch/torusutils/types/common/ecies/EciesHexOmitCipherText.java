@@ -15,6 +15,7 @@ public class EciesHexOmitCipherText {
         this.mode = mode;
     }
 
+    @SuppressWarnings("unused")
     public EciesHexOmitCipherText(@NotNull String iv, @NotNull String ephemPublicKey, @NotNull String mac) {
         this.iv = iv;
         this.ephemPublicKey = ephemPublicKey;

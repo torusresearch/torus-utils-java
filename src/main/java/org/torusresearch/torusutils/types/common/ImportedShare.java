@@ -56,88 +56,37 @@ public class ImportedShare {
         return oauth_pub_key_x;
     }
 
-    public void setOauth_pub_key_x(String oauth_pub_key_x) {
-        this.oauth_pub_key_x = oauth_pub_key_x;
-    }
-
     public String getOauth_pub_key_y() {
         return oauth_pub_key_y;
-    }
-
-    public void setOauth_pub_key_y(String oauth_pub_key_y) {
-        this.oauth_pub_key_y = oauth_pub_key_y;
-    }
-
-    public Point getFinal_user_point() {
-        return final_user_point;
-    }
-
-    public void setFinal_user_point(Point final_user_point) {
-        this.final_user_point = final_user_point;
     }
 
     public String getSigning_pub_key_x() {
         return signing_pub_key_x;
     }
 
-    public void setSigning_pub_key_x(String signing_pub_key_x) {
-        this.signing_pub_key_x = signing_pub_key_x;
-    }
-
     public String getSigning_pub_key_y() {
         return signing_pub_key_y;
-    }
-
-    public void setSigning_pub_key_y(String signing_pub_key_y) {
-        this.signing_pub_key_y = signing_pub_key_y;
     }
 
     public String getEncryptedShare() {
         return encryptedShare;
     }
 
-    public void setEncryptedShare(String encryptedShare) {
-        this.encryptedShare = encryptedShare;
-    }
-
     public EciesHexOmitCipherText getEncryptedShareMetadata() {
         return encryptedShareMetadata;
-    }
-
-    public void setEncryptedShareMetadata(EciesHexOmitCipherText encryptedShareMetadata) {
-        this.encryptedShareMetadata = encryptedShareMetadata;
-    }
-
-    public String getEncryptedSeed() {
-        return encryptedSeed;
-    }
-
-    public void setEncryptedSeed(String encryptedSeed) {
-        this.encryptedSeed = encryptedSeed;
     }
 
     public int getNode_index() {
         return node_index;
     }
 
-    public void setNode_index(int node_index) {
-        this.node_index = node_index;
-    }
-
     public TorusKeyType getKey_type() {
         return key_type;
     }
 
-    public void setKey_type(TorusKeyType key_type) {
-        this.key_type = key_type;
-    }
 
     public String getNonce_data() {
         return nonce_data;
-    }
-
-    public void setNonce_data(String nonce_data) {
-        this.nonce_data = nonce_data;
     }
 
     public String getNonce_signature() {

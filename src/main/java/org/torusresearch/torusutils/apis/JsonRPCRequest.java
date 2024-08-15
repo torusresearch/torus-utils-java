@@ -61,9 +61,9 @@ public class JsonRPCRequest {
         }
 
         public static class ErrorInfo {
-            private int code;
-            private String message;
-            private Object data;
+            private final int code;
+            private final String message;
+            private final Object data;
 
             public ErrorInfo(int code, String message, Object data) {
                 this.code = code;

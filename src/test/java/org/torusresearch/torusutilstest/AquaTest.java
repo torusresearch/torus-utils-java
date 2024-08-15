@@ -33,7 +33,6 @@ import org.torusresearch.torusutils.types.common.TorusPublicKey;
 import org.torusresearch.torusutils.types.common.TypeOfUser;
 import org.torusresearch.torusutilstest.utils.JwtUtils;
 import org.torusresearch.torusutilstest.utils.PemUtils;
-import org.web3j.crypto.Hash;
 
 import java.io.IOException;
 import java.math.BigInteger;

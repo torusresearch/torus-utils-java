@@ -207,7 +207,7 @@ public class Utils {
         if (serverTimeOffset != null) {
             timeOffset = BigInteger.valueOf(serverTimeOffset);
         }
-        timeOffset.add( new BigInteger(String.valueOf(System.currentTimeMillis() / 1000)));
+        timeOffset = timeOffset.add( new BigInteger(String.valueOf(System.currentTimeMillis() / 1000)));
 
         GetOrSetKeyParams params = new GetOrSetKeyParams(true, verifier, verifierId, extendedVerifierId, true, true, timeOffset.toString());
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
