@@ -1,7 +1,5 @@
 package org.torusresearch.torusutils.types;
 
-import java.util.Objects;
-
 public class FinalPubKeyData {
 
     public String walletAddress;
@@ -24,20 +22,5 @@ public class FinalPubKeyData {
 
     public String getY() {
         return y;
-    }
-
-    // TODO: Check this
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof FinalPubKeyData)) return false;
-        FinalPubKeyData that = (FinalPubKeyData) o;
-        return getWalletAddress().equals(that.getWalletAddress()) && getX().equals(that.getX()) && getY().equals(that.getY());
-    }
-
-    // TODO: Check this
-    @Override
-    public int hashCode() {
-        return Objects.hash(getWalletAddress(), getX(), getY());
     }
 }

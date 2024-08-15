@@ -25,17 +25,4 @@ public class OAuthPubKeyData {
     public String getY() {
         return y;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof OAuthPubKeyData)) return false;
-        OAuthPubKeyData that = (OAuthPubKeyData) o;
-        return getWalletAddress().equals(that.getWalletAddress()) && getX().equals(that.getX()) && getY().equals(that.getY());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getWalletAddress(), getX(), getY());
-    }
 }

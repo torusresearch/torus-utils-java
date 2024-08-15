@@ -28,6 +28,7 @@ public class PemUtils {
         return content;
     }
 
+    @SuppressWarnings("unused")
     private static PublicKey getPublicKey(byte[] keyBytes, String algorithm) {
         PublicKey publicKey = null;
         try {

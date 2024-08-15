@@ -36,19 +36,4 @@ public class TorusPublicKey {
     public NodesData getNodesData() {
         return nodesData;
     }
-
-    // TODO: Check this
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TorusPublicKey)) return false;
-        TorusPublicKey that = (TorusPublicKey) o;
-        return getoAuthKeyData().equals(that.getoAuthKeyData()) && getFinalKeyData().equals(that.getFinalKeyData()) && getMetadata().equals(that.getMetadata()) && getNodesData().equals(that.getNodesData());
-    }
-
-    // TODO: Check this
-    @Override
-    public int hashCode() {
-        return Objects.hash(getoAuthKeyData(), getFinalKeyData(), getMetadata(), getNodesData());
-    }
 }

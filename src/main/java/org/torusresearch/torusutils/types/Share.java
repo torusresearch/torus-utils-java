@@ -10,7 +10,6 @@ public class Share {
 
     @SuppressWarnings("unused")
     public Share(String shareIndex, String share) throws Exception {
-        // Initialize shareIndex and share from hexadecimal strings
         try {
             this.shareIndex = new BigInteger(shareIndex, 16);
         } catch (NumberFormatException e) {

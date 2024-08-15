@@ -33,18 +33,4 @@ public class SessionToken {
     public String getNode_puby() {
         return node_puby;
     }
-
-
-    // TODO: Check this
-    @Override
-    public int hashCode() {
-        return Objects.hash(signature);
-    }
-
-    // TODO: Check this
-    @Override
-    public boolean equals(Object obj) {
-        SessionToken newObj = (SessionToken)obj;
-        return this.signature != newObj.signature;
-    }
 }

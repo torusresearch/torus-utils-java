@@ -32,14 +32,7 @@ public class TorusUtilError extends Exception {
         return message;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof TorusUtilError) {
-            return ((TorusUtilError) obj).message.equals(message);
-        }
-        return false;
-    }
-
+    @SuppressWarnings("unused")
     public String debugDescription() {
         return message;
     }
