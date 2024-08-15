@@ -17,15 +17,14 @@ public class Polynomial {
     }
 
     public BigInteger polyEval(BigInteger x) {
-        BigInteger tmpX = x;
-        BigInteger xi = tmpX;
+        BigInteger xi = x;
         BigInteger sum = BigInteger.ZERO;
         sum = sum.add(polynomial[0]);
 
         for (int i = 1; i < polynomial.length; i++) {
             BigInteger tmp = xi.multiply(polynomial[i]);
             sum = sum.add(tmp).mod(getOrderOfCurve());
-            xi = xi.multiply(tmpX).mod(getOrderOfCurve());
+            xi = xi.multiply(x).mod(getOrderOfCurve());
         }
 
         return sum;

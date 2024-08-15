@@ -8,6 +8,7 @@ public class Share {
     private final BigInteger share;
     private final BigInteger shareIndex;
 
+    @SuppressWarnings("unused")
     public Share(String shareIndex, String share) throws Exception {
         // Initialize shareIndex and share from hexadecimal strings
         try {

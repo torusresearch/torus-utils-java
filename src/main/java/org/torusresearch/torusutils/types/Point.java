@@ -12,6 +12,7 @@ import java.math.BigInteger;
 public class Point {
     private final BigInteger x;
     private final BigInteger y;
+    @SuppressWarnings("unused")
     private final ECDomainParameters ecCurve;
 
     public Point(String x, String y) {
@@ -36,6 +37,7 @@ public class Point {
         return y;
     }
 
+    @SuppressWarnings("unused")
     public byte[] encode(String enc) throws Exception {
         String xPadded = Utils.padLeft(this.x.toString(16),'0', 64);
         String yPadded = Utils.padLeft(this.y.toString(16),'0', 64);

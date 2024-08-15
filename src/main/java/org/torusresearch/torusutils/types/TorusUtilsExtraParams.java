@@ -30,7 +30,7 @@ public class TorusUtilsExtraParams {
         this.timestamp = null;
     }
 
-    // Constructor with parameters
+    @SuppressWarnings("unused")
     public TorusUtilsExtraParams(
             Integer session_token_exp_second,
             String nonce, String message,
