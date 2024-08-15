@@ -235,10 +235,10 @@ public class TorusUtils {
                 ImportedShare importShare = importedShares[j];
 
                 ShareRequestItem shareRequestItem = new ShareRequestItem(verifier, verifierParams.verifier_id, verifierParams.extended_verifier_id,
-                        idToken, extraParams, nodeSigs.toArray(new CommitmentRequestResult[0]), importShare.getOauth_pub_key_x(), importShare.getOauth_pub_key_y(),
-                        importShare.getSigning_pub_key_x(), importShare.getSigning_pub_key_y(), importShare.getEncryptedShare(),
-                        importShare.getEncryptedShareMetadata(), importShare.getNode_index(), importShare.getKey_type(),
-                        importShare.getNonce_data(), importShare.getNonce_signature(), verifierParams.sub_verifier_ids, verifierParams.verify_params, endpoints[j]
+                        idToken, extraParams, nodeSigs.toArray(new CommitmentRequestResult[0]), importShare.oauth_pub_key_x, importShare.oauth_pub_key_y,
+                        importShare.signing_pub_key_x, importShare.signing_pub_key_y, importShare.encryptedShare,
+                        importShare.encryptedShareMetadata, importShare.node_index, importShare.key_type,
+                        importShare.nonce_data, importShare.nonce_signature, verifierParams.sub_verifier_ids, verifierParams.verify_params, endpoints[j]
                 );
                 importedItems.add(shareRequestItem);
             }
