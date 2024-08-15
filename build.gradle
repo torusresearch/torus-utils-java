@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'org.torusresearch'
-version '3.2.2'
+version '4.0.0'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -23,7 +23,6 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
     testImplementation 'org.assertj:assertj-core:3.6.1'
-    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
     testImplementation 'com.auth0:java-jwt:3.19.2'
     testImplementation 'net.andreinc:mockneat:0.4.8'
 }

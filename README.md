@@ -14,8 +14,7 @@ The general approach is to evaluate predicates against a list of (potentially in
 README.md
 ## Features
 - Handles up to threshold number of failures.
-- Optimistic early exit (eg. 5/9 nodes return valid shares = complete)
-- All API's return `CompletableFutures`
+- Optimistic early exit (eg. threshold number of nodes return valid shares = complete)
 
 ## Getting Started
 
@@ -29,7 +28,7 @@ repositories {
         maven { url "https://jitpack.io" }
    }
    dependencies {
-         implementation 'org.torusresearch:torus-utils-java:3.1.2'
+         implementation 'org.torusresearch:torus-utils-java:4.0.0'
    }
 ```
 

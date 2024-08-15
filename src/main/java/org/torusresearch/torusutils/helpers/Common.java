@@ -27,13 +27,23 @@ public class Common {
     }
 
     public static String padLeft(@NotNull String inputString, @NotNull Character padChar, int length) {
-        if (inputString.length() >= length) return inputString;
-        StringBuilder sb = new StringBuilder();
-        while (sb.length() < length - inputString.length()) {
-            sb.append(padChar);
+        StringBuilder sb = new StringBuilder(inputString);
+        int count = length - sb.length();
+        while(count > 0) {
+            sb.insert(0, padChar);
+            count--;
         }
-        sb.append(inputString);
         return sb.toString();
+    }
+
+    public static String trimLeadingZeros(String source) {
+        for (int i = 0; i < source.length(); ++i) {
+            char c = source.charAt(i);
+            if (c != '0') {
+                return source.substring(i);
+            }
+        }
+        return "0";
     }
 
     public static List<List<Integer>> kCombinations(@NotNull List<Integer> set, int k) {
