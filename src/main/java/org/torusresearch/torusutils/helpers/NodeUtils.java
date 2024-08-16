@@ -347,7 +347,7 @@ public class NodeUtils {
         for (ShareRequestResult item : shareResponses) {
             isNewKeys.add(item.is_new_key.toString());
 
-            if (item.session_token_sigs.length > 0) {
+            if (item.session_token_sigs != null && item.session_token_sigs.length > 0) {
                 if (item.session_token_sig_metadata != null && item.session_token_sig_metadata.length > 0) {
                     String decrypted = MetadataUtils.decryptNodeData(item.session_token_sig_metadata[0], item.session_token_sigs[0], sessionAuthKeySerialized);
                     sessionTokenSigs.add(decrypted);
@@ -356,7 +356,7 @@ public class NodeUtils {
                 }
             }
 
-            if (item.session_tokens.length > 0) {
+            if (item.session_token_sigs != null && item.session_tokens.length > 0) {
                 if (item.session_token_metadata != null && item.session_token_metadata.length > 0) {
                     String decrypted = MetadataUtils.decryptNodeData(item.session_token_metadata[0], item.session_tokens[0], sessionAuthKeySerialized);
                     sessionTokens.add(decrypted);

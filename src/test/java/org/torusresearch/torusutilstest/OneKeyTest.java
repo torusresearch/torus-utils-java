@@ -85,20 +85,6 @@ public class OneKeyTest {
         assertTrue(publicAddress.getMetadata().getServerTimeOffset() < 20);
     }
 
-    @DisplayName("Key Assign test")
-    @Test
-    public void shouldKeyAssign() throws Exception {
-        String email = JwtUtils.getRandomEmail();
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER, email, null);
-        assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
-        assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
-        assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
-        assertNotEquals(publicAddress.getoAuthKeyData().getWalletAddress(), "");
-        assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v2);
-        assertFalse(publicAddress.getMetadata().isUpgraded());
-    }
-
     @DisplayName("Login test v1")
     @Test
     public void shouldLoginV1() throws Exception {
@@ -125,6 +111,41 @@ public class OneKeyTest {
         ));
         assertEquals("296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4", torusKey.getFinalKeyData().getPrivKey());
         assertTrue(torusKey.getMetadata().getServerTimeOffset() < 20);
+    }
+
+    @DisplayName("Key Assign test")
+    @Test
+    public void shouldKeyAssign() throws Exception {
+        String email = JwtUtils.getRandomEmail();
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
+        TorusPublicKey publicAddress = torusUtils.getPublicAddress(nodeDetails.getTorusNodeEndpoints(), TORUS_TEST_VERIFIER, email, null);
+        assertNotNull(publicAddress.getFinalKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getFinalKeyData().getWalletAddress(), "");
+        assertNotNull(publicAddress.getoAuthKeyData().getWalletAddress());
+        assertNotEquals(publicAddress.getoAuthKeyData().getWalletAddress(), "");
+        assertEquals(publicAddress.getMetadata().getTypeOfUser(), TypeOfUser.v2);
+        assertFalse(publicAddress.getMetadata().isUpgraded());
+    }
+
+    @Test
+    public void testShouldBeAbleToKeyAssignViaLogin() throws Exception {
+        String fakeEmail = JwtUtils.getRandomEmail();
+        String verifier = TORUS_TEST_VERIFIER;
+        String verifierID = fakeEmail;
+        String jwt = JwtUtils.generateIdToken(verifierID, algorithmRs);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, verifierID).get();
+        VerifierParams verifierParams = new VerifierParams(verifierID, null, null, null);
+        TorusKey data = torusUtils.retrieveShares(
+                nodeDetails.getTorusNodeEndpoints(),
+                verifier,
+                verifierParams,
+                jwt, null
+        );
+        assertEquals(data.getMetadata().getTypeOfUser(), TypeOfUser.v2);
+        assertNotEquals(data.getMetadata().getNonce(), BigInteger.ZERO);
+        assertFalse(data.getMetadata().isUpgraded());
+        assertNotEquals("", data.getFinalKeyData().getWalletAddress());
+        assertNotEquals("", data.getoAuthKeyData().getWalletAddress());
     }
 
     @DisplayName("Login test v2")

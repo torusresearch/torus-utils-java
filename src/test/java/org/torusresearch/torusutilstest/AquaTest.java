@@ -205,5 +205,19 @@ public class AquaTest {
                 new NodesData(torusKey.getNodesData().getNodeIndexes())
         ));
     }
+
+    @DisplayName("RetrieveShares Some Nodes Down")
+    @Test
+    public void testRetrieveSharesSomeNodesDown() throws Exception {
+        String verifier = TORUS_TEST_VERIFIER;
+        String verifierId = TORUS_TEST_EMAIL;
+        VerifierParams verifierParams = new VerifierParams(verifierId, null, null, null);
+        String jwt = JwtUtils.generateIdToken(verifierId, algorithmRs);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, verifierId).get();
+        String[] endpoints = nodeDetails.getTorusNodeEndpoints();
+        endpoints[endpoints.length - 1] = "https://ndjnfjbfrj/random";
+        TorusKey torusKey = torusUtils.retrieveShares(endpoints, verifier, verifierParams, jwt, null);
+        assertEquals("f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d", torusKey.getFinalKeyData().getPrivKey());
+    }
 }
 

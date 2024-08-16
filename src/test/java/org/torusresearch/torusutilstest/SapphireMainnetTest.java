@@ -96,7 +96,7 @@ public class SapphireMainnetTest {
         ));
     }
 
-    @DisplayName("Key Assign test")
+    @DisplayName("should be able to key assign")
     @Test
     public void shouldKeyAssign() throws Exception {
         String verifier = "tkey-google-sapphire-mainnet";
@@ -107,6 +107,21 @@ public class SapphireMainnetTest {
         assertNotNull(result.getFinalKeyData().getWalletAddress());
         assertNotEquals("", result.getFinalKeyData().getWalletAddress());
         assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertEquals(TypeOfUser.v2, result.getMetadata().getTypeOfUser());
+        assertFalse(result.getMetadata().isUpgraded());
+    }
+
+    @DisplayName("should assign key to tss verifier id")
+    @Test
+    public void shouldAssignKeyToTssVerifierId() throws Exception {
+        String email = JwtUtils.getRandomEmail();
+        int nonce = 0;
+        String tssTag = "default";
+        String tssVerifierId = email + "\u0015" + tssTag + "\u0016" + nonce;
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
+        TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_VERIFIER, email, tssVerifierId);
+        assertNotNull(result.getFinalKeyData().getWalletAddress());
+        assertNotNull(result.getoAuthKeyData().getWalletAddress());
         assertEquals(TypeOfUser.v2, result.getMetadata().getTypeOfUser());
         assertFalse(result.getMetadata().isUpgraded());
     }
@@ -133,19 +148,29 @@ public class SapphireMainnetTest {
         ));
     }
 
-    @DisplayName("should assign key to tss verifier id")
+    @DisplayName("should allow test tssVerifier to fetch shares")
     @Test
-    public void shouldAssignKeyToTssVerifierId() throws Exception {
+    public void testShouldAllowTestTssVerifierToFetchShares() throws Exception {
         String email = JwtUtils.getRandomEmail();
         int nonce = 0;
         String tssTag = "default";
-        String tssVerifierId = email + "\u0015" + tssTag + "\u0016" + nonce;
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(TORUS_TEST_VERIFIER, email).get();
-        TorusPublicKey result = torusUtils.getPublicAddress(nodeDetails.getTorusNodeSSSEndpoints(), TORUS_TEST_VERIFIER, email, tssVerifierId);
-        assertNotNull(result.getFinalKeyData().getWalletAddress());
-        assertNotNull(result.getoAuthKeyData().getWalletAddress());
-        assertEquals(TypeOfUser.v2, result.getMetadata().getTypeOfUser());
-        assertFalse(result.getMetadata().isUpgraded());
+        String tssVerifierID = email + "\u0015" + tssTag + "\u0016" + nonce;
+        String verifier = TORUS_TEST_VERIFIER;
+        String token = JwtUtils.generateIdToken(email, algorithmRs);
+
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, email).get();
+        VerifierParams verifierParams = new VerifierParams(email, tssVerifierID, null, null);
+        TorusKey torusKey = torusUtils.retrieveShares(
+                nodeDetails.getTorusNodeSSSEndpoints(),
+                verifier,
+                verifierParams,
+                token, null
+        );
+        assertNotNull(torusKey.getFinalKeyData().getPrivKey());
+        assertNotNull(torusKey.getoAuthKeyData().getWalletAddress());
+        assertEquals(TypeOfUser.v2, torusKey.getMetadata().getTypeOfUser());
+        assertEquals(BigInteger.ZERO, torusKey.getMetadata().getNonce());
+        assertTrue(torusKey.getMetadata().isUpgraded());
     }
 
     @DisplayName("should fetch public address when verifierID hash enabled")
