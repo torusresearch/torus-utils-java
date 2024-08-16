@@ -131,10 +131,9 @@ public class OneKeyTest {
     public void testShouldBeAbleToKeyAssignViaLogin() throws Exception {
         String fakeEmail = JwtUtils.getRandomEmail();
         String verifier = TORUS_TEST_VERIFIER;
-        String verifierID = fakeEmail;
-        String jwt = JwtUtils.generateIdToken(verifierID, algorithmRs);
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, verifierID).get();
-        VerifierParams verifierParams = new VerifierParams(verifierID, null, null, null);
+        String jwt = JwtUtils.generateIdToken(fakeEmail, algorithmRs);
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, fakeEmail).get();
+        VerifierParams verifierParams = new VerifierParams(fakeEmail, null, null, null);
         TorusKey data = torusUtils.retrieveShares(
                 nodeDetails.getTorusNodeEndpoints(),
                 verifier,
