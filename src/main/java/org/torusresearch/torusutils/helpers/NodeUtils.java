@@ -449,7 +449,7 @@ public class NodeUtils {
         String oAuthPublicKey = KeyUtils.privateToPublic(privateKey);
         String[] oAuthPublicKeyCoords = KeyUtils.getPublicKeyCoords(oAuthPublicKey);
         BigInteger metadataNonce = (thresholdNonceData != null && thresholdNonceData.nonce != null) ? new BigInteger(Common.padLeft(thresholdNonceData.nonce, '0', 64), 16) : BigInteger.ZERO;
-        String finalPublicKey = null;
+        String finalPublicKey;
         PubNonce pubNonce = null;
         TypeOfUser typeOfUser = TypeOfUser.v1;
 
