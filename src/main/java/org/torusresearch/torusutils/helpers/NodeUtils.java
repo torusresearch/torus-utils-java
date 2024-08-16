@@ -481,7 +481,7 @@ public class NodeUtils {
                 finalPublicKey = KeyUtils.combinePublicKeysFromStrings(Arrays.asList(oAuthPublicKey, pubNonceKey), false);
                 pubNonce = pubNonceObject;
             } else {
-                throw TorusUtilError.PUB_NONCE_MISSING; // TODO: Fix this
+                throw TorusUtilError.PUB_NONCE_MISSING;
             }
         }
 

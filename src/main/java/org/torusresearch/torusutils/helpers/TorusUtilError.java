@@ -2,7 +2,6 @@ package org.torusresearch.torusutils.helpers;
 
 import org.jetbrains.annotations.NotNull;
 
-// TODO: Recheck all returned errors across the codebase
 public class TorusUtilError extends Exception {
 
     // Define error cases
