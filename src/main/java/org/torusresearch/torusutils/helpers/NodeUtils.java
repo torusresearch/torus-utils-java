@@ -213,18 +213,25 @@ public class NodeUtils {
 
         Gson json = new Gson();
         for (CompletableFuture<String> commitment : CommitmentRequests) {
-            String result = commitment.get();
-            @SuppressWarnings({"unchecked"}) // Due to Type Erasure of Generic Types at Runtime. Java does this to ensure code is compatible with pre-generic versions of Java.
-            JsonRPCResponse<CommitmentRequestResult> response = json.fromJson(result, JsonRPCResponse.class);
-            if (response != null && response.getError() == null) {
-                nodeSigs.add(response.getTypedResult(CommitmentRequestResult.class));
-                received++;
-                if (!isImportShareReq) {
-                    if (received >= minRequiredCommitmments) {
+            try {
+                String result = commitment.get();
+                @SuppressWarnings({"unchecked"}) // Due to Type Erasure of Generic Types at Runtime. Java does this to ensure code is compatible with pre-generic versions of Java.
+                JsonRPCResponse<CommitmentRequestResult> response = json.fromJson(result, JsonRPCResponse.class);
+                if (response != null && response.getError() == null) {
+                    nodeSigs.add(response.getTypedResult(CommitmentRequestResult.class));
+                    received++;
+                    if (!isImportShareReq) {
+                        if (received >= minRequiredCommitmments) {
+                            break;
+                        }
+                    }
+                } else {
+                    if (isImportShareReq) {
+                        // cannot continue. all must pass for import
                         break;
                     }
                 }
-            } else {
+            } catch (Exception e) {
                 if (isImportShareReq) {
                     // cannot continue. all must pass for import
                     break;
@@ -288,17 +295,21 @@ public class NodeUtils {
             }
 
             for (CompletableFuture<String> item : shareRequests) {
-                @SuppressWarnings({"unchecked"}) // Due to Type Erasure of Generic Types at Runtime. Java does this to ensure code is compatible with pre-generic versions of Java.
-                JsonRPCResponse<ShareRequestResult> response = json.fromJson(item.get(), JsonRPCResponse.class);
+                try {
+                    @SuppressWarnings({"unchecked"}) // Due to Type Erasure of Generic Types at Runtime. Java does this to ensure code is compatible with pre-generic versions of Java.
+                    JsonRPCResponse<ShareRequestResult> response = json.fromJson(item.get(), JsonRPCResponse.class);
 
-                if (response != null && response.getError() == null) {
-                    shareResponses.add(response.getTypedResult(ShareRequestResult.class));
-                }
+                    if (response != null && response.getError() == null) {
+                        shareResponses.add(response.getTypedResult(ShareRequestResult.class));
+                    }
 
-                thresholdPublicKey = NodeUtils.thresholdSame(shareResponses.stream().filter(res -> res.keys.length > 0).map(res -> res.keys[0].public_key).toArray(PubKey[]::new), threshold);
+                    thresholdPublicKey = NodeUtils.thresholdSame(shareResponses.stream().filter(res -> res.keys.length > 0).map(res -> res.keys[0].public_key).toArray(PubKey[]::new), threshold);
 
-                if (thresholdPublicKey != null) {
-                    break;
+                    if (thresholdPublicKey != null) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    // Continue to try next result
                 }
             }
         }
