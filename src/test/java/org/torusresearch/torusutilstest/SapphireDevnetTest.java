@@ -63,7 +63,6 @@ public class SapphireDevnetTest {
     static String TORUS_TEST_VERIFIER = "torus-test-health";
     static String TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate";
     static String TORUS_TEST_EMAIL = "devnettestuser@tor.us";
-    static String TORUS_HASH_ENABLED_TEST_EMAIL = "aasas@tr.us";
     static String TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com";
     static String HashEnabledVerifier = "torus-test-verifierid-hash";
 
@@ -193,13 +192,12 @@ public class SapphireDevnetTest {
         String tssTag = "default";
         String tssVerifierID = fakeEmail + "\u0015" + tssTag + "\u0016" + nonce;
         String verifier = TORUS_TEST_VERIFIER;
-        String verifierID = fakeEmail;
 
-        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, verifierID).get();
+        NodeDetails nodeDetails = fetchNodeDetails.getNodeDetails(verifier, fakeEmail).get();
         TorusPublicKey torusPublicKey = torusUtils.getPublicAddress(
                 nodeDetails.getTorusNodeSSSEndpoints(),
                 verifier,
-                verifierID,
+                fakeEmail,
                 tssVerifierID
         );
 
