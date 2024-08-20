@@ -74,7 +74,7 @@ public class NodeUtils {
         List<CompletableFuture<String>> lookupPromises = new ArrayList<>();
         for (int i = 0; i < endpoints.length; i++) {
             lookupPromises.add(i, APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("GetPubKeyOrKeyAssign",
-                    params), false));
+                    params), true));
         }
 
         ArrayList<JsonRPCResponse<VerifierLookupResponse>> collected = new ArrayList<>();
@@ -204,7 +204,7 @@ public class NodeUtils {
 
         // make commitment requests to endpoints
         for (int i = 0; i < endpoints.length; i++) {
-            CompletableFuture<String> commitmentRequest = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.replace("0x", ""), pubKeyX, pubKeyY, String.valueOf(System.currentTimeMillis()), verifier)), false);
+            CompletableFuture<String> commitmentRequest = APIUtils.post(endpoints[i], APIUtils.generateJsonRPCObject("CommitmentRequest", new CommitmentRequestParams("mug00", tokenCommitment.replace("0x", ""), pubKeyX, pubKeyY, String.valueOf(System.currentTimeMillis()), verifier)), true);
             CommitmentRequests.add(i, commitmentRequest);
         }
 
