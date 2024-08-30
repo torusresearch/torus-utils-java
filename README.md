@@ -9,13 +9,12 @@ Since Torus nodes operate on a threshold assumption, we need to ensure that API 
 This is to prevent malicious nodes from withholding shares, or deliberately slowing down the entire process.
 
 This utility library allows for early exits in optimistic scenarios, while handling rejection of invalid inputs from nodes in malicious/offline scenarios.
-The general approach is to evaluate predicates against a list of (potentially incomplete) results, and exit when the predicate passes.
+The general approach is to evaluate a threshold number of results instead of a list of (potentially incomplete) results, and then exit once a threshold number of valid results have been evaluated.
 
 README.md
 ## Features
 - Handles up to threshold number of failures.
-- Optimistic early exit (eg. 5/9 nodes return valid shares = complete)
-- All API's return `CompletableFutures`
+- Optimistic early exit (eg. threshold number of nodes return valid shares = complete)
 
 ## Getting Started
 
@@ -29,11 +28,11 @@ repositories {
         maven { url "https://jitpack.io" }
    }
    dependencies {
-         implementation 'org.torusresearch:torus-utils-java:3.1.2'
+         implementation 'org.torusresearch:torus-utils-java:4.0.0'
    }
 ```
 
 ## Requirements
 
 - Android - API level 24
-- Java 8 / 1.8
+- Java 11

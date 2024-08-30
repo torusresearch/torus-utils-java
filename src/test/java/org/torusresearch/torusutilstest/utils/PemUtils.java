@@ -28,42 +28,25 @@ public class PemUtils {
         return content;
     }
 
-    private static PublicKey getPublicKey(byte[] keyBytes, String algorithm) {
+    @SuppressWarnings("unused")
+    private static PublicKey getPublicKey(byte[] keyBytes, String algorithm) throws NoSuchAlgorithmException, InvalidKeySpecException {
         PublicKey publicKey = null;
-        try {
-            KeyFactory kf = KeyFactory.getInstance(algorithm);
-            EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-            publicKey = kf.generatePublic(keySpec);
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("Could not reconstruct the public key, the given algorithm could not be found.");
-        } catch (InvalidKeySpecException e) {
-            System.out.println("Could not reconstruct the public key");
-        }
-
+        KeyFactory kf = KeyFactory.getInstance(algorithm);
+        EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+        publicKey = kf.generatePublic(keySpec);
         return publicKey;
     }
 
-    private static PrivateKey getPrivateKey(byte[] keyBytes, String algorithm) {
+    private static PrivateKey getPrivateKey(byte[] keyBytes, String algorithm) throws NoSuchAlgorithmException, InvalidKeySpecException {
         PrivateKey privateKey = null;
-        try {
-            KeyFactory kf = KeyFactory.getInstance(algorithm);
-            EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-            privateKey = kf.generatePrivate(keySpec);
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("Could not reconstruct the private key, the given algorithm could not be found.");
-        } catch (InvalidKeySpecException e) {
-            System.out.println("Could not reconstruct the private key");
-        }
+        KeyFactory kf = KeyFactory.getInstance(algorithm);
+        EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+        privateKey = kf.generatePrivate(keySpec);
 
         return privateKey;
     }
 
-    public static PublicKey readPublicKeyFromFile(String filepath, String algorithm) throws IOException {
-        byte[] bytes = PemUtils.parsePEMFile(new File(filepath));
-        return PemUtils.getPublicKey(bytes, algorithm);
-    }
-
-    public static PrivateKey readPrivateKeyFromFile(String filepath, String algorithm) throws IOException {
+    public static PrivateKey readPrivateKeyFromFile(String filepath, String algorithm) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] bytes = PemUtils.parsePEMFile(new File(filepath));
         return PemUtils.getPrivateKey(bytes, algorithm);
     }

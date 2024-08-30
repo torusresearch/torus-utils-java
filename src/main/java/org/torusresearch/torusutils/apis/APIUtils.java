@@ -3,7 +3,7 @@ package org.torusresearch.torusutils.apis;
 import com.google.gson.Gson;
 
 import org.jetbrains.annotations.NotNull;
-import org.torusresearch.torusutils.helpers.Utils;
+import org.torusresearch.torusutils.helpers.Common;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -29,7 +29,7 @@ public class APIUtils {
             .connectionPool(new ConnectionPool(64, 5, TimeUnit.SECONDS))
             .dispatcher(createDispatcher())
             .build();
-    private static String apiKey;
+    public static String apiKey;
 
     private static Dispatcher createDispatcher() {
         final Dispatcher dispatcher = new Dispatcher(Executors.newCachedThreadPool());
@@ -41,17 +41,13 @@ public class APIUtils {
     private APIUtils() {
     }
 
-    public static String getApiKey() {
-        return apiKey;
-    }
-
     public static void setApiKey(String apiKey) {
         APIUtils.apiKey = apiKey;
     }
 
     public static String generateJsonRPCObject(String method, Object params) {
         Gson gson = new Gson();
-        return gson.toJson(new JsonRPCCall(method, params));
+        return gson.toJson(new JsonRPCRequest(method, params));
     }
 
     public static Callback toCallback(CompletableFuture<String> future) {
@@ -77,6 +73,7 @@ public class APIUtils {
         return _post(url, data, new Header[0], useApiKey);
     }
 
+    @SuppressWarnings("unused")
     public static CompletableFuture<String> post(String url, String data, Header[] headers, Boolean useApiKey) {
         return _post(url, data, headers, useApiKey);
     }
@@ -97,7 +94,7 @@ public class APIUtils {
         for (Header header : headers) {
             requestBuilder.addHeader(header.name.utf8(), header.value.utf8());
         }
-        if (useApiKey && !Utils.isEmpty(apiKey))
+        if (useApiKey && !Common.isEmpty(apiKey))
             requestBuilder.addHeader("x-api-key", apiKey);
         Request request = requestBuilder.build();
         CompletableFuture<String> future = new CompletableFuture<>();
@@ -110,7 +107,7 @@ public class APIUtils {
         for (Header header : headers) {
             requestBuilder.addHeader(header.name.utf8(), header.value.utf8());
         }
-        if (useApiKey && !Utils.isEmpty(apiKey))
+        if (useApiKey && !Common.isEmpty(apiKey))
             requestBuilder.addHeader("x-api-key", apiKey);
         Request request = requestBuilder.build();
         CompletableFuture<String> future = new CompletableFuture<>();

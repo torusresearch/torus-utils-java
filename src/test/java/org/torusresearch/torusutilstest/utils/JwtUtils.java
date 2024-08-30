@@ -2,24 +2,40 @@ package org.torusresearch.torusutilstest.utils;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.impl.JWTParser;
+import com.auth0.jwt.interfaces.Header;
+import com.auth0.jwt.interfaces.JWTPartsParser;
+
 import net.andreinc.mockneat.MockNeat;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class JwtUtils {
     public static String generateIdToken(String email, Algorithm alg) {
+
+        Date today = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(today);
+        calendar.add(Calendar.MINUTE, 2);
+        Date modifiedDate = calendar.getTime();
+
         return JWT.create()
-                .withSubject("email|" + email.split("@")[0])
-                .withAudience("torus-key-test")
-                .withExpiresAt(new Date(System.currentTimeMillis() + 3600 * 1000))
-                .withIssuedAt(new Date())
-                .withIssuer("torus-key-test")
-                .withClaim("email", email)
-                .withClaim("nickname", email.split("@")[0])
+                .withClaim("admin", false)
                 .withClaim("name", email)
-                .withClaim("picture", "")
+                .withClaim("email", email)
+                .withSubject("email|" + email.split("@")[0]) // sub
                 .withClaim("email_verified", true)
+                .withAudience("torus-key-test") // aud
+                .withExpiresAt(modifiedDate) // eat
+                .withIssuer("torus-key-test") // iss
+                .withIssuedAt(today) // iat
                 .sign(alg);
+    }
+
+    public static Header parseTokenHeader(String token) {
+        JWTPartsParser parts = new JWTParser();
+        return parts.parseHeader(token);
     }
 
     public static String getRandomEmail() {
