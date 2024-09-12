@@ -356,7 +356,9 @@ public class NodeUtils {
         ArrayList<IsNewKeyResponse> isNewKeys = new ArrayList<>();
 
         for (ShareRequestResult item : shareResponses) {
-            isNewKeys.add(new IsNewKeyResponse(item.is_new_key, item.keys[0].public_key.getX()));
+            if (item.keys.length > 0 && item.keys[0] != null) {
+                isNewKeys.add(new IsNewKeyResponse(item.is_new_key, item.keys[0].public_key.getX()));
+            }
 
             if (item.session_token_sigs != null && item.session_token_sigs.length > 0) {
                 if (item.session_token_sig_metadata != null && item.session_token_sig_metadata.length > 0) {
@@ -445,7 +447,7 @@ public class NodeUtils {
 
         boolean isNewKey = false;
         for (IsNewKeyResponse item : isNewKeys) {
-            if (item.isNewKey() && item.getPublicKeyX().equalsIgnoreCase(thresholdPublicKey.getX())) {
+            if (item.isNewKey && item.publicKeyX.equalsIgnoreCase(thresholdPublicKey.getX())) {
                 isNewKey = true;
             }
         }
