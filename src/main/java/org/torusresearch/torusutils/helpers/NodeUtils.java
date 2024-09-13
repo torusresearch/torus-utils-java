@@ -353,10 +353,12 @@ public class NodeUtils {
         ArrayList<String> sessionTokens = new ArrayList<>();
         ArrayList<Integer> nodeIndexes = new ArrayList<>();
         ArrayList<SessionToken> sessionTokenDatas = new ArrayList<>();
-        ArrayList<String> isNewKeys = new ArrayList<>();
+        ArrayList<IsNewKeyResponse> isNewKeys = new ArrayList<>();
 
         for (ShareRequestResult item : shareResponses) {
-            isNewKeys.add(item.is_new_key.toString());
+            if (item.keys.length > 0 && item.keys[0] != null) {
+                isNewKeys.add(new IsNewKeyResponse(item.is_new_key, item.keys[0].public_key.getX()));
+            }
 
             if (item.session_token_sigs != null && item.session_token_sigs.length > 0) {
                 if (item.session_token_sig_metadata != null && item.session_token_sig_metadata.length > 0) {
@@ -443,7 +445,12 @@ public class NodeUtils {
             throw TorusUtilError.PRIVATE_KEY_DERIVE_FAILED;
         }
 
-        String thesholdIsNewKey = thresholdSame(isNewKeys.toArray(new String[0]), threshold);
+        boolean isNewKey = false;
+        for (IsNewKeyResponse item : isNewKeys) {
+            if (item.isNewKey && item.publicKeyX.equalsIgnoreCase(thresholdPublicKey.getX())) {
+                isNewKey = true;
+            }
+        }
 
         String oAuthKey = Common.padLeft(privateKey.toString(16), '0', 64);
         String oAuthPublicKey = KeyUtils.privateToPublic(privateKey);
@@ -458,8 +465,7 @@ public class NodeUtils {
             finalPublicKey = oAuthPublicKey;
         } else if (TorusUtils.isLegacyNetorkRouteMap(network)) {
             if (enableOneKey) {
-                Boolean isNewKey = (!(thesholdIsNewKey != null && thesholdIsNewKey.equalsIgnoreCase("true")));
-                GetOrSetNonceResult nonce = MetadataUtils.getOrSetNonce(legacyMetadataHost, thresholdPublicKey.getX(), thresholdPublicKey.getY(), serverOffsetResponse, oAuthKey, isNewKey, null);
+                GetOrSetNonceResult nonce = MetadataUtils.getOrSetNonce(legacyMetadataHost, thresholdPublicKey.getX(), thresholdPublicKey.getY(), serverOffsetResponse, oAuthKey, !isNewKey, null);
                 metadataNonce = (nonce.nonce != null) ? new BigInteger(Common.padLeft(nonce.nonce, '0', 64), 16) : BigInteger.ZERO;
                 typeOfUser = (nonce.typeOfUser != null) ? nonce.typeOfUser : TypeOfUser.v1;
 
