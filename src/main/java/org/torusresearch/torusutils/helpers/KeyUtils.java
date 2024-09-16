@@ -1,5 +1,7 @@
 package org.torusresearch.torusutils.helpers;
+
 import com.google.gson.Gson;
+
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -17,6 +19,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.torusresearch.fetchnodedetails.types.TorusNodePub;
+import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.apis.requests.NonceMetadataParams;
 import org.torusresearch.torusutils.apis.requests.SetNonceData;
 import org.torusresearch.torusutils.helpers.encryption.Encryption;
@@ -122,7 +125,7 @@ public class KeyUtils {
         if (publicKeyUnprefixed.length() <= 128) {
             Common.padLeft(publicKeyUnprefixed, '0', 128);
         } else {
-            throw new TorusUtilError("Invalid public key size");
+            throw new TorusUtilError("Invalid public key size", TorusUtils.getClientId());
         }
 
         String xCoord = publicKeyUnprefixed.substring(0, 64);
@@ -151,7 +154,7 @@ public class KeyUtils {
 
     public static String combinePublicKeys(@NotNull List<? extends ECPoint> keys, boolean compressed) throws TorusUtilError {
         if (keys.isEmpty()) {
-            throw new TorusUtilError("The keys list cannot be empty");
+            throw new TorusUtilError("The keys list cannot be empty", TorusUtils.getClientId());
         }
 
         ECPoint combinedPoint = keys.get(0);
