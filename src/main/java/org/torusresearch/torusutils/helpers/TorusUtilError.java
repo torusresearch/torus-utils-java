@@ -24,7 +24,7 @@ public class TorusUtilError extends Exception {
     public static final TorusUtilError PUB_NONCE_MISSING = new TorusUtilError("public nonce is missing", TorusUtils.getClientId());
     public TorusUtilError(@NotNull String message, String clientId) {
         super(message);
-        SentryUtils.captureException(message + "_for client id: " + clientId);
+        SentryUtils.captureException(message + " for client id: " + clientId);
         this.message = message;
     }
 

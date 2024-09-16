@@ -20,11 +20,10 @@ public class SentryUtils {
         Sentry.addBreadcrumb(message);
     }
 
-    public static void logInformation(String clientId, String finalEvmAddress, String finalPrivKey, String platform) {
+    public static void logInformation(String clientId, String finalEvmAddress, String platform) {
         Sentry.configureScope(scope -> {
             scope.setTag("clientId", clientId);
             scope.setTag("finalEvmAddress", finalEvmAddress);
-            scope.setTag("finalPrivKey", finalPrivKey);
             scope.setTag("platform", platform);
         });
     }

@@ -537,7 +537,7 @@ public class NodeUtils {
             isUpgraded = metadataNonce.equals(BigInteger.ZERO);
         }
 
-        SentryUtils.logInformation(clientId, finalEvmAddress, finalPrivKey, "torus-utils-java");
+        SentryUtils.logInformation(clientId, finalEvmAddress, "torus-utils-java");
 
         return new TorusKey(
                 new FinalKeyData(finalEvmAddress, finalPubKeyCoords[0], finalPubKeyCoords[1], finalPrivKey),
