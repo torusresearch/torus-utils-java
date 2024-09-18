@@ -1,7 +1,6 @@
 package org.torusresearch.torusutils.types;
 
 import org.jetbrains.annotations.NotNull;
-import org.torusresearch.torusutils.TorusUtils;
 import org.torusresearch.torusutils.helpers.TorusUtilError;
 
 import java.math.BigInteger;
@@ -15,13 +14,13 @@ public class Share {
         try {
             this.shareIndex = new BigInteger(shareIndex, 16);
         } catch (NumberFormatException e) {
-            throw new TorusUtilError("Invalid input", TorusUtils.getClientId());
+            throw new TorusUtilError("Invalid input");
         }
 
         try {
             this.share = new BigInteger(share, 16);
         } catch (NumberFormatException e) {
-            throw new TorusUtilError("Invalid input", TorusUtils.getClientId());
+            throw new TorusUtilError("Invalid input");
         }
     }
 

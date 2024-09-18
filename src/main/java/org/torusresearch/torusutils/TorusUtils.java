@@ -51,7 +51,6 @@ public class TorusUtils {
     private int sessionTime = 86400;
     private final TorusKeyType keyType;
     private String apiKey = "torus-default";
-    public static String clientId;
 
     {
         setupBouncyCastle();
@@ -61,7 +60,6 @@ public class TorusUtils {
     public TorusUtils(TorusOptions options) throws TorusUtilError {
         this.options = options;
         this.keyType = options.keyType;
-        this.clientId = options.clientId;
         if (options.legacyMetadataHost == null) {
             if (isLegacyNetorkRouteMap(options.network)) {
                 this.defaultHost = METADATA_MAP.get(options.network);
@@ -94,10 +92,6 @@ public class TorusUtils {
     public void removeApiKey() {
         this.apiKey = "torus-default";
         APIUtils.setApiKey("torus-default");
-    }
-
-    public static String getClientId() {
-        return clientId;
     }
 
     public void setSessionTime(int sessionTime) {
