@@ -24,7 +24,6 @@ sentry {
 
     org = "torus"
     projectName = "torus-utils-java"
-    authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
 dependencies {
