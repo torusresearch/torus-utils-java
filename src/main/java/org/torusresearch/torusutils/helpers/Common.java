@@ -21,7 +21,7 @@ public class Common {
         KeyResult finalResult = new KeyResult(isNewKey);
         if (result.keys.length > 0) {
             VerifierKey finalKey = result.keys[0];
-            finalResult.keys = new VerifierKey[]{ finalKey };
+            finalResult.keys = new VerifierKey[]{new VerifierKey(finalKey.pub_key_X, finalKey.pub_key_Y, finalKey.address)};
         }
         return finalResult;
     }
