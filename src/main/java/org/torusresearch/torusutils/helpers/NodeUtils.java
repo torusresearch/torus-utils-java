@@ -92,8 +92,8 @@ public class NodeUtils {
                 @SuppressWarnings({"unchecked"}) // Due to Type Erasure of Generic Types at Runtime. Java does this to ensure code is compatible with pre-generic versions of Java.
                 JsonRPCResponse<VerifierLookupResponse> response = json.fromJson(result, JsonRPCResponse.class);
                 collected.add(response);
-                lookupPubKeys = collected.stream().filter(item -> item.getError() == null && item.getTypedResult(VerifierLookupResponse.class) != null).collect(Collectors.toList());
-                errResult = (JsonRPCErrorInfo) NodeUtils.thresholdSame(collected.stream().filter(item -> item.getError() != null).toArray(), threshold);
+                lookupPubKeys = collected.stream().filter(item -> item != null && item.getError() == null && item.getTypedResult(VerifierLookupResponse.class) != null).collect(Collectors.toList());
+                errResult = (JsonRPCErrorInfo) NodeUtils.thresholdSame(collected.stream().filter(item -> item != null && item.getError() != null).toArray(), threshold);
                 ArrayList<KeyResult> normalizedKeys = new ArrayList<>();
                 for (JsonRPCResponse<VerifierLookupResponse> item : lookupPubKeys) {
                     VerifierLookupResponse vlr = item.getTypedResult(VerifierLookupResponse.class);
@@ -550,11 +550,11 @@ public class NodeUtils {
             ObjectMapper objectMapper = new ObjectMapper()
                     .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
             String value = objectMapper.writeValueAsString(s);
-            Integer index = hashMap.get(value);
-            if (index != null) {
-                hashMap.put(value, index+1);
+            Integer found = hashMap.get(value);
+            if (found != null) {
+                hashMap.put(value, found + 1);
             } else {
-                hashMap.put(value, 0);
+                hashMap.put(value, 1);
             }
             if (hashMap.get(value) != null && hashMap.get(value) == threshold) {
                 return s;
