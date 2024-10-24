@@ -1,6 +1,7 @@
 package org.torusresearch.torusutils.helpers;
 
 import org.jetbrains.annotations.NotNull;
+import org.torusresearch.torusutils.analytics.SentryUtils;
 
 public class TorusUtilError extends Exception {
 
@@ -16,20 +17,21 @@ public class TorusUtilError extends Exception {
     public static final TorusUtilError INVALID_KEY_SIZE = new TorusUtilError("Invalid key size. Expected 32 bytes");
     public static final TorusUtilError INVALID_PUB_KEY_SIZE = new TorusUtilError("Invalid key size. Expected 64 bytes");
     public static final TorusUtilError INVALID_INPUT = new TorusUtilError("Input was found to be invalid");
-
-    public static TorusUtilError RUNTIME_ERROR(@NotNull String msg)  {
-        return new TorusUtilError(msg);
-    }
     public static final TorusUtilError RETRIEVE_OR_IMPORT_SHARE_ERROR = new TorusUtilError("retrieve or import share failed");
     public static final TorusUtilError METADATA_NONCE_MISSING = new TorusUtilError("Unable to fetch metadata nonce");
     public static final TorusUtilError GATING_ERROR = new TorusUtilError("could not process request");
     public static final TorusUtilError PUB_NONCE_MISSING = new TorusUtilError("public nonce is missing");
 
-    private final String message;
-
     public TorusUtilError(@NotNull String message) {
         super(message);
+        SentryUtils.captureException(message);
         this.message = message;
+    }
+
+    private final String message;
+
+    public static TorusUtilError RUNTIME_ERROR(@NotNull String msg)  {
+        return new TorusUtilError(msg);
     }
 
     @Override

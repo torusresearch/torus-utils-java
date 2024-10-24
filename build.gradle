@@ -2,17 +2,28 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id "org.gradle.test-retry" version "1.5.10"
+    id "io.sentry.jvm.gradle" version "4.11.0"
 }
 
 group 'org.torusresearch'
 version '4.0.3'
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
+}
+
+sentry {
+    // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
+    // This enables source context, allowing you to see your source
+    // code as part of your stack traces in Sentry.
+    includeSourceContext = true
+
+    org = "torus"
+    projectName = "torus-utils-java"
 }
 
 dependencies {
